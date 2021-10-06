@@ -1,13 +1,15 @@
 from pydantic import BaseModel, Field
 from bson import ObjectId
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from schemas.common import PyObjectId
+from typing import Optional
 
 
 # Shared properties
 class UserBase(BaseModel):
-    user: str
+    username: str
     name: str
+    email: Optional[EmailStr] = None
 
 
 class UserInDBBase(UserBase):
@@ -22,8 +24,19 @@ class UserInDBBase(UserBase):
 
 # Additional properties to return via API
 class User(UserInDBBase):
+    # password: str
+    # _password: Optional[str] = Field(alias="password") # = PrivateAttr(Field("", title="Password"))
     pass
 
+# Properties to receive via API on creation
+class UserCreate(UserBase):
+    # username: EmailStr
+    password: str
+
+
+class Login(BaseModel):
+    username: str
+    password: str
 
 # # Shared properties
 # class UserBase(BaseModel):

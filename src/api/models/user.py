@@ -1,4 +1,4 @@
-from models import DBBaseModel
+from models.base import DBBaseModel
 from pydantic import Field
 
 
