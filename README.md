@@ -1,5 +1,7 @@
 ## ENCYCLO-FLOWER SITE (v2)
 
+**Backend API running on Python 3.10**
+
 ### dev environment:
 * express - [http://localhost:8081/](http://localhost:8081/)
 * swagger - [http://localhost:8000/docs](http://localhost:8000/docs)
