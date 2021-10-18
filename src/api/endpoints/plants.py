@@ -4,17 +4,17 @@ import pymongo
 from typing import Any, List, Dict
 import db
 from core.security import oauth2_scheme
-from schemas import plant as PlantSchema
+from models import plant as plant_model
 from pprint import pprint
 
 router = APIRouter()
 
 
-@router.get("/simple_search", response_model=PlantSchema.PlantsSearchOutList)
+@router.get("/simple_search", response_model=plant_model.PlantsSearchOutList)
 async def simple_search(
     db: MongoClient = Depends(db.get_db),
     token: str = Depends(oauth2_scheme),
-    search: PlantSchema.SimplePlantsSearchIn = Depends(),
+    search: plant_model.SimplePlantsSearchIn = Depends(),
 ):
     # TODO: add from and limit as params - server side pagination
     print(search.name_text)
@@ -34,7 +34,7 @@ async def simple_search(
         query_and.append({"arr_color_name": {"$in": [search.color_name]}})
     if search.location_name:
         query_and.append({"arr_location_name": {"$in": [search.location_name]}})
-    out_plants = PlantSchema.PlantsSearchOutList(total=0, plants=[])
+    out_plants = plant_model.PlantsSearchOutList(total=0, plants=[])
     if not query_and:
         return out_plants # ! should return 400
     query = {"$and": query_and}

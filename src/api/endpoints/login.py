@@ -6,8 +6,8 @@ from pymongo.mongo_client import MongoClient
 from core.security import verify_password, create_access_token
 from core.config import settings
 from core.http_exceptions import e401
-from schemas import token as token_schema
-from schemas import user as user_schema
+from models import token as token_schema
+from models import user as user_model
 
 
 router = APIRouter()
@@ -22,7 +22,7 @@ def login_access_token(
 
     if not user:
         raise e401
-    user = user_schema.Login(**user)
+    user = user_model.Login(**user)
 
     if not verify_password(form_data.password, user.password):
         raise e401
