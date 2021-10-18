@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Literal
 import db
 from bson.son import SON
 
+
 class Plant(BaseModel):
     science_name: str
     heb_name: str

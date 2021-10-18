@@ -4,6 +4,7 @@ from bson.decimal128 import Decimal128
 from datetime import datetime
 from bson import ObjectId
 
+
 class DBBaseModel(BaseModel):
     # * https://pydantic-docs.helpmanual.io/usage/model_config/#change-behaviour-globally
 

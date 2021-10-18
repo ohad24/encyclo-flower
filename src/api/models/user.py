@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, EmailStr
 from bson import ObjectId
 from typing import Optional
 
+
 class User(DBBaseModel):
     user_id: int = Field()
     username: str = Field()
@@ -36,6 +37,7 @@ class User(UserInDBBase):
     # _password: Optional[str] = Field(alias="password") # = PrivateAttr(Field("", title="Password"))
     pass
 
+
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     # username: EmailStr
@@ -45,6 +47,7 @@ class UserCreate(UserBase):
 class Login(BaseModel):
     username: str
     password: str
+
 
 # # Shared properties
 # class UserBase(BaseModel):

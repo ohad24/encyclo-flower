@@ -36,7 +36,7 @@ async def simple_search(
         query_and.append({"arr_location_name": {"$in": [search.location_name]}})
     out_plants = plant_model.PlantsSearchOutList(total=0, plants=[])
     if not query_and:
-        return out_plants # ! should return 400
+        return out_plants  # ! should return 400
     query = {"$and": query_and}
     pprint(query)
     per_page = 10  # * limit to 10
@@ -54,5 +54,5 @@ async def simple_search(
     print(db_result)
     plants = [plant for plant in db_result]
     print(len(plants))
-    out_plants.plants=plants
+    out_plants.plants = plants
     return out_plants
