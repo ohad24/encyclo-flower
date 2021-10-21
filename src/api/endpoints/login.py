@@ -4,11 +4,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 import db
 from pymongo.mongo_client import MongoClient
 from core.security import verify_password, create_access_token
-from core.config import settings
+from core.config import get_settings
 from core.http_exceptions import e401
 from models import token as token_schema
 from models import user as user_model
 
+settings = get_settings()
 
 router = APIRouter()
 

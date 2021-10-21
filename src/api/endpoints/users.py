@@ -3,17 +3,18 @@ from typing import Any, List, Dict
 from pymongo.mongo_client import MongoClient
 import db
 import models.user as user_model
-from core.security import get_password_hash, oauth2_scheme
+from core.security import get_password_hash, oauth2_scheme, get_current_active_user
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List[user_model.User])
 async def read_users(
-    db: MongoClient = Depends(db.get_db), token: str = Depends(oauth2_scheme)
+    db: MongoClient = Depends(db.get_db),
+    current_user: user_model.User = Depends(get_current_active_user),
 ):
     users = list(db.users.find({}))
-    print(users)
+    # print(users)
     return users
 
 
