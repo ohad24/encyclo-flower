@@ -3,3 +3,7 @@ venv
 __pycache__
 plants_data.json
 ape.py
+coverage.xml
+.cov_html
+.coverage
+.pytest_cache

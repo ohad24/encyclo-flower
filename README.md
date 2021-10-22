@@ -9,7 +9,7 @@ Tests:
 # pwd
 # ./encyclo-flower
 # enter venv
-pytest -v -x -s
+pytest -v -x -s --cov=src/api/ --cov-report xml --cov-report html:.cov_html
 ```
 Run:
 ```bash
