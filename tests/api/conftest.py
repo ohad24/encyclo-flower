@@ -1,6 +1,10 @@
 import pytest
 import string
 import random
+import sys, os
+
+os.environ["MONGO_DB_NAME"] = "test"
+sys.path.append("./src/api/")
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return "".join(random.choice(chars) for _ in range(size))

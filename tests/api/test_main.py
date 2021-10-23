@@ -1,10 +1,5 @@
 from fastapi.testclient import TestClient
-import sys, os
 import json
-
-os.environ["MONGO_DB_NAME"] = "test"
-sys.path.append("./src/api/")
-
 from main import app
 import pytest
 from db import get_db
