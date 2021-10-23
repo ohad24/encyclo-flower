@@ -69,9 +69,26 @@ class TestUser:
         )
         assert response.status_code == 401
 
-    def test_get_users(self):  # ! should replace with current user
+    def test_get_current_user(self):
+        response = client.get("/api/v1/users/me/", headers=pytest.headers)
+        assert response.status_code == 200
+        assert response.json()["username"] == pytest.test_username
+
+    def test_all_users_superuser_access(self):
+        db = get_db()
+        db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_superuser": True}}
+        )
         response = client.get("/api/v1/users/", headers=pytest.headers)
         assert response.status_code == 200
+        db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_superuser": False}}
+        )
+    
+    def test_all_users_superuser_no_access(self):
+        response = client.get("/api/v1/users/", headers=pytest.headers)
+        assert response.status_code == 403
+        assert response.json()["detail"] == "The user does not have enough privileges"
 
     def test_fault_credentials(self):
         db = get_db()
@@ -108,11 +125,8 @@ class TestUser:
         )
 
         request = client.get(
-            "/api/v1/users/",
-            headers={
-                "Accept": "application/json",
-                "Authorization": "Bearer {}".format(pytest.access_token),
-            },
+            "/api/v1/users/me/",
+            headers=pytest.headers
         )
         assert request.status_code == 400
 
