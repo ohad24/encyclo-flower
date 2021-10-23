@@ -4,6 +4,7 @@ import pymongo
 import db
 from models import plant as plant_model
 from pprint import pprint
+import math
 
 router = APIRouter()
 
@@ -13,8 +14,6 @@ async def simple_search(
     db: MongoClient = Depends(db.get_db),
     search: plant_model.SimplePlantsSearchIn = Depends(),
 ):
-    # TODO: add from and limit as params - server side pagination
-    # print(search.name_text)
     query_and = []
     if search.name_text:
         name_text_or = []
@@ -31,28 +30,31 @@ async def simple_search(
         query_and.append({"arr_color_name": {"$in": [search.color_name]}})
     if search.location_name:
         query_and.append({"arr_location_name": {"$in": [search.location_name]}})
-    out_plants = plant_model.PlantsSearchOutList(total=0, plants=[])
     if not query_and:
         raise HTTPException(
             status_code=400,
             detail="must supply at least one parameter",
         )
     query = {"$and": query_and}
-    # pprint(query)
-    per_page = 10  # * limit to 10
-    total = db.plants.count_documents(query)
-    # print(total)
-    if total == 0:
+    count_documents = db.plants.count_documents(query)
+    out_plants = plant_model.PlantsSearchOutList()
+    if count_documents == 0:
         return out_plants
-    out_plants.total = total
-    db_result = (
+    out_plants.total = count_documents
+    out_plants.current_page = search.page
+    per_page = 30  # * limit to 30 per page
+    out_plants.pages = math.floor(count_documents / per_page) + 1
+    if search.page > out_plants.pages:
+        raise HTTPException(
+            status_code=400,
+            detail="page number out of range",
+        )
+
+    out_plants.plants = list(
         db.plants.find(query)
         .sort([("science_name", pymongo.ASCENDING)])
-        .skip(search.page * per_page)
+        .skip((search.page - 1) * per_page)
         .limit(per_page)
     )
-    # print(db_result)
-    plants = [plant for plant in db_result]
-    # print(len(plants))
-    out_plants.plants = plants
+
     return out_plants

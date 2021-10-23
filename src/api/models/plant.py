@@ -1,7 +1,5 @@
-from pydantic import BaseModel
-from typing import Dict, List, Optional, Literal
-import db
-from bson.son import SON
+from pydantic import BaseModel, Field
+from typing import Dict, List, Optional
 
 
 class Plant(BaseModel):
@@ -30,26 +28,12 @@ class Plant(BaseModel):
     arr_color_name: List[str]
 
 
-# pipeline_arr_color_name = [
-#             {"$unwind": "$arr_color_name"},
-#             {"$group": {"_id": "$arr_color_name"}},
-#             {"$sort": SON([("_id", -1)])}
-#         ]
-# db = db.get_db()
-
-# COLORS = tuple(x['_id'] for x in list(db.plants.aggregate(pipeline_arr_color_name)))
-# print(COLORS)
-
-# class PlantsColors(BaseModel):
-#     colors: Literal[COLORS]
-
-
 class SimplePlantsSearchIn(BaseModel):
     name_text: Optional[str]
     color_name: Optional[str]
     location_name: Optional[str]
     season_num: Optional[int]
-    page: int = 0
+    page: int = Field(ge=1, default=1)
 
 
 class PlantSearchOut(BaseModel):
@@ -63,5 +47,7 @@ class PlantSearchOut(BaseModel):
 
 
 class PlantsSearchOutList(BaseModel):
-    total: int
-    plants: List[Optional[PlantSearchOut]]
+    total: int = 0
+    pages: int = 1
+    current_page: int = 1
+    plants: List[Optional[PlantSearchOut]] = []
