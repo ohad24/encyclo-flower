@@ -11,6 +11,11 @@ def pytest_configure():
     pytest.test_username = test_username
     pytest.access_token = None
 
+    pytest.headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+
 
 # from core.config import get_settings, Settings
 

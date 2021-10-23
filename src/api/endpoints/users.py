@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form
+from fastapi import APIRouter, Depends, HTTPException, Body
 from typing import Any, List, Dict
 from pymongo.mongo_client import MongoClient
 import db
@@ -14,15 +14,14 @@ async def read_users(
     current_user: user_model.User = Depends(get_current_active_user),
 ):
     users = list(db.users.find({}))
-    # print(users)
+    # print(current_user)
     return users
 
 
 @router.post("/", response_model=user_model.UserCreateOut)
 async def create_user(
-    *,
+    user_in: user_model.UserCreateIn = Body(...),
     db: MongoClient = Depends(db.get_db),
-    user_in: user_model.UserCreateIn,
     # current_user: user_model.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     user = db.users.find_one({"username": user_in.username})

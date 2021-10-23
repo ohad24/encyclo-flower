@@ -19,7 +19,7 @@ class User(DBBaseModel):
 class UserCreateIn(BaseModel):
     username: str
     full_name: str
-    email: Optional[EmailStr] = None
+    email: Optional[EmailStr]
     password: str
 
     def __init__(self, **data):

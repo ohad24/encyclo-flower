@@ -1,11 +1,13 @@
 from fastapi.testclient import TestClient
 import sys, os
+import json
 
 os.environ["MONGO_DB_NAME"] = "test"
 sys.path.append("./src/api/")
 
 from main import app
 import pytest
+from db import get_db
 
 
 client = TestClient(app)
@@ -19,64 +21,106 @@ def test_read_main():
 
 class TestUser:
 
-    login_json = {
-        "username": pytest.test_username,
-        "full_name": "test",
-        "password": "test",
-        "email": "1@1.com",
-    }
+    login_json = json.dumps(
+        {
+            "username": pytest.test_username,
+            "full_name": "test",
+            "password": "test",
+            "email": "1@1.com",
+        }
+    )
 
     def test_create_user(self):
         response = client.post(
             "/api/v1/users/",
-            json=self.login_json,
+            data=self.login_json,
         )
         assert response.status_code == 200
 
     def test_create_user_duplicate(self):
         response = client.post(
             "/api/v1/users/",
-            json=self.login_json,
+            data=self.login_json,
         )
         assert response.status_code == 400
 
-    headers = {
+    login_headers = {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-
-    
 
     def test_login(self):
         response = client.post(
             "/api/v1/token",
             data={"username": pytest.test_username, "password": "test"},
-            headers=self.headers,
+            headers=self.login_headers,
         )
         assert response.status_code == 200
         pytest.access_token = response.json()["access_token"]
+        pytest.headers["Authorization"] = f"Bearer {pytest.access_token}"
 
     def test_login_failed(self):
         response = client.post(
             "/api/v1/token",
             data={"username": pytest.test_username + "1", "password": "test"},
-            headers=self.headers,
+            headers=self.login_headers,
         )
         assert response.status_code == 401
 
         response = client.post(
             "/api/v1/token",
             data={"username": pytest.test_username, "password": "test1"},
-            headers=self.headers,
+            headers=self.login_headers,
         )
         assert response.status_code == 401
 
-    def test_get_users(self):
-        response = client.get(
+    def test_get_users(self):  # ! should replace with current user
+        response = client.get("/api/v1/users/", headers=pytest.headers)
+        assert response.status_code == 200
+
+    def test_fault_credentials(self):
+        db = get_db()
+
+        # * test for invalid token
+        request = client.get(
+            "/api/v1/users/",
+            headers=self.login_headers
+            | {"Authorization": "Bearer {}".format(pytest.access_token + "1")},
+        )
+        assert request.status_code == 401
+
+        # * test removed user
+        db.users.update_one(
+            {"username": pytest.test_username},
+            {"$set": {"username": pytest.test_username + "a"}},
+        )
+        request = client.get(
             "/api/v1/users/",
             headers={
                 "Accept": "application/json",
                 "Authorization": "Bearer {}".format(pytest.access_token),
             },
         )
-        assert response.status_code == 200
+        assert request.status_code == 401
+        db.users.update_one(
+            {"username": pytest.test_username + "a"},
+            {"$set": {"username": pytest.test_username}},
+        )
+
+        # * inactive user
+        db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_active": False}}
+        )
+
+        request = client.get(
+            "/api/v1/users/",
+            headers={
+                "Accept": "application/json",
+                "Authorization": "Bearer {}".format(pytest.access_token),
+            },
+        )
+        assert request.status_code == 400
+
+        db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_active": True}}
+        )

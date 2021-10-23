@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post("/token", response_model=token_schema.Token)
-def login_access_token(
+def login_for_access_token(
     db: MongoClient = Depends(db.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
@@ -28,17 +28,11 @@ def login_access_token(
     if not verify_password(form_data.password, user.password):
         raise e401
 
-    # if not user:
-    #     raise HTTPException(status_code=400, detail="Incorrect email or password")
-    # if user.is_active:
-    #     raise HTTPException(status_code=400, detail="Inactive user")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {
-        "access_token": create_access_token(
-            user.username, expires_delta=access_token_expires
-        ),
-        "token_type": "bearer",
-    }
+    access_token = create_access_token(
+        user.username, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 # @router.post("/reset-password/", response_model=schemas.Msg)
