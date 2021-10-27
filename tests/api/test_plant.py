@@ -1,9 +1,5 @@
-from fastapi import params
-from fastapi.params import Header
 from test_main import client
 import pytest
-from db import get_db
-import math
 
 
 class TestSimpleSearch:

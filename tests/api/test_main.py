@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 import json
 from main import app
 import pytest
-from db import get_db
+from common_fixtures import db
 
 
 client = TestClient(app)
@@ -14,7 +14,7 @@ def test_read_main():
     assert response.json() == {"Hello": "World"}
 
 
-class TestUser:
+class TestCreateUser:
 
     login_json = json.dumps(
         {
@@ -39,6 +39,8 @@ class TestUser:
         )
         assert response.status_code == 400
 
+
+class TestLogin:
     login_headers = {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -69,13 +71,27 @@ class TestUser:
         )
         assert response.status_code == 401
 
+    def test_login_inactive_user(self, db):
+        db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_active": False}}
+        )
+
+        request = client.get("/api/v1/users/me/", headers=pytest.headers)
+        assert request.status_code == 400
+
+        db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_active": True}}
+        )
+
+
+class TestUserAccess:
     def test_get_current_user(self):
         response = client.get("/api/v1/users/me/", headers=pytest.headers)
         assert response.status_code == 200
         assert response.json()["username"] == pytest.test_username
 
-    def test_all_users_superuser_access(self):
-        db = get_db()
+    def test_superuser_access(self, db):
+        # db = get_db()
         db.users.update_one(
             {"username": pytest.test_username}, {"$set": {"is_superuser": True}}
         )
@@ -84,20 +100,21 @@ class TestUser:
         db.users.update_one(
             {"username": pytest.test_username}, {"$set": {"is_superuser": False}}
         )
-    
-    def test_all_users_superuser_no_access(self):
+
+    def test_superuser_no_access(self):
         response = client.get("/api/v1/users/", headers=pytest.headers)
         assert response.status_code == 403
         assert response.json()["detail"] == "The user does not have enough privileges"
 
-    def test_fault_credentials(self):
-        db = get_db()
+
+class TestBrokenToken:
+    def test_access_token(self, db):
 
         # * test for invalid token
         request = client.get(
             "/api/v1/users/",
-            headers=self.login_headers
-            | {"Authorization": "Bearer {}".format(pytest.access_token + "1")},
+            headers=pytest.headers
+            | {"Authorization": f"Bearer {pytest.access_token + '1'}"},
         )
         assert request.status_code == 401
 
@@ -108,28 +125,10 @@ class TestUser:
         )
         request = client.get(
             "/api/v1/users/",
-            headers={
-                "Accept": "application/json",
-                "Authorization": "Bearer {}".format(pytest.access_token),
-            },
+            headers=pytest.headers | {"Authorization": f"Bearer {pytest.access_token}"},
         )
         assert request.status_code == 401
         db.users.update_one(
             {"username": pytest.test_username + "a"},
             {"$set": {"username": pytest.test_username}},
-        )
-
-        # * inactive user
-        db.users.update_one(
-            {"username": pytest.test_username}, {"$set": {"is_active": False}}
-        )
-
-        request = client.get(
-            "/api/v1/users/me/",
-            headers=pytest.headers
-        )
-        assert request.status_code == 400
-
-        db.users.update_one(
-            {"username": pytest.test_username}, {"$set": {"is_active": True}}
         )
