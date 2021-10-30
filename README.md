@@ -10,6 +10,11 @@ Tests:
 # ./encyclo-flower
 # enter venv
 pytest -v -x -s --cov=src/api/ --cov-report xml --cov-report html:.cov_html
+
+# format
+black src/api/
+# lint
+flake8 src/api/
 ```
 Run:
 ```bash

@@ -2,6 +2,7 @@ venv
 .vscode
 __pycache__
 plants_data.json
+plants_data_new.json
 ape.py
 coverage.xml
 .cov_html

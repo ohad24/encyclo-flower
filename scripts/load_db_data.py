@@ -9,12 +9,14 @@ db_client = MongoClient(
         password='example',
     )
 
-db = db_client['dev']
 
-plants_collection = db["plants"]
-  
+dbs = ["dev", "test"]
 
-with open('scripts/plants_data.json') as file:
-    file_data = json.load(file)
+for db_name in dbs:
+    db = db_client[db_name]
+    plants_collection = db["plants"]
+    plants_collection.drop()
+    with open('scripts/plants_data_new.json') as file:
+        file_data = json.load(file)
 
-plants_collection.insert_many(file_data)
+    plants_collection.insert_many(file_data)
