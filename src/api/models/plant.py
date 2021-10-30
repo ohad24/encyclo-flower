@@ -16,14 +16,6 @@ pipeline_arr_color_name = [
 COLORS = Literal[
     tuple(x["_id"] for x in list(db.plants.aggregate(pipeline_arr_color_name)))
 ]
-# print(COLORS)
-# COLORS = Literal[COLORS]
-# print(COLORS)
-# print(type(COLORS))
-
-
-class PlantsColors(BaseModel):
-    color: COLORS
 
 
 class Taxonomy(BaseModel):
@@ -68,26 +60,15 @@ class Plant(DBBaseModel):
     spine: List[str]
 
 
-class SimplePlantsSearchIn(BaseModel):
+class SearchIn(BaseModel):
     name_text: Optional[str]
-    color_name: Optional[str]
+    colors: Optional[List[COLORS]]
     location_name: Optional[str]
     season_num: Optional[int]
     page: int = Field(ge=1, default=1)
 
 
-# class AdvancedPlantsSearchIn(BaseModel):
-#     name_text: Optional[str]
-#     color_name: Optional[List[PlantsColors]]
-#     location_name: Optional[str]
-#     season_num: Optional[int]
-# protected: Optional[bool]
-# red: Optional[bool]
-# invasive: Optional[bool]
-# page: int = Field(ge=1, default=1)
-
-
-class PlantSearchOut(BaseModel):
+class SearchOut(BaseModel):
     heb_name: str
     science_name: Optional[str]  # ! for debug
     season_num: Optional[List]  # ! for debug
@@ -97,8 +78,8 @@ class PlantSearchOut(BaseModel):
     image: Optional[dict]
 
 
-class PlantsSearchOutList(BaseModel):
+class SearchOutList(BaseModel):
     total: int = 0
-    pages: int = 1
+    total_pages: int = 1
     current_page: int = 1
-    plants: List[Optional[PlantSearchOut]] = []
+    plants: List[Optional[SearchOut]] = []

@@ -6,6 +6,7 @@ from bson import ObjectId
 
 
 class PyObjectId(ObjectId):
+    # * https://www.mongodb.com/developer/quickstart/python-quickstart-fastapi/
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
@@ -23,7 +24,7 @@ class PyObjectId(ObjectId):
 
 class DBBaseModel(BaseModel):
     # * https://pydantic-docs.helpmanual.io/usage/model_config/#change-behaviour-globally
-    _id: PyObjectId = Field(alias="_id", default_factory=PyObjectId)
+    id: PyObjectId = Field(alias="_id", default_factory=PyObjectId)
 
     class Config:
         arbitrary_types_allowed = True
