@@ -1,8 +1,6 @@
-from pydantic import BaseModel, PrivateAttr, Field, schema
+from pydantic import BaseModel, Field
 from bson import ObjectId
 from bson.decimal128 import Decimal128
-from datetime import datetime
-from bson import ObjectId
 
 
 class PyObjectId(ObjectId):

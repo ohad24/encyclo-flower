@@ -37,7 +37,7 @@ async def create_user(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    user_in.password = get_password_hash(user_in.password)
+    user_in.password = get_password_hash(user_in.password.get_secret_value())
     inserted_id = db.users.insert_one(user_in.dict()).inserted_id
     user = db.users.find_one({"_id": inserted_id})
     return user

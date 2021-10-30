@@ -19,8 +19,8 @@ class TestCreateUser:
     login_json = json.dumps(
         {
             "username": pytest.test_username,
-            "full_name": "test",
-            "password": "test",
+            "full_name": "test12",
+            "password": "test12",
             "email": "1@1.com",
         }
     )
@@ -49,7 +49,7 @@ class TestLogin:
     def test_login(self):
         response = client.post(
             "/api/v1/token",
-            data={"username": pytest.test_username, "password": "test"},
+            data={"username": pytest.test_username, "password": "test12"},
             headers=self.login_headers,
         )
         assert response.status_code == 200
@@ -59,14 +59,14 @@ class TestLogin:
     def test_login_failed(self):
         response = client.post(
             "/api/v1/token",
-            data={"username": pytest.test_username + "1", "password": "test"},
+            data={"username": pytest.test_username + "1", "password": "test12"},
             headers=self.login_headers,
         )
         assert response.status_code == 401
 
         response = client.post(
             "/api/v1/token",
-            data={"username": pytest.test_username, "password": "test1"},
+            data={"username": pytest.test_username, "password": "test122"},
             headers=self.login_headers,
         )
         assert response.status_code == 401
