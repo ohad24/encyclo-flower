@@ -5,6 +5,8 @@
 **API is running on Python 3.10**  
 Install:  
 Tests:  
+Environmnet variables:  
+* TESTS_GET_PLANTS_NAMES_LIMIT - query limit for get_plants_names
 ```bash
 # pwd
 # ./encyclo-flower
