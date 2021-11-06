@@ -58,7 +58,7 @@ class TestSimpleSearch:
         assert response.json()["plants"][0]["science_name"] == "Aegilops sharonensis"
 
     def test_search_with_multi_params(self):
-        params = {"colors": ["אדום"], "location_name": "hula valley", "season_num": "4"}
+        params = {"colors": ["אדום"], "location_names": ["hula valley"], "seasons": ["4"]}
         response = client.post(
             "/api/v1/plants/search", headers=pytest.headers, json=params
         )
@@ -67,7 +67,7 @@ class TestSimpleSearch:
         assert len(response.json()["plants"]) == 20
 
     def test_search_with_multi_page(self):
-        params = {"name_text": "מצוי", "season_num": "3"}
+        params = {"name_text": "מצוי", "seasons": ["3"]}
         response = client.post(
             "/api/v1/plants/search", headers=pytest.headers, json=params
         )
@@ -89,7 +89,7 @@ class TestSimpleSearch:
             )
 
     def test_search_page_out_of_range(self):
-        params = {"name_text": "מצוי", "season_num": "3"}
+        params = {"name_text": "מצוי", "seasons": ["3"]}
         response = client.post(
             "/api/v1/plants/search", headers=pytest.headers, json=params
         )

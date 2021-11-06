@@ -42,14 +42,13 @@ def prepare_search_query(search_input) -> dict:
                 }
             )
         query_and.append({"$or": name_text_or})
-    if search_input.season_num:
-        query_and.append({"season_num": {"$in": [search_input.season_num]}})
+    if search_input.seasons:
+        query_and.append({"season_num": {"$in": search_input.seasons}})
     if search_input.colors:
         query_and.append({"arr_color_name": {"$in": search_input.colors}})
-    if search_input.location_name:
-        query_and.append(
-            {f"arr_location_name.{search_input.location_name}": {"$exists": True}}
-        )
+    if search_input.location_names:
+        for location_name in search_input.location_names:
+            query_and.append({f"arr_location_name.{location_name}": {"$exists": True}})
     if not query_and:
         raise HTTPException(
             status_code=400,

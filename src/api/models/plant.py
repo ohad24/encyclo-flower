@@ -59,8 +59,8 @@ class Plant(DBBaseModel):
 class SearchIn(BaseModel):
     name_text: Optional[str]
     colors: Optional[List[COLORS]]
-    location_name: Optional[str]
-    season_num: Optional[int]
+    location_names: Optional[List[str]]
+    seasons: Optional[List[int]]
     page: int = Field(ge=1, default=1)
 
 
