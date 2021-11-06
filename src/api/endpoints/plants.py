@@ -21,26 +21,34 @@ async def get_plant(
     return plant
 
 
-@router.post("/search", response_model=plant_model.SearchOutList)
-async def search(
-    db: MongoClient = Depends(db.get_db),
-    search: plant_model.SearchIn = Body(...),
-):
-    per_page = 30  # * limit to 30 per page
+def prepare_search_query(search_input) -> dict:
     query_and = []
-    if search.name_text:
+    if search_input.name_text:
+        nt = search_input.name_text
         name_text_or = [
-            {"science_name": {"$regex": search.name_text, "$options": "-i"}},
-            {"heb_name": {"$regex": search.name_text, "$options": "-i"}},
+            {"science_name": {"$regex": nt, "$options": "-i"}},
+            {"heb_name": {"$regex": nt, "$options": "-i"}},
         ]
+        for arr in ["arr_syn_name_eng", "arr_syn_name_heb"]:
+            # * "in" not allow nestest $ in query
+            name_text_or.append(
+                {
+                    arr: {
+                        "$elemMatch": {
+                            "$regex": nt,
+                            "$options": "-i",
+                        }
+                    }
+                }
+            )
         query_and.append({"$or": name_text_or})
-    if search.season_num:
-        query_and.append({"season_num": {"$in": [search.season_num]}})
-    if search.colors:
-        query_and.append({"arr_color_name": {"$in": search.colors}})
-    if search.location_name:
+    if search_input.season_num:
+        query_and.append({"season_num": {"$in": [search_input.season_num]}})
+    if search_input.colors:
+        query_and.append({"arr_color_name": {"$in": search_input.colors}})
+    if search_input.location_name:
         query_and.append(
-            {f"arr_location_name.{search.location_name}": {"$exists": True}}
+            {f"arr_location_name.{search_input.location_name}": {"$exists": True}}
         )
     if not query_and:
         raise HTTPException(
@@ -48,6 +56,16 @@ async def search(
             detail="must supply at least one parameter",
         )
     query = {"$and": query_and}
+    return query
+
+
+@router.post("/search", response_model=plant_model.SearchOutList)
+async def search(
+    db: MongoClient = Depends(db.get_db),
+    search: plant_model.SearchIn = Body(...),
+):
+    per_page = 30  # * limit to 30 per page
+    query = prepare_search_query(search_input=search)
     count_documents = db.plants.count_documents(query)
     if count_documents == 0:
         return {}

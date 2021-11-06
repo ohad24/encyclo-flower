@@ -58,7 +58,7 @@ class TestSimpleSearch:
         assert response.json()["plants"][0]["science_name"] == "Aegilops sharonensis"
 
     def test_search_with_multi_params(self):
-        params = {"colors": ["אדום"], "location_name": "עמק החולה", "season_num": "4"}
+        params = {"colors": ["אדום"], "location_name": "hula valley", "season_num": "4"}
         response = client.post(
             "/api/v1/plants/search", headers=pytest.headers, json=params
         )
@@ -72,7 +72,7 @@ class TestSimpleSearch:
             "/api/v1/plants/search", headers=pytest.headers, json=params
         )
         assert response.status_code == 200
-        assert response.json()["total"] == 102
+        assert response.json()["total"] == 105
 
         for page in range(response.json()["total_pages"]):
             response = client.post(
@@ -81,7 +81,7 @@ class TestSimpleSearch:
                 json=params | {"page": page + 1},
             )
             assert response.status_code == 200
-            assert response.json()["total"] == 102
+            assert response.json()["total"] == 105
             assert (
                 len(response.json()["plants"]) == 30
                 if response.json()["current_page"] < response.json()["total_pages"]
@@ -94,7 +94,7 @@ class TestSimpleSearch:
             "/api/v1/plants/search", headers=pytest.headers, json=params
         )
         assert response.status_code == 200
-        assert response.json()["total"] == 102
+        assert response.json()["total"] == 105
 
         response = client.post(
             "/api/v1/plants/search",
