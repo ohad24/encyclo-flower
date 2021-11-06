@@ -9,3 +9,4 @@ coverage.xml
 .cov_html
 .coverage
 .pytest_cache
+tests/api/_test*

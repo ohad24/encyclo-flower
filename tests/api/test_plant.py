@@ -1,7 +1,7 @@
 from test_main import client
 import pytest
 import json
-from common_fixtures import get_db
+from db import get_db
 import os
 
 
@@ -43,13 +43,13 @@ class TestPlant(object):
 
 class TestSearch:
     @pytest.fixture(autouse=True)
-    def plants_search_utl(self, plants_url):
+    def plants_search_url(self, plants_url):
         # * Arrange
         self._plants_search_url = plants_url + "search"
 
     def test_no_params(self):
         # * Act
-        response = client.post(self._plants_search_url, headers=pytest.headers, json={})
+        response = client.post(self._plants_search_url, json={})
         # * Assert
         assert response.status_code == 400
         assert response.json() == {"detail": "must supply at least one parameter"}
@@ -58,7 +58,6 @@ class TestSearch:
         # * Act
         response = client.post(
             self._plants_search_url,
-            headers=pytest.headers,
             data=json.dumps({"name_text": "not_a_real_name"}),
         )
         # * Assert
@@ -74,7 +73,6 @@ class TestSearch:
         # * Arrange
         response = client.post(
             self._plants_search_url,
-            headers=pytest.headers,
             json={"name_text": "Aegilops sharonensis"},
         )
         # * Assert
@@ -93,9 +91,7 @@ class TestSearch:
 
     def test_search_with_multi_params(self, multi_params):
         # * act
-        response = client.post(
-            self._plants_search_url, headers=pytest.headers, json=multi_params
-        )
+        response = client.post(self._plants_search_url, json=multi_params)
         # * assert
         assert response.status_code == 200
         assert response.json()["total"] == 20
@@ -108,9 +104,7 @@ class TestSearch:
 
     def test_search_with_multi_page(self):
         # * Act
-        response = client.post(
-            self._plants_search_url, headers=pytest.headers, json=self._basic_params
-        )
+        response = client.post(self._plants_search_url, json=self._basic_params)
         # * Assert
         assert response.status_code == 200
         assert response.json()["total"] == 105
@@ -119,7 +113,6 @@ class TestSearch:
             # * Act
             response = client.post(
                 self._plants_search_url,
-                headers=pytest.headers,
                 json=self._basic_params | {"page": page + 1},
             )
             # * Assert
@@ -133,9 +126,7 @@ class TestSearch:
 
     def test_search_page_out_of_range(self):
         # * Act
-        response = client.post(
-            self._plants_search_url, headers=pytest.headers, json=self._basic_params
-        )
+        response = client.post(self._plants_search_url, json=self._basic_params)
         # * Assert
         assert response.status_code == 200
         assert response.json()["total"] == 105
@@ -143,7 +134,6 @@ class TestSearch:
         # * Act
         response = client.post(
             self._plants_search_url,
-            headers=pytest.headers,
             json=self._basic_params | {"page": response.json()["total_pages"] + 1},
         )
         # * Assert

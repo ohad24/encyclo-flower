@@ -1,10 +1,13 @@
 import pytest
 import string
 import random
-import sys, os
+import sys
+import os
 
 os.environ["MONGO_DB_NAME"] = "test"
 sys.path.append("./src/api/")
+
+from db import get_db
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -16,14 +19,30 @@ test_username = id_generator()
 
 def pytest_configure():
     pytest.test_username = test_username
-    pytest.access_token = None
-
-    pytest.headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
 
 @pytest.fixture(scope="session")
 def base_url():
     return "/api/v1/"
+
+
+@pytest.fixture
+def db():
+    return get_db()
+
+
+@pytest.fixture(scope="session")
+def auth_data():
+    return {"Authorization": None}
+
+
+@pytest.fixture(scope="session")
+def auth_headers(auth_data):
+    return {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        **auth_data,
+    }
 
 
 # from core.config import get_settings, Settings
