@@ -61,14 +61,22 @@ class SearchIn(BaseModel):
     colors: Optional[List[COLORS]]
     location_names: Optional[List[str]]
     seasons: Optional[List[int]]
+    petals: Optional[List[str]]
+    # TODO: leaf attributes
+    life_form: Optional[List[str]]
+    habitat: Optional[List[str]]
+    stem_shape: Optional[List[str]]
+    spine: Optional[List[str]]
+    red: Optional[bool]
+    invasive: Optional[bool]
+    danger: Optional[bool]
+    rare: Optional[bool]
     page: int = Field(ge=1, default=1)
 
 
 class SearchOut(BaseModel):
     heb_name: str
     science_name: str  # ! for debug
-    season_num: List  # ! for debug
-    arr_location_name: Dict  # ! for debug
     arr_color_name: List
     image: Optional[dict]
 

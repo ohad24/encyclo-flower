@@ -7,7 +7,7 @@ import os
 
 def get_plants_names():
     limit = int(
-        os.getenv("TESTS_GET_PLANTS_NAMES_LIMIT", 0)
+        os.getenv("TESTS_GET_PLANTS_NAMES_LIMIT", 10)
     )  # * 0 is equivalent to no limit
     db = get_db()
     science_names = (
@@ -80,22 +80,42 @@ class TestSearch:
         assert response.json()["total"] == 1
         assert response.json()["plants"][0]["science_name"] == "Aegilops sharonensis"
 
-    @pytest.fixture
-    def multi_params(self):
-        # * Arrange
-        return {
-            "colors": ["אדום"],
-            "location_names": ["hula valley"],
-            "seasons": ["4"],
-        }
+    # * Arrange
+    multi_params = [
+        [
+            {
+                "colors": ["אדום"],
+                "location_names": ["hula valley", "golan"],
+                "seasons": ["4"],
+                "petals": ["חסר עלי כותרת"],
+            },
+            2,
+        ],
+        [
+            {
+                "life_form": ["חד-שנתי"],
+                "habitat": ["חולות", "מדבר"],
+                "stem_shape": ["עגול", "מצולע"],
+                "spine": ["עלים"],
+            },
+            10,
+        ],
+        [{"red": True, "danger": True}, 13],
+        [{"invasive": True, "rare": True}, 1],
+    ]
 
-    def test_search_with_multi_params(self, multi_params):
+    @pytest.mark.parametrize("params, expected_total", multi_params)
+    def test_search_with_multi_params(self, params, expected_total):
         # * act
-        response = client.post(self._plants_search_url, json=multi_params)
+        response = client.post(self._plants_search_url, json=params)
         # * assert
         assert response.status_code == 200
-        assert response.json()["total"] == 20
-        assert len(response.json()["plants"]) == 20
+        assert response.json()["total"] == expected_total
+        assert (
+            len(response.json()["plants"]) == expected_total
+            if expected_total < 30
+            else 30
+        )
 
     @pytest.fixture(autouse=True)
     def basic_params(self):

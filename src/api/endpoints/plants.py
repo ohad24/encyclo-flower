@@ -49,6 +49,28 @@ def prepare_search_query(search_input) -> dict:
     if search_input.location_names:
         for location_name in search_input.location_names:
             query_and.append({f"arr_location_name.{location_name}": {"$exists": True}})
+    if search_input.petals:
+        query_and.append({"petal_num_name": {"$in": search_input.petals}})
+    if search_input.life_form:
+        query_and.append({"life_form_name": {"$in": search_input.life_form}})
+    if search_input.habitat:
+        query_and.append({"arr_habitat_name": {"$in": search_input.habitat}})
+    if search_input.stem_shape:
+        stem_or = []
+        for stem_shape in search_input.stem_shape:
+            stem_or.append({"stem_shape_name": stem_shape})
+        query_and.append({"$or": stem_or})
+    if search_input.spine:
+        query_and.append({"spine": {"$in": search_input.spine}})
+    if search_input.red:
+        query_and.append({"red": search_input.red})
+    if search_input.invasive:
+        query_and.append({"invasive": search_input.invasive})
+    if search_input.danger:
+        query_and.append({"denger": search_input.danger})
+    if search_input.rare:
+        query_and.append({"rare": search_input.rare})
+
     if not query_and:
         raise HTTPException(
             status_code=400,
