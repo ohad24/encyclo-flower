@@ -27,15 +27,19 @@ async def read_current_user(
     return current_user
 
 
-@router.post("/", response_model=user_model.UserCreateOut)
+@router.post(
+    "/", response_model=user_model.UserCreateOut, response_model_exclude_none=True
+)
 async def create_user(
     user_in: user_model.UserCreateIn = Body(...), db: MongoClient = Depends(db.get_db)
 ) -> Any:
-    user = db.users.find_one({"username": user_in.username})
+    user = db.users.find_one(
+        {"$or": [{"username": user_in.username}, {"email": user_in.email}]}
+    )
     if user:
         raise HTTPException(
             status_code=400,
-            detail="The user with this username already exists in the system.",
+            detail="The user with this username or email already exists in the system.",
         )
     user_in.password = get_password_hash(user_in.password.get_secret_value())
     inserted_id = db.users.insert_one(user_in.dict()).inserted_id

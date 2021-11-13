@@ -27,9 +27,13 @@ class TestCreateUser:
         self._login_json = json.dumps(
             {
                 "username": pytest.test_username,
-                "full_name": "test12",
+                "f_name": "Bob",
+                "l_name": "Salad",
                 "password": "test12",
-                "email": "1@1.com",
+                "email": f"{pytest.test_username}@1.com",
+                "sex": "female",
+                "phone": "+123456789",
+                "settlement": "Haifa"
             }
         )
 

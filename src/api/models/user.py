@@ -1,16 +1,25 @@
+from typing import Optional
 from models.base import DBBaseModel
 from pydantic import BaseModel, Field, EmailStr, SecretStr
 import uuid
 from datetime import datetime
+from enum import Enum
 
-# from bson import ObjectId
+
+class Sex(str, Enum):
+    male = "male"
+    female = "female"
 
 
 class User(DBBaseModel):
     user_id: str
     username: str
-    full_name: str
-    email: str
+    f_name: str
+    l_name: str
+    email: EmailStr
+    phone: Optional[str]
+    settlement: Optional[str]
+    sex: Optional[Sex]
     _password: SecretStr = Field(alias="password")
     is_active: bool
     is_superuser: bool
@@ -18,8 +27,16 @@ class User(DBBaseModel):
 
 
 class UserCreateIn(BaseModel):
-    username: str = Field(..., min_length=6, max_length=50, example="username1")
-    full_name: str = Field(..., min_length=6, max_length=50, example="Bob Salad")
+    username: str = Field(..., min_length=5, max_length=20, example="username1")
+    f_name: str = Field(..., min_length=2, max_length=20, example="Bob")
+    l_name: str = Field(..., min_length=2, max_length=20, example="Salad")
+    phone: Optional[str] = Field(
+        None, min_length=8, max_length=20, example="+123456789"
+    )
+    settlement: Optional[str] = Field(
+        None, min_length=2, max_length=20, example="Haifa"
+    )
+    sex: Optional[Sex]
     email: EmailStr = Field(..., example="example@exampe.com")
     password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
 
@@ -34,7 +51,11 @@ class UserCreateIn(BaseModel):
 class UserCreateOut(BaseModel):
     user_id: str
     username: str
-    full_name: str
+    f_name: str
+    l_name: str
+    phone: Optional[str]
+    settlement: Optional[str]
+    sex: Optional[Sex]
     email: EmailStr
 
 
