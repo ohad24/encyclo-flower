@@ -33,8 +33,24 @@ class TestCreateUser:
                 "email": f"{pytest.test_username}@1.com",
                 "sex": "female",
                 "phone": "+123456789",
-                "settlement": "Haifa"
+                "settlement": "Haifa",
+                "accept_terms_of_service": "true",
             }
+        )
+
+    def test_accept_terms_of_service(self):
+        # * Arrange
+        false_terms_of_service_data = json.loads(self._login_json)
+        false_terms_of_service_data["accept_terms_of_service"] = "false"
+        # * Act
+        response = client.post(
+            self._users_url,
+            json=false_terms_of_service_data,
+        )
+        # * Assert
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"] == "Terms of service must be accepted"
         )
 
     def test_create_user(self):

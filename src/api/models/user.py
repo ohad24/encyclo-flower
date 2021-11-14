@@ -1,6 +1,6 @@
 from typing import Optional
 from models.base import DBBaseModel
-from pydantic import BaseModel, Field, EmailStr, SecretStr
+from pydantic import BaseModel, Field, EmailStr, SecretStr, validator
 import uuid
 from datetime import datetime
 from enum import Enum
@@ -39,6 +39,7 @@ class UserCreateIn(BaseModel):
     sex: Optional[Sex]
     email: EmailStr = Field(..., example="example@exampe.com")
     password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
+    accept_terms_of_service: bool = Field(..., example=True)
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -46,6 +47,11 @@ class UserCreateIn(BaseModel):
         object.__setattr__(self, "is_superuser", False)
         object.__setattr__(self, "user_id", uuid.uuid4().hex)
         object.__setattr__(self, "create_dt", datetime.utcnow())
+
+    @validator("accept_terms_of_service")
+    def check_accept_terms_of_service(cls, v):
+        if not v:
+            raise ValueError("Terms of service must be accepted")
 
 
 class UserCreateOut(BaseModel):
