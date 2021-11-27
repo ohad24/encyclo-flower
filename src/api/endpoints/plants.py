@@ -42,24 +42,21 @@ def prepare_search_query(search_input) -> dict:
                 }
             )
         query_and.append({"$or": name_text_or})
-    if search_input.seasons:
-        query_and.append({"season_num": {"$in": search_input.seasons}})
+    if search_input.flowering_seasons:
+        query_and.append({"flowering_seasons": {"$in": search_input.flowering_seasons}})
     if search_input.colors:
-        query_and.append({"arr_color_name": {"$in": search_input.colors}})
+        query_and.append({"colors": {"$in": search_input.colors}})
     if search_input.location_names:
         for location_name in search_input.location_names:
-            query_and.append({f"arr_location_name.{location_name}": {"$exists": True}})
+            query_and.append({f"locations.{location_name}": {"$exists": True}})
     if search_input.petals:
-        query_and.append({"petal_num_name": {"$in": search_input.petals}})
-    if search_input.life_form:
-        query_and.append({"life_form_name": {"$in": search_input.life_form}})
-    if search_input.habitat:
-        query_and.append({"arr_habitat_name": {"$in": search_input.habitat}})
-    if search_input.stem_shape:
-        stem_or = []
-        for stem_shape in search_input.stem_shape:
-            stem_or.append({"stem_shape_name": stem_shape})
-        query_and.append({"$or": stem_or})
+        query_and.append({"petal_num": {"$in": search_input.petals}})
+    if search_input.life_forms:
+        query_and.append({"life_forms": {"$in": search_input.life_forms}})
+    if search_input.habitats:
+        query_and.append({"habitats": {"$in": search_input.habitats}})
+    if search_input.stem_shapes:
+        query_and.append({"stem_shapes": {"$in": search_input.stem_shapes}})
     if search_input.spine:
         query_and.append({"spine": {"$in": search_input.spine}})
     if search_input.red:
@@ -67,7 +64,7 @@ def prepare_search_query(search_input) -> dict:
     if search_input.invasive:
         query_and.append({"invasive": search_input.invasive})
     if search_input.danger:
-        query_and.append({"denger": search_input.danger})
+        query_and.append({"danger": search_input.danger})
     if search_input.rare:
         query_and.append({"rare": search_input.rare})
 

@@ -93,9 +93,9 @@ class TestSearch:
         ],
         [
             {
-                "life_form": ["חד-שנתי"],
-                "habitat": ["חולות", "מדבר"],
-                "stem_shape": ["עגול", "מצולע"],
+                "life_forms": ["חד-שנתי"],
+                "habitats": ["חולות", "מדבר"],
+                "stem_shapes": ["עגול", "מצולע"],
                 "spine": ["עלים"],
             },
             10,
@@ -120,14 +120,14 @@ class TestSearch:
     @pytest.fixture(autouse=True)
     def basic_params(self):
         # * Arrange
-        self._basic_params = {"name_text": "מצוי", "seasons": ["3"]}
+        self._basic_params = {"name_text": "מצוי", "flowering_seasons": ["3"]}
 
     def test_search_with_multi_page(self):
         # * Act
         response = client.post(self._plants_search_url, json=self._basic_params)
         # * Assert
         assert response.status_code == 200
-        assert response.json()["total"] == 105
+        assert response.json()["total"] == 102
 
         for page in range(response.json()["total_pages"]):
             # * Act
@@ -137,7 +137,7 @@ class TestSearch:
             )
             # * Assert
             assert response.status_code == 200
-            assert response.json()["total"] == 105
+            assert response.json()["total"] == 102
             assert (
                 len(response.json()["plants"]) == 30
                 if response.json()["current_page"] < response.json()["total_pages"]
@@ -149,7 +149,7 @@ class TestSearch:
         response = client.post(self._plants_search_url, json=self._basic_params)
         # * Assert
         assert response.status_code == 200
-        assert response.json()["total"] == 105
+        assert response.json()["total"] == 102
 
         # * Act
         response = client.post(
