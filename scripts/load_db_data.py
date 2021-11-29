@@ -21,9 +21,9 @@ for db_name in dbs:
 
     plants_collection.insert_many(file_data)
 
-    plants_collection = db["images"]
-    plants_collection.drop()
-    with open('scripts/plant_data_27_11_2021_images.json') as file:
-        file_data = json.load(file)
+    # plants_collection = db["images"]
+    # plants_collection.drop()
+    # with open('scripts/plant_data_27_11_2021_images.json') as file:
+    #     file_data = json.load(file)
 
-    plants_collection.insert_many(file_data)
+    # plants_collection.insert_many(file_data)

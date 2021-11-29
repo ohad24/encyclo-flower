@@ -27,8 +27,6 @@ fam_name_eng - rename and add to others keys or taxons
 add external sites and Organizem
 """
 
-plants_data = json.load(open("scripts/plant_data_1_11_2021.json"))
-
 
 def set_image(image: dict):
     image["what_inside"] = []
@@ -45,13 +43,13 @@ def set_image(image: dict):
 
 
 def set_taxon(taxon: dict):
-    taxon["genus"] = taxon.get("genus", None)
-    taxon["subfamily"] = taxon.get("subfamily", None)
-    taxon["famely"] = taxon.get("famely", None)
-    taxon["clade4"] = taxon.get("clade4", None)
-    taxon["clade3"] = taxon.get("clade3", None)
-    taxon["clade2"] = taxon.get("clade2", None)
     taxon["clade1"] = taxon.get("clade1", None)
+    taxon["clade2"] = taxon.get("clade2", None)
+    taxon["clade3"] = taxon.get("clade3", None)
+    taxon["clade4"] = taxon.get("clade4", None)
+    taxon["famely"] = taxon.get("famely", None)
+    taxon["subfamily"] = taxon.get("subfamily", None)
+    taxon["genus"] = taxon.get("genus", None)
     return taxon
 
 
@@ -72,44 +70,55 @@ def update_keys(plant: dict):
     plant["taxon"] = set_taxon(plant["taxon"])
     plant["external_sites"] = []
     plant["organism"] = None
-    plant['others'] = {}
-    plant['others']["famely_eng"] = plant.pop("fam_name_eng")
+    plant["others"] = {}
+    plant["others"]["famely_eng"] = plant.pop("fam_name_eng")
 
     # * images handling
-    if "images_data" in plant:
-        plant["images"] = plant.pop("images_data")
-        plant["images"] = {} if plant["images"] is None else plant["images"]
-        plant["images"] = {"data": [set_image(image) for image in plant["images"]]}
+    if plant.get("images_data"):
+        # print(plant["images_data"])
+        plant["images"] = plant.pop("images_data", [])
+        plant["images"] = [set_image(image) for image in plant["images"]]
     else:
-        plant["images"] = None
+        plant["images"] = []
+
+    # if "images_data" in plant.keys() or plant['images_data'] is not None:
+    #     plant["images"] = plant.pop("images_data", [])
+    #     if plant['images'] is None:
+    #         print(plant['science_name'])
+    #         print(plant['images'])
+    #     # plant["images"] = {} if plant["images"] is None else plant["images"]
+    #     plant["images"] = [set_image(image) for image in plant["images"]]
+    # else:
+    #     plant["images"] = []
     return plant
 
 
 if __name__ == "__main__":
+    plants_data = json.load(open("scripts/plant_data_1_11_2021.json"))
     new_plants_with_images = list(map(update_keys, plants_data))
 
-    def separate_images(plant: dict):
-        new_plant_images = {}
-        if plant["images"]:
-            new_plant_images["science_name"] = plant["science_name"]
-            new_plant_images["data"] = plant["images"]["data"]
-        plant.pop("images")
-        return plant, new_plant_images
+    # def separate_images(plant: dict):
+    #     new_plant_images = {}
+    #     if plant["images"]:
+    #         new_plant_images["science_name"] = plant["science_name"]
+    #         new_plant_images["data"] = plant["images"]["data"]
+    #     plant.pop("images")
+    #     return plant, new_plant_images
 
-    new_plants, new_plants_images = zip(*map(separate_images, new_plants_with_images))
+    # new_plants, new_plants_images = zip(*map(separate_images, new_plants_with_images))
 
     json.dump(
-        new_plants,
+        new_plants_with_images,
         open("scripts/plant_data_27_11_2021.json", "w"),
         default=str,
         indent=4,
         ensure_ascii=False,
     )
 
-    json.dump(
-        new_plants_images,
-        open("scripts/plant_data_27_11_2021_images.json", "w"),
-        default=str,
-        indent=4,
-        ensure_ascii=False,
-    )
+    # json.dump(
+    #     new_plants_images,
+    #     open("scripts/plant_data_27_11_2021_images.json", "w"),
+    #     default=str,
+    #     indent=4,
+    #     ensure_ascii=False,
+    # )

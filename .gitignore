@@ -3,6 +3,8 @@ venv
 __pycache__
 scripts/plant_data*
 scripts/plants_data*
+scripts/plants_images
+scripts/*tar.gz
 scripts/*.log
 ape.py
 coverage.xml
