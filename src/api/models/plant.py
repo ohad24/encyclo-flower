@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AnyUrl, validator
 from typing import Dict, List, Optional, Literal
 from db import get_db
 from bson.son import SON
 from models.base import DBBaseModel
+from datetime import datetime
 
 db = get_db()
 
@@ -19,13 +20,31 @@ COLORS = Literal[
 
 
 class Taxonomy(BaseModel):
-    genus: str
-    family: str
-    subfamily: Optional[str]
     clade1: str
     clade2: str
     clade3: Optional[str]
     clade4: Optional[str]
+    family: str
+    subfamily: Optional[str]
+    genus: str
+
+
+class PlantImage(BaseModel):
+    author_name: Optional[str]
+    licenses: Optional[List[str]]
+    what_inside: Optional[List[str]]
+    image_date: Optional[datetime]
+    location: Optional[List[str]]
+    general_description: Optional[str]
+    specific_description: Optional[str]
+    source_url: Optional[AnyUrl]
+    source_url_page: Optional[AnyUrl]
+    level: Optional[str]
+    file_name: str
+
+    @validator("level")
+    def set_level(cls, level):
+        return level or "e"
 
 
 class Plant(DBBaseModel):
@@ -54,6 +73,7 @@ class Plant(DBBaseModel):
     rare: bool
     taxon: Taxonomy
     spine: List[str]
+    images: List[PlantImage]
 
 
 class SearchIn(BaseModel):
@@ -76,10 +96,19 @@ class SearchIn(BaseModel):
 
 class SearchOut(BaseModel):
     heb_name: str
-    science_name: str  # ! for debug
-    flowering_seasons: Optional[List[int]]  # ! for debug
+    science_name: str
     colors: List
-    image: Optional[dict]
+    image: Optional[PlantImage]
+
+    def __init__(__pydantic_self__, **data: Dict) -> None:
+        super().__init__(**data)
+        plant = Plant(**data)
+        if plant.images:
+            # * sort images in plant by level - show pre selected image first
+            # * sort reverse plant images by level (level = a,b,c.d)
+            plant.images.sort(key=lambda x: x.level)
+            # * get the first image
+            __pydantic_self__.image = plant.images[0].file_name
 
 
 class SearchOutList(BaseModel):
@@ -87,3 +116,12 @@ class SearchOutList(BaseModel):
     total_pages: int = 1
     current_page: int = 1
     plants: List[Optional[SearchOut]] = []
+    # ! calculate sort mechanism
+    # create two groups:
+    # 1. plants with images
+    # 2. plants without images
+    # first show plants with images
+    # then show plants without images
+    # for each group sort by locations value
+    # if the search include gps location, sort by distance, first is the closest
+    # if the search doesn't include gps location, sort by locations value
