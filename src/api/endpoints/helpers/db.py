@@ -9,7 +9,7 @@ def prepare_search_query(search_input) -> dict:
             {"science_name": {"$regex": nt, "$options": "-i"}},
             {"heb_name": {"$regex": nt, "$options": "-i"}},
         ]
-        for arr in ["arr_syn_name_eng", "arr_syn_name_heb"]:
+        for arr in ["synonym_names_eng", "synonym_names_heb"]:
             # * "in" not allow nestest $ in query
             name_text_or.append(
                 {

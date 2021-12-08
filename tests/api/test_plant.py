@@ -127,7 +127,7 @@ class TestSearch:
         response = client.post(self._plants_search_url, json=self._basic_params)
         # * Assert
         assert response.status_code == 200
-        assert response.json()["total"] == 102
+        assert response.json()["total"] == 105
 
         for page in range(response.json()["total_pages"]):
             # * Act
@@ -137,7 +137,7 @@ class TestSearch:
             )
             # * Assert
             assert response.status_code == 200
-            assert response.json()["total"] == 102
+            assert response.json()["total"] == 105
             assert (
                 len(response.json()["plants"]) == 30
                 if response.json()["current_page"] < response.json()["total_pages"]
@@ -149,7 +149,7 @@ class TestSearch:
         response = client.post(self._plants_search_url, json=self._basic_params)
         # * Assert
         assert response.status_code == 200
-        assert response.json()["total"] == 102
+        assert response.json()["total"] == 105
 
         # * Act
         response = client.post(
