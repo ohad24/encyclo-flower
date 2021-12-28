@@ -28,6 +28,36 @@ class LocationCommonEnum(str, Enum):
     e = "שכיחות לא ידועה"
 
 
+class LocationKMLtranslate(str, Enum):
+    GalileeBeach = "galilee coast"
+    CarmelBeach = "carmel coast"
+    Sharon = "sharon"
+    SouthernBeach = "southern coast"
+    UpperGalilee = "upper galilee"
+    LowerGalilee = "lower galilee"
+    Carmel = "carmel"
+    MenasheHills = "menashe hights"
+    IzraelValley = "izrael valley"
+    Shomron = "samarian mountains"
+    JudeaLowLands = "shfela"
+    JudeaMountains = "judaean mountains"
+    NorthernNegev = "north negev"
+    WesternNegev = "west negev"
+    CentralNegev = "central negev"
+    SouthernNegev = "south negev"
+    Hula = "hula valley"
+    KinarotValley = "kinarot valley"
+    BetSheanValley = "bit shean valley"
+    Gilboa = "gilboa"
+    ShomronDesert = "shomron desert"
+    JudeaDesert = "judaean desert"
+    JordanValley = "jorden valley"
+    DeadSeaValley = "dead sea valley"
+    Arava = "arava"
+    Hermon = "hermon"
+    Golan = "golan"
+
+
 class Taxonomy(BaseModel):
     clade1: str
     clade2: str

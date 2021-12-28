@@ -5,6 +5,7 @@ import db
 from models import plant as plant_model
 import math
 from endpoints.helpers.db import prepare_search_query
+from endpoints.helpers.GPS_translate import find_point_location
 
 router = APIRouter()
 
@@ -47,3 +48,14 @@ async def search(
         .skip((search.page - 1) * per_page).limit(per_page)
     )
     return out_plants
+
+
+@router.get("/translate_gps/{lat}/{lon}")
+async def translate(lat: float = 35.73356519465218, lon: float = 33.040111127472926):
+    # TODO: set input and output as model
+    # * tranlate location from GPS to location name using LocationKMLtranslate
+    coords = (lat, lon)
+    kml_location = find_point_location(coords)
+    if kml_location:
+        return dict(location=plant_model.LocationKMLtranslate[kml_location].value)
+    return dict(location="unknown")

@@ -159,3 +159,19 @@ class TestSearch:
         # * Assert
         assert response.status_code == 400
         assert response.json() == {"detail": "page number out of range"}
+
+
+    def test_KML_translate(self, plants_url):
+        # * Arrange
+        lat: float = 35.73356519465218
+        lon: float = 33.040111127472926
+        # coords = (lat, lon)
+        # * Act - Valid data
+        response = client.get(
+            plants_url + f'translate_gps/{lat}/{lon}',
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()['location'] == "golan"
+
+        # ! test invalid data
