@@ -4,6 +4,7 @@ from db import get_db
 from bson.son import SON
 from models.base import DBBaseModel
 from datetime import datetime
+from enum import Enum
 
 db = get_db()
 
@@ -17,6 +18,14 @@ pipeline_colors_name = [
 COLORS = Literal[
     tuple(x["_id"] for x in list(db.plants.aggregate(pipeline_colors_name)))
 ]
+
+
+class LocationCommonEnum(str, Enum):
+    a = "נפוץ"
+    b = "מצוי"
+    c = "נדיר"
+    d = "נדיר מאוד"
+    e = "שכיחות לא ידועה"
 
 
 class Taxonomy(BaseModel):
@@ -98,7 +107,8 @@ class SearchOut(BaseModel):
     heb_name: str
     science_name: str
     colors: List
-    image: Optional[PlantImage]
+    image: Optional[PlantImage] = None
+    commoness: Optional[str]
 
     def __init__(__pydantic_self__, **data: Dict) -> None:
         super().__init__(**data)
@@ -110,18 +120,35 @@ class SearchOut(BaseModel):
             # * get the first image
             __pydantic_self__.image = plant.images[0].file_name
 
+        commoness = set(plant.locations.values())
+
+        # * get most commoness by LocationCommonEnum
+        commoness = sorted(commoness, key=lambda x: LocationCommonEnum(x).value)
+        # * set default value (latest one)
+        commoness = commoness[0] if commoness else "שכיחות לא ידועה"
+        __pydantic_self__.commoness = commoness
+
 
 class SearchOutList(BaseModel):
     total: int = 0
     total_pages: int = 1
     current_page: int = 1
     plants: List[Optional[SearchOut]] = []
-    # ! calculate sort mechanism
-    # create two groups:
-    # 1. plants with images
-    # 2. plants without images
-    # first show plants with images
-    # then show plants without images
-    # for each group sort by locations value
-    # if the search include gps location, sort by distance, first is the closest
-    # if the search doesn't include gps location, sort by locations value
+
+    @validator("plants")
+    def sort_plants_image(cls, v):
+        """
+        sort plants by image and commoness
+        """
+
+        # * sort plants by image first
+        plants = sorted(v, key=lambda x: x.image if x.image else "", reverse=True)
+
+        # * sort plants_with_images and plants_without_images by commoness by LocationCommonEnum
+        plants.sort(key=lambda x: LocationCommonEnum(x.commoness).value)
+
+        # * remove key 'commoness' from each plant (after sorting)
+        for plant in plants:
+            del plant.commoness
+
+        return plants
