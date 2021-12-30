@@ -7,6 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from models.user import User
 from db import get_db
+from core.http_exceptions import e403
+
 
 settings = get_settings()
 
@@ -59,7 +61,13 @@ async def get_current_active_superuser(
     current_user: User = Depends(get_current_active_user),
 ):
     if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=403, detail="The user does not have enough privileges"
-        )
+        raise e403
+    return current_user
+
+
+async def get_current_active_editor(
+    current_user: User = Depends(get_current_active_user),
+):
+    if not current_user.is_editor:
+        raise e403
     return current_user

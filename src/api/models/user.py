@@ -22,6 +22,7 @@ class User(DBBaseModel):
     sex: Optional[Sex]
     _password: SecretStr = Field(alias="password")
     is_active: bool
+    is_editor: bool
     is_superuser: bool
     create_dt: datetime
 
@@ -45,6 +46,7 @@ class UserCreateIn(BaseModel):
         super().__init__(**data)
         object.__setattr__(self, "is_active", True)
         object.__setattr__(self, "is_superuser", False)
+        object.__setattr__(self, "is_editor", False)
         object.__setattr__(self, "user_id", uuid.uuid4().hex)
         object.__setattr__(self, "create_dt", datetime.utcnow())
 
