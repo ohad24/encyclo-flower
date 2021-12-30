@@ -19,6 +19,12 @@ def get_users_url(base_url):
     return base_url + "users/"
 
 
+@pytest.fixture
+def get_helpers_url(base_url):
+    # * Arrange
+    return base_url + "helpers/"
+
+
 class TestCreateUser:
     @pytest.fixture(autouse=True)
     def prepare_test_data(self, get_users_url):
@@ -223,3 +229,28 @@ class TestBrokenToken:
         )
         # * Assert
         assert request.status_code == 401
+
+
+class TestHelpers:
+    def test_KML_translate(self, get_helpers_url):
+        # * Arrange valid data
+        lat: float = 33.040111127472926
+        lon: float = 35.73356519465218
+        # * Act - Valid data
+        response = client.get(
+            get_helpers_url + "translate_gps", params={"lat": lat, "lon": lon}
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()["location"] == "golan"
+
+        # * Arrange invalid data
+        lat: float = 1
+        lon: float = 1
+        # * Act - Valid data
+        response = client.get(
+            get_helpers_url + "translate_gps", params={"lat": lat, "lon": lon}
+        )
+        # * Assert
+        assert response.status_code == 404
+        assert response.json()["detail"] == "location not found"

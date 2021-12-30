@@ -177,8 +177,9 @@ class SearchOutList(BaseModel):
         # * sort plants_with_images and plants_without_images by commoness by LocationCommonEnum
         plants.sort(key=lambda x: LocationCommonEnum(x.commoness).value)
 
-        # * remove key 'commoness' from each plant (after sorting)
-        for plant in plants:
-            del plant.commoness
+        # * remove key 'commoness' from each plant (after sorting) - canceled because UI group by commoness
+        # TODO: remove this after UI group by commoness
+        # for plant in plants:
+        #     del plant.commoness
 
         return plants

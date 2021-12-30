@@ -92,17 +92,18 @@ def find_point_location(coords):
     if not exists
     """
     point = Point(coords)
+    KML_dictionary.pop("Background", None)  # ! talk to Shahar about this
     for loc in KML_dictionary:
         if point.within(KML_dictionary[loc]):
             return loc
-    return False
+    return None
 
 
 # ! remove this function
 if __name__ == "__main__":
     # p = (34.7, 32.0)
-    latitude = 35.73356519465218
-    longitude = 33.040111127472926
-    coords = (latitude, longitude)
+    latitude = 33.106251
+    longitude = 35.719422
+    coords = (longitude, latitude)
     ans = find_point_location(coords)
     print(ans)
