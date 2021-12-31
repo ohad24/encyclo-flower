@@ -70,3 +70,11 @@ class UserCreateOut(BaseModel):
 class Login(BaseModel):
     username: str
     password: str
+
+
+class BaseUserOut(BaseModel):
+    username: str
+    f_name: str
+    l_name: str
+    sex: Optional[Sex]
+    create_dt: datetime

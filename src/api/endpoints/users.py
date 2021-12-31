@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
-from typing import Any, List, Dict
+from fastapi.responses import RedirectResponse
+from typing import Any, List
 from pymongo.mongo_client import MongoClient
 import db
 import models.user as user_model
@@ -20,11 +21,20 @@ async def read_users(
     return list(db.users.find({}))
 
 
-@router.get("/me", response_model=user_model.User)
+@router.get("/me", response_class=RedirectResponse)
 async def read_current_user(
     current_user: user_model.User = Depends(get_current_active_user),
 ):
-    return current_user
+    return current_user.username
+
+
+@router.get("/{username}", response_model=user_model.BaseUserOut)
+async def read_user(
+    username: str,
+    db: MongoClient = Depends(db.get_db),
+):
+    user = db.users.find_one({"username": username})
+    return user
 
 
 @router.post(
