@@ -11,7 +11,8 @@ downloader = google_images_download.googleimagesdownload()
 
 DOWNLOAD_LIMIT = 100
 
-for scientific_name in scientific_names[:2]:
+for scientific_name in scientific_names:
+    scientific_name = scientific_name.replace("\n", "")
     # * arguments docs https://google-images-download.readthedocs.io/en/latest/arguments.html#
     arguments = {
         "keywords": '"' + scientific_name + '"',
