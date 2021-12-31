@@ -12,7 +12,7 @@ downloader = google_images_download.googleimagesdownload()
 DOWNLOAD_LIMIT = 100
 
 for scientific_name in scientific_names:
-    scientific_name = scientific_name.replace("\n", "")
+    scientific_name = scientific_name.replace("\n", "").replace('"', "").replace("'", "")
     # * arguments docs https://google-images-download.readthedocs.io/en/latest/arguments.html#
     arguments = {
         "keywords": '"' + scientific_name + '"',
@@ -38,7 +38,7 @@ def list_log_files():
 
 # remove all files in log folder. remove ' and " from file name
 for file_name in list_log_files():
-    new_file_name = file_name.replace('"', "").replace("'", "")
+    new_file_name = file_name.replace("\n", "").replace('"', "").replace("'", "")
     os.rename(
         os.path.dirname(__file__) + "/google-images-download/logs/" + file_name,
         os.path.dirname(__file__) + f"/downloads/{new_file_name[:-5]}/" + new_file_name,
