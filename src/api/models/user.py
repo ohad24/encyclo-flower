@@ -27,8 +27,7 @@ class User(DBBaseModel):
     create_dt: datetime
 
 
-class UserCreateIn(BaseModel):
-    username: str = Field(..., min_length=5, max_length=20, example="username1")
+class BaseUserIn(BaseModel):
     f_name: str = Field(..., min_length=2, max_length=20, example="Bob")
     l_name: str = Field(..., min_length=2, max_length=20, example="Salad")
     phone: Optional[str] = Field(
@@ -38,6 +37,10 @@ class UserCreateIn(BaseModel):
         None, min_length=2, max_length=20, example="Haifa"
     )
     sex: Optional[Sex]
+
+
+class UserCreateIn(BaseUserIn):
+    username: str = Field(..., min_length=5, max_length=20, example="username1")
     email: EmailStr = Field(..., example="example@exampe.com")
     password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
     accept_terms_of_service: bool = Field(..., example=True)
@@ -76,5 +79,7 @@ class BaseUserOut(BaseModel):
     username: str
     f_name: str
     l_name: str
+    phone: Optional[str]
+    settlement: Optional[str]
     sex: Optional[Sex]
     create_dt: datetime

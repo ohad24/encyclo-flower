@@ -231,6 +231,41 @@ class TestBrokenToken:
         assert request.status_code == 401
 
 
+class TestUserUpdateData:
+
+    # * prepare assert data
+    @pytest.fixture(autouse=True)
+    def prepare_assert_data(self, get_users_url, auth_headers):
+        # * Arrange
+        self._users_url_me = get_users_url + "me"
+        response = client.get(self._users_url_me, headers=auth_headers)
+        self.phone = response.json()["phone"]
+
+    def test_update_user(self, auth_headers, get_users_url):
+        # * Act
+        response = client.put(
+            get_users_url + pytest.test_username,
+            headers=auth_headers,
+            json={"f_name": "new_f_name", "l_name": "new_l_name"},
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()["f_name"] == "new_f_name"
+        # * Assert phone didn't change
+        assert response.json()["phone"] == self.phone
+
+    def test_update_different_user(self, auth_headers, get_users_url):
+        # * Act
+        response = client.put(
+            get_users_url + pytest.test_username + "1",
+            headers=auth_headers,
+            json={"f_name": "new_f_name", "l_name": "new_l_name"},
+        )
+        # * Assert
+        assert response.status_code == 400
+        assert response.json()["detail"] == "The user is not allowed to edit this user"
+
+
 class TestHelpers:
     def test_KML_translate(self, get_helpers_url):
         # * Arrange valid data
