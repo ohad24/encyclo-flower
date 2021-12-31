@@ -7,6 +7,9 @@ scripts/plants_images
 scripts/*tar.gz
 scripts/*.log
 scripts/data_extraction/*.xlsx
+scripts/download_google_images/downloads/*
+scripts/download_google_images/google-images-download
+scripts/download_google_images/scientific_names.txt
 ape.py
 coverage.xml
 .cov_html
