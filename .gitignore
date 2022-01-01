@@ -1,4 +1,4 @@
-venv
+venv*
 .vscode
 __pycache__
 scripts/plant_data*
@@ -10,6 +10,8 @@ scripts/data_extraction/*.xlsx
 scripts/download_google_images/downloads/*
 scripts/download_google_images/google-images-download
 scripts/download_google_images/scientific_names.txt
+src/services/gcp_vision/.env
+src/services/gcp_vision/cred.json
 ape.py
 coverage.xml
 .cov_html
