@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  vision:
+    image: vision:latest
+    restart: always
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/cred.json
+    volumes:
+      - ./cred.json:/app/cred.json:ro
+    ports:
+      - 5001:5001

@@ -16,7 +16,7 @@ python vision.py
 ### Bash script
 Run with unicorn (with service 5001)
 ```bash
-Uvicorn vision:app --reload --port 5001
+uvicorn vision:app --reload --port 5001
 ```bash
 Then run ./test.sh
 ```
