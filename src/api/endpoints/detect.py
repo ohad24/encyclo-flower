@@ -1,24 +1,20 @@
-from fastapi import APIRouter, File
-from typing import List
-import requests
-import base64
+from fastapi import APIRouter, File, UploadFile
+from endpoints.helpers_tools import detect_vision_api, detect_google_search
 
 router = APIRouter()
 
 
-# @app.post("/image/")
-# async def create_file(file: bytes = File(...)):
-#     return {"file_size": len(file)}
-
-
-@router.post("/images/")
-async def images(files: List[bytes] = File(...)):
-    # convert first file to base64
-    file = files[0]
-    encoded_image = base64.b64encode(file).decode("utf-8")
-    r = requests.post(
-        "http://localhost:5001/detect/",
-        json={"encoded_image": encoded_image}
+@router.post("/image/")
+async def images(file: UploadFile = File(...)):
+    # TODO: add response model (list of plants)
+    apis_result = dict(google_search_by_image=None, search_by_vision_api=None)
+    apis_result["google_search_by_image"] = detect_google_search.search_by_image(
+        file.filename, file.file, file.content_type
     )
-    print(r.json())
-    return {"file_sizes": [len(file) for file in files]}
+    await file.seek(0)
+    apis_result["search_by_vision_api"] = detect_vision_api.search_by_vision_api(
+        await file.read()
+    )
+
+    # TODO: DB cross data against apis_result - with Shahar
+    return apis_result  # TODO: replace with final response model

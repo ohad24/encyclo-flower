@@ -1,11 +1,13 @@
 ## ENCYCLO-FLOWER SITE (v2)
 
 ### Development install and run
+Environment variables:  
+* GOOGLE_APPLICATION_CREDENTIALS - path to Google Cloud Service Account JSON file.
 #### backend
 **API is running on Python 3.10**  
 Install:  
 Tests:  
-Environmnet variables:  
+Environment variables:  
 * TESTS_GET_PLANTS_NAMES_LIMIT - query limit for get_plants_names
 ```bash
 # pwd
