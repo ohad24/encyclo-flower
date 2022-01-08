@@ -63,6 +63,7 @@ class UserCreateIn(BaseUserIn):
     def check_accept_terms_of_service(cls, v):
         if not v:
             raise ValueError("Terms of service must be accepted")
+        return v
 
 
 class UserCreateOut(BaseModel):
