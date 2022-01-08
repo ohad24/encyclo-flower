@@ -7,6 +7,7 @@ import db
 import uuid
 import datetime
 from core.security import verify_user_in_token
+from endpoints.helpers_tools.generic import get_today_str
 
 settings = get_settings()
 
@@ -45,9 +46,12 @@ async def images(
     blob = bucket.blob("image_api_files/" + new_file_name)
     blob.upload_from_file(file.file, content_type=file.content_type)
 
+    # * check in auth headers
+    user_data = verify_user_in_token(request.headers.get("Authorization"))
+
     # * save apis_result to DB
     additional_data = dict(
-        user_data=verify_user_in_token(request.headers.get("Authorization")),
+        user_data=user_data,
         self_link=blob.self_link,
         media_link=blob.media_link,
         public_url=blob.public_url,
@@ -64,7 +68,11 @@ async def images(
         dict(result_data=result_data, additional_data=additional_data)
     )
 
-    # TODO: increase user usage counter of images detections if signed in
-    # get username from header
+    # * increase user usage counter of images detection if signed in
+    if user_data:
+        db.users.update_one(
+            {"username": user_data.get("username")},
+            {"$inc": {f"counters.image_detection.{get_today_str()}": 1}},
+        )
 
     return apis_result  # TODO: replace with final response model

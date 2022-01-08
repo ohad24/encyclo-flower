@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 from models.base import DBBaseModel
 from pydantic import BaseModel, Field, EmailStr, SecretStr, validator
 import uuid
@@ -39,6 +39,11 @@ class BaseUserIn(BaseModel):
     sex: Optional[Sex]
 
 
+class UserCounters(BaseModel):
+    image_detection: Dict[str, int] = {}
+    # TODO: add login counter (per day)
+
+
 class UserCreateIn(BaseUserIn):
     username: str = Field(..., min_length=5, max_length=20, example="username1")
     email: EmailStr = Field(..., example="example@exampe.com")
@@ -52,6 +57,7 @@ class UserCreateIn(BaseUserIn):
         object.__setattr__(self, "is_editor", False)
         object.__setattr__(self, "user_id", uuid.uuid4().hex)
         object.__setattr__(self, "create_dt", datetime.utcnow())
+        object.__setattr__(self, "counters", UserCounters())
 
     @validator("accept_terms_of_service")
     def check_accept_terms_of_service(cls, v):
