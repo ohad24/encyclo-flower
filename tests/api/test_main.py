@@ -25,6 +25,12 @@ def get_helpers_url(base_url):
     return base_url + "helpers/"
 
 
+@pytest.fixture
+def get_detect_image_url(base_url):
+    # * Arrange
+    return base_url + "detect/image/"
+
+
 class TestCreateUser:
     @pytest.fixture(autouse=True)
     def prepare_test_data(self, get_users_url):
@@ -289,3 +295,20 @@ class TestHelpers:
         # * Assert
         assert response.status_code == 404
         assert response.json()["detail"] == "location not found"
+
+
+class TestDetectImage:
+    def test_detect_image(self, auth_headers, get_detect_image_url):
+        # * Arrange
+        auth_headers.pop("Content-Type", None)
+        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+        # * Act
+        response = client.post(
+            get_detect_image_url,
+            headers=auth_headers,
+            files=files,
+        )
+        # * Assert
+        # print(response.json())
+        assert response.status_code == 200
+        # TODO: add test check response data
