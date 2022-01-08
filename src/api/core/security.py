@@ -51,6 +51,25 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return User(**user)
 
 
+def verify_user_in_token(token: str | None = Depends(oauth2_scheme)) -> dict:
+    """
+    Verify that the user is in the token and db
+    if not return empty dict
+    """
+    try:
+        payload = jwt.decode(
+            token.split("Bearer ")[-1], settings.SECRET_KEY, algorithms=[ALGORITHM]
+        )
+        username: str = payload.get("sub")
+    except (JWTError, AttributeError):
+        return {}
+    db = get_db()
+    user_data = db.users.find_one(
+        {"username": username}, {"_id": 0, "username": 1, "user_id": 1}
+    )
+    return user_data
+
+
 async def get_current_active_user(current_user: User = Depends(get_current_user)):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")

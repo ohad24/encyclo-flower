@@ -29,10 +29,11 @@ def search_by_vision_api(content: bytes) -> DetectResponse:
     response_web_detection = client.web_detection(image=image).web_detection
     response_web_detection.web_entities.sort(key=lambda x: x.score, reverse=True)
 
-    return DetectResponse(
+    detect_response = DetectResponse(
         labels=[x.description for x in labels],
         web_entities=[
             {"description": x.description, "score": x.score}
             for x in response_web_detection.web_entities
         ],
     )
+    return detect_response

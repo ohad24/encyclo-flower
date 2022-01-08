@@ -18,3 +18,5 @@ coverage.xml
 .coverage
 .pytest_cache
 tests/api/_test*
+src/api/.env
+src/api/google_cred.json
