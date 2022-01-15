@@ -3,6 +3,19 @@
 ### Development install and run
 Environment variables:  
 * GOOGLE_APPLICATION_CREDENTIALS - path to Google Cloud Service Account JSON file.
+
+#### Generic commands
+
+* Find all `todo:`s and urgent (`# !`) comments in the code (`src/api`).  
+
+    ```bash
+    # -r search subdirectories
+    # -n print line numbers
+    # -i ignore case
+    # -E extended regex
+    grep -r -n -i -E 'todo\:|\# \!' src/api
+    ```
+
 #### backend
 **API is running on Python 3.10**  
 Install:  
