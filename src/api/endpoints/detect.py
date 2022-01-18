@@ -8,6 +8,7 @@ import uuid
 import datetime
 from core.security import verify_user_in_token
 from endpoints.helpers_tools.generic import get_today_str
+from endpoints.helpers_tools.db import prepare_query_detect_image
 
 settings = get_settings()
 
@@ -27,17 +28,28 @@ async def images(
     apis_result = dict(google_search_by_image=None, search_by_vision_api=None)
 
     # * detect with google search by image
-    apis_result["google_search_by_image"] = detect_google_search.search_by_image(
+    result_google_search_by_image = detect_google_search.search_by_image(
         file.filename, file.file, file.content_type
     )
+    apis_result["google_search_by_image"] = result_google_search_by_image
     await file.seek(0)
 
     # * detect with google vision api
-    apis_result["search_by_vision_api"] = detect_vision_api.search_by_vision_api(
+    result_search_by_vision_api = detect_vision_api.search_by_vision_api(
         await file.read()
     )
+    apis_result["search_by_vision_api"] = result_search_by_vision_api
 
     # TODO: DB cross data against apis_result - with Shahar
+    # * search in db
+    query_or = prepare_query_detect_image(
+        result_google_search_by_image, result_search_by_vision_api
+    )
+    # print(query_or)
+    db_result = db.plants.find(
+        query_or,
+        {"_id": 0, "heb_name": 1, "science_name": 1},
+    )
 
     # * upload image to cloud storage
     await file.seek(0)
@@ -75,4 +87,6 @@ async def images(
             {"$inc": {f"counters.image_detection.{get_today_str()}": 1}},
         )
 
-    return apis_result  # TODO: replace with final response model
+    return apis_result | {
+        "db_result": list(db_result)
+    }  # TODO: replace with final response model

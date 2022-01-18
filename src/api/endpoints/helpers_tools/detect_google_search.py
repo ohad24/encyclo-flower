@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
 
 
@@ -13,10 +13,16 @@ class KPPanel(BaseModel):
     kingdom: Optional[str]
     phylum: Optional[str]
 
+    @validator('scientific_name')
+    def remove_underscore(cls, v):
+        if v:
+            return v.replace("_", " ")
+        return v
+
 
 class SearchByImageResponse(BaseModel):
     search_bar: Optional[str]
-    kb_panel: KPPanel = {}
+    kb_panel: KPPanel = KPPanel()
 
     class Config:
         extra = "ignore"
@@ -73,11 +79,13 @@ def search_by_image(filename: str, content: bytes, content_type: str):
     # * get right kb panel
     kb_panel = soup.find_all("div", {"class": "kp-blk"})
     if kb_panel:
+        panel = {}
         for divs in kb_panel[0].find_all("div", {"class": "zloOqf PZPZlf"}):
             # print(divs.get_text())
             k, v = divs.get_text().split(": ")
             k = k.replace("\n", "").replace(" ", "_").strip().lower()
             v = v.replace("\n", "").replace(" ", "_").strip().lower()
-            search_response.kb_panel.update({k: v})
+            panel[k] = v
+        search_response.kb_panel = KPPanel(**panel)
 
     return search_response

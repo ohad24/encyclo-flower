@@ -1,6 +1,7 @@
 from google.cloud import vision
 from pydantic import BaseModel
 from typing import Optional
+from endpoints.helpers_tools.generic import detect_image_blacklist
 
 
 class WebEntity(BaseModel):
@@ -30,10 +31,15 @@ def search_by_vision_api(content: bytes) -> DetectResponse:
     response_web_detection.web_entities.sort(key=lambda x: x.score, reverse=True)
 
     detect_response = DetectResponse(
-        labels=[x.description for x in labels],
+        labels=[
+            x.description
+            for x in labels
+            if x.description.lower() not in "".join(detect_image_blacklist).lower()
+        ],
         web_entities=[
             {"description": x.description, "score": x.score}
             for x in response_web_detection.web_entities
+            if x.description.lower() not in "".join(detect_image_blacklist).lower()
         ],
     )
     return detect_response
