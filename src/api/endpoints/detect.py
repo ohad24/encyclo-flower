@@ -1,20 +1,18 @@
 from fastapi import APIRouter, File, UploadFile, Depends, Request
 from endpoints.helpers_tools import detect_vision_api, detect_google_search
-from google.cloud import storage
 from core.config import get_settings
 from pymongo.mongo_client import MongoClient
 import db
-import uuid
+from endpoints.helpers_tools.generic import gen_image_file_name
 import datetime
 from core.security import verify_user_in_token
 from endpoints.helpers_tools.generic import get_today_str
 from endpoints.helpers_tools.db import prepare_query_detect_image
+from core.gstorage import bucket
 
 settings = get_settings()
 
 router = APIRouter()
-
-storage_client = storage.Client()
 
 
 @router.post("/image/")
@@ -53,8 +51,7 @@ async def images(
 
     # * upload image to cloud storage
     await file.seek(0)
-    bucket = storage_client.bucket(settings.CLOUD_BUCKET)
-    new_file_name = str(uuid.uuid4()) + "." + file.filename.split(".")[-1]
+    new_file_name = gen_image_file_name(file.filename)
     blob = bucket.blob("image_api_files/" + new_file_name)
     blob.upload_from_file(file.file, content_type=file.content_type)
 

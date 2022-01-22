@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 
 def get_today_str() -> str:
@@ -40,3 +41,7 @@ detect_image_blacklist = [
     "Pedicel",
     "Flora",
 ]
+
+
+def gen_image_file_name(file_name: str) -> str:
+    return str(uuid.uuid4()) + "." + file_name.split(".")[-1]

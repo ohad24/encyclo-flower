@@ -23,8 +23,8 @@ class ImageLocation(BaseModel):
 
 
 class QuestionImage(BaseModel):
-    file_name: str
-    # url: FileUrl
+    orig_file_name: str = Field(default="image1.jpg")
+    file_name: str | None = None
     description: str | None = None
     notes: str | None = None
     what_in_image: WhatInImage
@@ -40,3 +40,7 @@ class Question(BaseModel):
 class QuestionInDB(Question):
     question_id: str = Field(default_factory=question_id_generator)
     user_id: str
+
+
+class QuestionInResponse(BaseModel):
+    question_id: str
