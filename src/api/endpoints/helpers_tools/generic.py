@@ -38,5 +38,5 @@ detect_image_blacklist = [
     "YouTube",
     "Flowerpot",
     "Pedicel",
-    "Flora"
+    "Flora",
 ]

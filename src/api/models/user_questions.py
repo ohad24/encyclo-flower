@@ -1,9 +1,11 @@
-from pydantic import BaseModel, FileUrl
-from typing import List
+from pydantic import BaseModel, FileUrl, Field
+from typing import List, Optional
 from enum import Enum
+from datetime import datetime
+from models.helpers import question_id_generator
 
 
-class WhatInImage(Enum, str):
+class WhatInImage(str, Enum):
     a = "הצמח במלואו"
     b = "פרי"
     c = "פרח"
@@ -13,14 +15,28 @@ class WhatInImage(Enum, str):
     g = "לא נבחר"
 
 
+class ImageLocation(BaseModel):
+    lat: float
+    lon: float
+    alt: float
+    location_name: str | None
+
+
 class QuestionImage(BaseModel):
     file_name: str
-    url: FileUrl
+    # url: FileUrl
     description: str | None = None
     notes: str | None = None
     what_in_image: WhatInImage
+    location: Optional[ImageLocation]
+    photo_taken_dt: Optional[datetime]
 
 
 class Question(BaseModel):
     question_text: str
-    images: List[str]
+    images: List[QuestionImage] = Field(description="Images metadata")
+
+
+class QuestionInDB(Question):
+    question_id: str = Field(default_factory=question_id_generator)
+    user_id: str
