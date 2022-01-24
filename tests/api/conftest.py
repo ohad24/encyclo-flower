@@ -9,7 +9,6 @@ sys.path.append("./src/api/")
 
 from db import get_db
 
-
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return "".join(random.choice(chars) for _ in range(size))
 
@@ -19,6 +18,7 @@ test_username = id_generator()
 
 def pytest_configure():
     pytest.test_username = test_username
+    pytest.question_id = None
 
 
 @pytest.fixture(scope="session")

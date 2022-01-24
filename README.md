@@ -28,6 +28,9 @@ Environment variables:
 # enter venv
 pytest -v -x -s --cov=src/api/ --cov-report xml --cov-report html:.cov_html
 
+# exclude one test VIA command line
+pytest -x -s -vv -k 'not detect_image' tests/api/
+
 # format
 black src/api/
 # lint
