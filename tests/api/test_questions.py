@@ -9,7 +9,7 @@ from pathlib import Path
 @pytest.fixture(scope="module")
 def question_url(base_url):
     # * Arrange
-    return base_url + "community/questions"
+    return base_url + "community/questions/"
 
 
 class TestQuestion:
@@ -61,9 +61,32 @@ class TestQuestion:
         auth_headers.pop("Content-Type", None)
         # * Act
         response = client.post(
-            question_url + f"/{pytest.question_id}/images",
+            question_url + f"{pytest.question_id}/images",
             headers=auth_headers,
             files=files,
         )
         # * Assert
         assert response.status_code == 200
+
+    def test_add_comment(self, auth_headers, question_url):
+        # * Arrange
+        comment_data = {
+            "comment_text": "This is a comment",
+        }
+        # * Act
+        response = client.post(
+            question_url + f"{pytest.question_id}/comments",
+            headers=auth_headers,
+            json=comment_data,
+        )
+        # * Assert
+        assert response.status_code == 200
+
+    def test_get_question(self, auth_headers, question_url):
+        # * Act
+        response = client.get(
+            question_url + f"{pytest.question_id}", headers=auth_headers
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()["question_id"] == pytest.question_id

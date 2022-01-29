@@ -14,30 +14,62 @@ import db
 from pymongo.mongo_client import MongoClient
 from google.cloud import storage
 from models.user_questions import (
+    CommentInDB,
     QuestionImage,
     Question,
     QuestionInDB,
     QuestionInResponse,
+    Comment,
+    CommentInDB,
 )
 import models.user as user_model
 from core.security import get_current_active_user
 from endpoints.helpers_tools.generic import gen_image_file_name
 from core.gstorage import bucket
 
-router = APIRouter()
+router = APIRouter(prefix="/questions")
 
 storage_client = storage.Client()
 
+
 # TODO: get one question
+@router.get("/{question_id}", response_model=QuestionInDB)
+async def get_question(
+    question_id: str,
+    db: MongoClient = Depends(db.get_db),
+):
+    question = db.questions.find_one({"question_id": question_id})
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return QuestionInDB(**question)
+
+
 # TODO: get all questions
 # TODO: add image to question
 # TODO: delete image from question
 # TODO: answer question
 # TODO: delete question ?
+
+
 # TODO: add comment to question
+@router.post("/{question_id}/comments", response_model=Comment)
+def add_comment(
+    question_id: str,
+    comment: Comment,
+    db: MongoClient = Depends(db.get_db),
+    user: user_model.User = Depends(get_current_active_user),
+):
+    question = db.questions.find_one({"question_id": question_id})
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    data = CommentInDB(user_id=user.user_id, **comment.dict())
+    db.questions.update_one(
+        {"question_id": question_id}, {"$push": {"comments": data.dict()}}
+    )
+    return Response(status_code=200)
 
 
-@router.post("/questions", response_model=QuestionInResponse)
+@router.post("/", response_model=QuestionInResponse)
 async def ask_question(
     question: Question,
     current_user: user_model.User = Depends(get_current_active_user),
@@ -48,7 +80,7 @@ async def ask_question(
     return {"question_id": questionInDB.question_id}
 
 
-@router.post("/questions/{question_id}/images")
+@router.post("/{question_id}/images")
 async def add_image_to_question(
     question_id: str,
     images: List[UploadFile] = File(...),

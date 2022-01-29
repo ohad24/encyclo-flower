@@ -2,7 +2,7 @@ from pydantic import BaseModel, FileUrl, Field
 from typing import List, Optional
 from enum import Enum
 from datetime import datetime
-from models.helpers import question_id_generator
+from models.helpers import question_id_generator, gen_uuid
 
 
 class WhatInImage(str, Enum):
@@ -32,6 +32,16 @@ class QuestionImage(BaseModel):
     photo_taken_dt: Optional[datetime]
 
 
+class Comment(BaseModel):
+    comment_text: str
+
+
+class CommentInDB(Comment):
+    comment_id: str = Field(default_factory=gen_uuid)
+    comment_dt: datetime = Field(default_factory=datetime.utcnow)
+    user_id: str
+
+
 class Question(BaseModel):
     question_text: str
     images: List[QuestionImage] = Field(description="Images metadata")
@@ -40,6 +50,8 @@ class Question(BaseModel):
 class QuestionInDB(Question):
     question_id: str = Field(default_factory=question_id_generator)
     user_id: str
+    created_dt: datetime = Field(default_factory=datetime.utcnow)
+    comments: List[Optional[CommentInDB]] = []
 
 
 class QuestionInResponse(BaseModel):
