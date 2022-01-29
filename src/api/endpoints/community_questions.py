@@ -8,6 +8,7 @@ from fastapi import (
     Request,
     HTTPException,
     Response,
+    Query,
 )
 from typing import List, Any, Union
 import db
@@ -27,9 +28,26 @@ from core.security import get_current_active_user
 from endpoints.helpers_tools.generic import gen_image_file_name
 from core.gstorage import bucket
 
-router = APIRouter(prefix="/questions")
+router = APIRouter(prefix="/questions", tags=["questions"])
 
 storage_client = storage.Client()
+
+
+# TODO: get all questions from db
+@router.get("/", response_model=List[QuestionInDB])
+async def get_all_questions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(9, le=9),
+    db: MongoClient = Depends(db.get_db),
+):
+    # TODO: SET MORE RELEVANT FIELDS (NO COMMENTS, ONE IMAGE)
+    questions = (
+        db.questions.find({}, {"comments": 0})
+        .sort("created_dt", -1)
+        .limit(limit)
+        .skip(skip)
+    )
+    return list(questions)
 
 
 # TODO: get one question
@@ -44,11 +62,11 @@ async def get_question(
     return QuestionInDB(**question)
 
 
-# TODO: get all questions
 # TODO: add image to question
 # TODO: delete image from question
 # TODO: answer question
 # TODO: delete question ?
+# TODO: rotate image
 
 
 # TODO: add comment to question

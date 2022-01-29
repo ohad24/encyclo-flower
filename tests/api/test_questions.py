@@ -12,6 +12,11 @@ def question_url(base_url):
     return base_url + "community/questions/"
 
 
+def create_user_question(question_url, auth_headers, question_data):
+    response = client.post(question_url, headers=auth_headers, json=question_data)
+    return response
+
+
 class TestQuestion:
     def test_create_question(self, question_url, auth_headers):
         # * Arrange
@@ -34,7 +39,8 @@ class TestQuestion:
             ],
         }
         # * Act
-        response = client.post(question_url, headers=auth_headers, json=question_data)
+        # response = client.post(question_url, headers=auth_headers, json=question_data)
+        response = create_user_question(question_url, auth_headers, question_data)
         # * Assert
         assert response.status_code == 200
         assert response.json()["question_id"][:2] == "q-"
@@ -90,3 +96,12 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200
         assert response.json()["question_id"] == pytest.question_id
+
+    def test_get_all_questions(self, auth_headers, question_url):
+        # * Act
+        response = client.get(
+            question_url, headers=auth_headers, params={"limit": 9, "skip": 0}
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert 9 >= len(response.json()) >= 1
