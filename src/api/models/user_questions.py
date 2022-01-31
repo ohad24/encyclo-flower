@@ -1,4 +1,4 @@
-from pydantic import BaseModel, FileUrl, Field
+from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional
 from enum import Enum
 from datetime import datetime
@@ -32,6 +32,13 @@ class QuestionImage(BaseModel):
     photo_taken_dt: Optional[datetime]
 
 
+class QuestionImageInDB(QuestionImage):
+    uploaded: bool = False
+    self_link: HttpUrl | None = None
+    media_link: HttpUrl | None = None
+    public_url: HttpUrl | None = None
+
+
 class Comment(BaseModel):
     comment_text: str
 
@@ -43,7 +50,7 @@ class CommentInDB(Comment):
 
 
 class Question(BaseModel):
-    question_text: str
+    question_text: str = Field(min_length=5, max_length=1000)
     images: List[QuestionImage] = Field(description="Images metadata")
 
 
@@ -52,7 +59,20 @@ class QuestionInDB(Question):
     user_id: str
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     comments: List[Optional[CommentInDB]] = []
+    images: List[QuestionImageInDB]
 
 
-class QuestionInResponse(BaseModel):
+class ImagesInResponse(BaseModel):
+    """
+    response for added new images to question.
+    """
+
+    images_gen_names: List[str]
+
+
+class QuestionInResponse(ImagesInResponse):
+    """
+    This is the response of the question creation
+    """
+
     question_id: str

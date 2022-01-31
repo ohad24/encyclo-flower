@@ -45,8 +45,33 @@ class TestQuestion:
         assert response.status_code == 200
         assert response.json()["question_id"][:2] == "q-"
         pytest.question_id = response.json()["question_id"]
+        pytest.question_images_gen_names = response.json()["images_gen_names"]
 
-    def test_add_image(self, auth_headers, question_url):
+    def test_add_new_image_metadata(self, auth_headers, question_url):
+        """
+        This test is for adding new image metadata to an existing question
+        don't upload the image bytes, just add the metadata
+        """
+        # * Arrange
+        new_image_metadata = [
+            {
+                "orig_file_name": "new_image.jpg",
+                "description": "new image",
+                "notes": "new notes",
+                "what_in_image": "פרי",
+                "location": {"lat": 0, "lon": 0, "alt": 0},
+            }
+        ]
+        # * Act
+        response = client.post(
+            question_url + f"{pytest.question_id}/images_metadata",
+            headers=auth_headers,
+            json=new_image_metadata,
+        )
+        # * Assert
+        assert response.status_code == 200
+
+    def test_add_images(self, auth_headers, question_url):
         # * Arrange
         files = [
             (
@@ -65,11 +90,22 @@ class TestQuestion:
             ),
         ]
         auth_headers.pop("Content-Type", None)
+
+        images_name_metadata = []
+        for name in pytest.question_images_gen_names:
+            images_name_metadata.append(
+                (
+                    "images_gen_names",
+                    (name),
+                )
+            )
+
         # * Act
         response = client.post(
             question_url + f"{pytest.question_id}/images",
             headers=auth_headers,
             files=files,
+            data=images_name_metadata,
         )
         # * Assert
         assert response.status_code == 200
