@@ -141,3 +141,13 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200
         assert 9 >= len(response.json()) >= 1
+
+    def test_delete_image(self, auth_headers, question_url):
+        # * Act
+        response = client.delete(
+            question_url
+            + f"{pytest.question_id}/images/{pytest.question_images_ids[0]}",
+            headers=auth_headers,
+        )
+        # * Assert
+        assert response.status_code == 200

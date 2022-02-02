@@ -23,7 +23,6 @@ class ImageLocation(BaseModel):
 
 
 class QuestionImage(BaseModel):
-    # image_id: str
     orig_file_name: str = Field(default="image1.jpg")
     file_name: str | None = None
     description: str | None = None
