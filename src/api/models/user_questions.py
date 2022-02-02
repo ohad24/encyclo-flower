@@ -33,6 +33,7 @@ class QuestionImage(BaseModel):
 
 
 class QuestionImageInDB(QuestionImage):
+    image_id: str = Field(default_factory=gen_uuid)
     uploaded: bool = False
     self_link: HttpUrl | None = None
     media_link: HttpUrl | None = None

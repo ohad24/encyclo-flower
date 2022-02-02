@@ -64,7 +64,6 @@ async def get_question(
     return QuestionInDB(**question)
 
 
-# TODO: delete image from question
 # TODO: answer question
 # TODO: delete question ?
 # TODO: rotate image
@@ -145,6 +144,7 @@ async def add_image_to_question(
     current_user: user_model.User = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
 ):
+    # TODO: change ids array to image_ids
     question = db.questions.find_one({"question_id": question_id})
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -178,4 +178,39 @@ async def add_image_to_question(
                 }
             },
         )
+    return Response(status_code=200)
+
+
+# TODO: delete image from question
+@router.delete("/{question_id}/images/{image_id}")
+async def delete_image_from_question(
+    question_id: str,
+    image_id: str,
+    current_user: user_model.User = Depends(get_current_active_user),
+    db: MongoClient = Depends(db.get_db),
+):
+    # * get question data from db
+    question = db.questions.find_one({"question_id": question_id})
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    if question["user_id"] != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Not allowed to edit this question")
+
+    # * check if image metadata exists
+    image_data = list(
+        filter(lambda image: image["image_id"] == image_id, question["images"])
+    )
+    if not image_data:
+        raise HTTPException(status_code=404, detail="Image not found")
+    image_data = image_data[0]
+
+    # * delete image from storage
+    blob = bucket.blob("questions/" + image_data["file_name"])
+    blob.delete()
+
+    # * delete image metadata from question
+    db.questions.update_one(
+        {"question_id": question_id},
+        {"$pull": {"images": {"image_id": image_id, "uploaded": True}}},
+    )
     return Response(status_code=200)
