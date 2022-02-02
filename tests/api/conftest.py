@@ -20,7 +20,7 @@ test_username = id_generator()
 def pytest_configure():
     pytest.test_username = test_username
     pytest.question_id = None
-    pytest.question_images_gen_names = None
+    pytest.question_images_ids = None
 
 
 @pytest.fixture(scope="session")

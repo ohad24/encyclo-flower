@@ -23,6 +23,7 @@ class ImageLocation(BaseModel):
 
 
 class QuestionImage(BaseModel):
+    # image_id: str
     orig_file_name: str = Field(default="image1.jpg")
     file_name: str | None = None
     description: str | None = None
@@ -68,7 +69,7 @@ class ImagesInResponse(BaseModel):
     response for added new images to question.
     """
 
-    images_gen_names: List[str]
+    images_ids: List[str]
 
 
 class QuestionInResponse(ImagesInResponse):

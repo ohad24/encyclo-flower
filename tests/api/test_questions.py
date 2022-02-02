@@ -42,10 +42,10 @@ class TestQuestion:
         # response = client.post(question_url, headers=auth_headers, json=question_data)
         response = create_user_question(question_url, auth_headers, question_data)
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 200, response.text
         assert response.json()["question_id"][:2] == "q-"
         pytest.question_id = response.json()["question_id"]
-        pytest.question_images_gen_names = response.json()["images_gen_names"]
+        pytest.question_images_ids = response.json()["images_ids"]
 
     def test_add_new_image_metadata(self, auth_headers, question_url):
         """
@@ -92,10 +92,10 @@ class TestQuestion:
         auth_headers.pop("Content-Type", None)
 
         images_name_metadata = []
-        for name in pytest.question_images_gen_names:
+        for name in pytest.question_images_ids:
             images_name_metadata.append(
                 (
-                    "images_gen_names",
+                    "images_ids",
                     (name),
                 )
             )
@@ -108,7 +108,7 @@ class TestQuestion:
             data=images_name_metadata,
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 200, response.text
 
     def test_add_comment(self, auth_headers, question_url):
         # * Arrange

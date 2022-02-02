@@ -100,7 +100,7 @@ async def ask_question(
     db.questions.insert_one(questionInDB.dict())
     return QuestionInResponse(
         question_id=questionInDB.question_id,
-        images_gen_names=[x.file_name for x in question.images],
+        images_ids=[x.image_id for x in questionInDB.images],
     )
 
 
@@ -121,25 +121,21 @@ async def add_image_metadata_to_question(
     for image in images_metadata:
         image.file_name = gen_image_file_name(image.orig_file_name)
 
+    images_metadata_for_db = [
+        QuestionImageInDB(**x.dict()).dict() for x in images_metadata
+    ]
+
     db.questions.update_one(
         {"question_id": question_id},
-        {
-            "$push": {
-                "images": {
-                    "$each": [
-                        QuestionImageInDB(**x.dict()).dict() for x in images_metadata
-                    ]
-                }
-            }
-        },
+        {"$push": {"images": {"$each": images_metadata_for_db}}},
     )
-    return ImagesInResponse(images_gen_names=[x.file_name for x in images_metadata])
+    return ImagesInResponse(images_ids=[x["image_id"] for x in images_metadata_for_db])
 
 
 @router.post("/{question_id}/images")
 async def add_image_to_question(
     question_id: str,
-    images_gen_names: List[str],
+    images_ids: List[str],
     images: List[UploadFile] = File(...),
     current_user: user_model.User = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
@@ -150,25 +146,35 @@ async def add_image_to_question(
         raise HTTPException(status_code=404, detail="Question not found")
     if question["user_id"] != current_user.user_id:
         raise HTTPException(status_code=403, detail="Not allowed to edit this question")
-    if len(images) != len(images_gen_names):
-        raise HTTPException(status_code=400, detail="Images and names mismatch")
+    if len(images) != len(images_ids):
+        raise HTTPException(status_code=400, detail="Images and ids mismatch")
 
-    for image, file_name in zip(images, images_gen_names):
+    for image, image_id in zip(images, images_ids):
         # * each image must have a unique name
+        # * TODO: fix error text and logic
 
+        question = db.questions.find_one(
+            {"images": {"$elemMatch": {"image_id": image_id, "uploaded": False}}}
+        )
         # * check if image metadata exists and not been uploaded. before uploading image
-        if not db.questions.find_one(
-            {"images": {"$elemMatch": {"file_name": file_name, "uploaded": False}}}
-        ):
+        if not question:
             raise HTTPException(
                 status_code=400,
-                detail=f"Image not found or already been uploaded - {file_name}",
+                detail=f"Image not found or already been uploaded - {image_id}",
             )
-
+        image_data = list(
+            filter(lambda image: image["image_id"] == image_id, question["images"])
+        )
+        if not image_data:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Image metadata not found not found or already been uploaded - {image_id}",
+            )
+        file_name = image_data[0]["file_name"]
         blob = bucket.blob("questions/" + file_name)
         blob.upload_from_file(image.file, content_type=image.content_type)
         db.questions.update_one(
-            {"question_id": question_id, "images.file_name": file_name},
+            {"question_id": question_id, "images.image_id": image_id},
             {
                 "$set": {
                     "images.$.uploaded": True,
