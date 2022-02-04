@@ -66,7 +66,7 @@ class TestQuestion:
             json=new_image_metadata,
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 200, response.text
 
     def test_add_images(self, auth_headers, question_url):
         # * Arrange

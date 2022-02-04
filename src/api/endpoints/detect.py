@@ -3,7 +3,7 @@ from endpoints.helpers_tools import detect_vision_api, detect_google_search
 from core.config import get_settings
 from pymongo.mongo_client import MongoClient
 import db
-from endpoints.helpers_tools.generic import gen_image_file_name
+from models.helpers import gen_image_file_name
 import datetime
 from core.security import verify_user_in_token
 from endpoints.helpers_tools.generic import get_today_str

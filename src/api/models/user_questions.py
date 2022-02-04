@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, validator
 from typing import List, Optional
 from enum import Enum
 from datetime import datetime
-from models.helpers import question_id_generator, gen_uuid
+from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
 
 
 class WhatInImage(str, Enum):
@@ -24,7 +24,6 @@ class ImageLocation(BaseModel):
 
 class QuestionImage(BaseModel):
     orig_file_name: str = Field(default="image1.jpg")
-    file_name: str | None = None
     description: str | None = None
     notes: str | None = None
     what_in_image: WhatInImage
@@ -34,10 +33,17 @@ class QuestionImage(BaseModel):
 
 class QuestionImageInDB(QuestionImage):
     image_id: str = Field(default_factory=gen_uuid)
+    file_name: str | None = None
     uploaded: bool = False
     self_link: HttpUrl | None = None
     media_link: HttpUrl | None = None
     public_url: HttpUrl | None = None
+
+    @validator("file_name", pre=True, always=True)
+    def set_file_name(cls, v, values):
+        if not v:
+            return gen_image_file_name(values["orig_file_name"])
+        return v
 
 
 class Comment(BaseModel):
@@ -67,7 +73,7 @@ class AnswerInDB(Answer):
 class QuestionInDB(Question):
     question_id: str = Field(default_factory=question_id_generator)
     user_id: str
-    answer: AnswerInDB | None = None
+    answer: Optional[AnswerInDB] = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     comments: List[Optional[CommentInDB]] = []
     images: List[QuestionImageInDB]
