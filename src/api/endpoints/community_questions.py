@@ -24,9 +24,11 @@ from models.user_questions import (
     ImagesInResponse,
     Comment,
     CommentInDB,
+    Answer,
+    AnswerInDB,
 )
 import models.user as user_model
-from core.security import get_current_active_user
+from core.security import get_current_active_user, get_current_privilege_user
 from endpoints.helpers_tools.generic import gen_image_file_name
 from core.gstorage import bucket
 
@@ -64,7 +66,6 @@ async def get_question(
     return QuestionInDB(**question)
 
 
-# TODO: answer question
 # TODO: delete question ?
 # TODO: rotate image
 # TODO: format file
@@ -218,5 +219,26 @@ async def delete_image_from_question(
     db.questions.update_one(
         {"question_id": question_id},
         {"$pull": {"images": {"image_id": image_id, "uploaded": True}}},
+    )
+    return Response(status_code=200)
+
+
+# TODO: answer question
+@router.post("/{question_id}/answer")
+async def answer_question(
+    question_id: str,
+    answer: Answer,
+    current_user: user_model.User = Depends(get_current_privilege_user),
+    db: MongoClient = Depends(db.get_db),
+):
+    question = db.questions.find_one({"question_id": question_id})
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    if not db.plants.find_one({"plant_id": answer.plant_id}):
+        raise HTTPException(status_code=404, detail="Plant not found")
+
+    answerInDB = AnswerInDB(**answer.dict(), user_id=current_user.user_id)
+    db.questions.update_one(
+        {"question_id": question_id}, {"$set": {"answer": answerInDB.dict()}}
     )
     return Response(status_code=200)

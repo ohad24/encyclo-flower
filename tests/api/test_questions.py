@@ -1,8 +1,5 @@
 from test_main import client
 import pytest
-import json
-from db import get_db
-import os
 from pathlib import Path
 
 
@@ -151,3 +148,16 @@ class TestQuestion:
         )
         # * Assert
         assert response.status_code == 200
+
+    @pytest.mark.usefixtures("editor_user")
+    def test_set_answer(self, auth_headers, question_url):
+        # * Arrange
+        answer_data = {"plant_id": "sfdm76"}
+        # * Act
+        response = client.post(
+            question_url + f"{pytest.question_id}/answer",
+            headers=auth_headers,
+            json=answer_data,
+        )
+        # * Assert
+        assert response.status_code == 200, response.text

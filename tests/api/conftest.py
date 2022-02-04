@@ -47,6 +47,19 @@ def auth_headers(auth_data):
     }
 
 
+@pytest.fixture
+def editor_user(request, db):
+    db = get_db()
+    db.users.update_one(
+        {"username": pytest.test_username}, {"$set": {"is_editor": True}}
+    )
+    request.addfinalizer(
+        lambda: db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"is_editor": False}}
+        )
+    )
+
+
 # from core.config import get_settings, Settings
 
 # settings = get_settings()

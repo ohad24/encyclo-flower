@@ -55,9 +55,19 @@ class Question(BaseModel):
     images: List[QuestionImage] = Field(description="Images metadata")
 
 
+class Answer(BaseModel):
+    plant_id: str
+
+
+class AnswerInDB(Answer):
+    answer_dt: datetime = Field(default_factory=datetime.utcnow)
+    user_id: str
+
+
 class QuestionInDB(Question):
     question_id: str = Field(default_factory=question_id_generator)
     user_id: str
+    answer: AnswerInDB | None = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     comments: List[Optional[CommentInDB]] = []
     images: List[QuestionImageInDB]
