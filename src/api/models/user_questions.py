@@ -82,6 +82,7 @@ class QuestionInDB(Question):
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     comments: List[Optional[CommentInDB]] = []
     images: List[QuestionImageInDB]
+    deleted: bool = False
 
 
 class ImagesInResponse(BaseModel):

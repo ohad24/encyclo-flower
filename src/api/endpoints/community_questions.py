@@ -47,7 +47,7 @@ async def get_all_questions(
 ):
     # TODO: SET MORE RELEVANT FIELDS (NO COMMENTS, ONE IMAGE)
     questions = (
-        db.questions.find({}, {"comments": 0})
+        db.questions.find({"deleted": False}, {"comments": 0})
         .sort("created_dt", -1)
         .limit(limit)
         .skip(skip)
@@ -62,7 +62,6 @@ async def get_question(
     return question
 
 
-# TODO: delete question ?
 # TODO: format file
 
 
@@ -169,7 +168,11 @@ async def delete_image_from_question(
     # * delete image metadata from question
     db.questions.update_one(
         {"question_id": image_data.question_id},
-        {"$pull": {"images": {"image_id": image_data.image.image_id, "uploaded": True}}},
+        {
+            "$pull": {
+                "images": {"image_id": image_data.image.image_id, "uploaded": True}
+            }
+        },
     )
     return Response(status_code=200)
 
@@ -205,4 +208,18 @@ async def rotate_image_in_question(
     # * upload image to gstorage
     blob.upload_from_string(rotated_image, content_type=blob.content_type)
 
+    return Response(status_code=200)
+
+
+@router.delete("/{question_id}")
+async def delete_question(
+    question: QuestionInDB = Depends(get_current_question_w_valid_owner),
+    db: MongoClient = Depends(db.get_db),
+):
+    """
+    Only set deleted flag to true in DB
+    """
+    db.questions.update_one(
+        {"question_id": question.question_id}, {"$set": {"deleted": True}}
+    )
     return Response(status_code=200)

@@ -137,7 +137,7 @@ class TestQuestion:
         )
         # * Assert
         assert response.status_code == 200
-        assert 9 >= len(response.json()) >= 1
+        assert 9 >= len(response.json()) >= 1, response.text
 
     def test_rotate_image(self, auth_headers, question_url):
         # * Arrange
@@ -185,6 +185,15 @@ class TestQuestion:
             question_url + f"{pytest.question_id}/answer",
             headers=auth_headers,
             json=answer_data,
+        )
+        # * Assert
+        assert response.status_code == 200, response.text
+
+    @pytest.mark.usefixtures("editor_user")
+    def test_delete_question(self, auth_headers, question_url):
+        # * Act
+        response = client.delete(
+            question_url + f"{pytest.question_id}", headers=auth_headers
         )
         # * Assert
         assert response.status_code == 200, response.text

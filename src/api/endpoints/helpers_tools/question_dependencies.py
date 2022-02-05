@@ -13,7 +13,7 @@ from core.security import get_current_active_user, check_privilege_user
 async def validate_question_by_id(
     question_id: str, db: MongoClient = Depends(db.get_db)
 ) -> QuestionInDB:
-    question = db.questions.find_one({"question_id": question_id})
+    question = db.questions.find_one({"question_id": question_id, "deleted": False})
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
     return QuestionInDB(**question)
