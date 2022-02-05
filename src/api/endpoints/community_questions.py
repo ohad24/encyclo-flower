@@ -25,39 +25,14 @@ from models.user_questions import (
 import models.user as user_model
 from core.security import get_current_active_user, get_current_privilege_user
 from core.gstorage import bucket
+from endpoints.helpers_tools.question_dependencies import (
+    get_question_id,
+    get_current_question,
+    get_current_question_w_valid_owner,
+    get_current_question_w_valid_editor,
+)
 
 router = APIRouter(prefix="/questions", tags=["questions"])
-
-
-# * questions dependencies
-async def validate_question_by_id(
-    question_id: str, db: MongoClient = Depends(db.get_db)
-) -> str:
-    if not db.questions.find_one({"question_id": question_id}, {"question_id": 1}):
-        raise HTTPException(status_code=404, detail="Question not found")
-    return question_id
-
-
-async def get_current_question(
-    question_id: str = Depends(validate_question_by_id),
-    db: MongoClient = Depends(db.get_db),
-) -> dict:
-    question = db.questions.find_one({"question_id": question_id})
-    return QuestionInDB(**question)
-
-
-async def validate_user_is_question_owner(
-    question: QuestionInDB = Depends(get_current_question),
-    user: user_model.User = Depends(get_current_active_user),
-):
-    if user.user_id != question.user_id:
-        raise HTTPException(
-            status_code=403, detail="User is not owner of this question"
-        )
-    return user
-
-
-# * end of questions dependencies
 
 
 @router.get("/", response_model=List[QuestionInDB])
@@ -76,7 +51,6 @@ async def get_all_questions(
     return list(questions)
 
 
-# TODO: get one question
 @router.get("/{question_id}", response_model=QuestionInDB)
 async def get_question(
     question: QuestionInDB = Depends(get_current_question),
@@ -89,13 +63,12 @@ async def get_question(
 # TODO: format file
 
 
-# TODO: add comment to question
 @router.post("/{question_id}/comments", response_model=Comment)
 def add_comment(
     comment: Comment,
-    question_id: str = Depends(validate_question_by_id),
-    db: MongoClient = Depends(db.get_db),
+    question_id: str = Depends(get_question_id),
     user: user_model.User = Depends(get_current_active_user),
+    db: MongoClient = Depends(db.get_db),
 ):
     comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
     db.questions.update_one(
@@ -118,13 +91,11 @@ async def ask_question(
     )
 
 
-# TODO: add image to question
 @router.post("/{question_id}/images_metadata", response_model=ImagesInResponse)
 async def add_image_metadata_to_question(
     images_metadata: List[QuestionImage],
-    question: QuestionInDB = Depends(get_current_question),
+    question: QuestionInDB = Depends(get_current_question_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
-    user: user_model.User = Depends(validate_user_is_question_owner),
 ):
     images_metadata_for_db = [
         QuestionImageInDB(**x.dict()).dict() for x in images_metadata
@@ -139,11 +110,9 @@ async def add_image_metadata_to_question(
 
 @router.post("/{question_id}/images")
 async def add_image_to_question(
-    # question_id: str,
     images_ids: List[str],
-    question: QuestionInDB = Depends(get_current_question),
+    question: QuestionInDB = Depends(get_current_question_w_valid_owner),
     images: List[UploadFile] = File(...),
-    current_user: user_model.User = Depends(validate_user_is_question_owner),
     db: MongoClient = Depends(db.get_db),
 ):
     if len(images) != len(images_ids):
@@ -188,11 +157,9 @@ async def add_image_to_question(
 @router.delete("/{question_id}/images/{image_id}")
 async def delete_image_from_question(
     image_id: str,
-    question: str = Depends(get_current_question),
-    current_user: user_model.User = Depends(validate_user_is_question_owner),
+    question: str = Depends(get_current_question_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
-    # TODO: also admin and editor should be able to delete image
     # * get image metadata
     image_data = list(filter(lambda image: image.image_id == image_id, question.images))
 
@@ -216,7 +183,7 @@ async def delete_image_from_question(
 @router.post("/{question_id}/answer")
 async def answer_question(
     answer: Answer,
-    question_id: str = Depends(validate_question_by_id),
+    question_id: str = Depends(get_question_id),
     current_user: user_model.User = Depends(get_current_privilege_user),
     db: MongoClient = Depends(db.get_db),
 ):

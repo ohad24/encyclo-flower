@@ -92,9 +92,17 @@ async def get_current_active_editor(
     return current_user
 
 
+def check_privilege_user(
+    current_user: User,
+):
+    if not current_user.is_superuser | current_user.is_editor:
+        return False
+    return True
+
+
 async def get_current_privilege_user(
     current_user: User = Depends(get_current_active_user),
 ):
-    if not current_user.is_superuser | current_user.is_editor:
+    if not check_privilege_user(current_user):
         raise e403
     return current_user

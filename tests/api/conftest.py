@@ -60,6 +60,21 @@ def editor_user(request, db):
     )
 
 
+@pytest.fixture
+def change_user_id(request, db):
+    """temporary change user id"""
+    db = get_db()
+    orig_user_id = db.users.find_one({"username": pytest.test_username})["user_id"]
+    db.users.update_one(
+        {"username": pytest.test_username}, {"$set": {"user_id": id_generator()}}
+    )
+    request.addfinalizer(
+        lambda: db.users.update_one(
+            {"username": pytest.test_username}, {"$set": {"user_id": orig_user_id}}
+        )
+    )
+
+
 # from core.config import get_settings, Settings
 
 # settings = get_settings()

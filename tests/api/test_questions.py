@@ -147,7 +147,19 @@ class TestQuestion:
             headers=auth_headers,
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 200, response.text
+
+    @pytest.mark.usefixtures("change_user_id")
+    @pytest.mark.usefixtures("editor_user")
+    def test_delete_image_as_editor(self, auth_headers, question_url):
+        # * Act
+        response = client.delete(
+            question_url
+            + f"{pytest.question_id}/images/{pytest.question_images_ids[1]}",
+            headers=auth_headers,
+        )
+        # * Assert
+        assert response.status_code == 200, response.text
 
     @pytest.mark.usefixtures("editor_user")
     def test_set_answer(self, auth_headers, question_url):
