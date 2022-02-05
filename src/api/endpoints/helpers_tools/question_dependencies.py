@@ -2,7 +2,7 @@ import db
 from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
 import models.user as user_model
-from models.user_questions import QuestionInDB
+from models.user_questions import QuestionInDB, QuestionImageInDB
 from core.security import get_current_active_user, check_privilege_user
 
 
@@ -56,3 +56,13 @@ async def get_current_question_w_valid_editor(
             status_code=403, detail="User is not owner or editor of this question"
         )
     return question
+
+
+async def get_image_data_from_question(
+    image_id: str,
+    question: QuestionInDB = Depends(get_current_question_w_valid_editor),
+) -> QuestionImageInDB:
+    image_data = list(filter(lambda image: image.image_id == image_id, question.images))
+    if not image_data:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return image_data[0]

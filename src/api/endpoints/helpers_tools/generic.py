@@ -1,4 +1,7 @@
 import datetime
+from PIL import Image
+import io
+from models.generic import AngleEnum
 
 
 def get_today_str() -> str:
@@ -40,3 +43,12 @@ detect_image_blacklist = [
     "Pedicel",
     "Flora",
 ]
+
+
+def rotate_image(image: bytes, angle: AngleEnum) -> bytes:
+    bytes = io.BytesIO(image)
+    image = Image.open(bytes)
+    rotated = image.transpose(AngleEnum[angle].value)
+    bytes = io.BytesIO()
+    rotated.save(bytes, format=image.format)
+    return bytes.getvalue()

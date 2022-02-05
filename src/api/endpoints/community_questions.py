@@ -23,6 +23,7 @@ from models.user_questions import (
     AnswerInDB,
 )
 import models.user as user_model
+from models.generic import RotateDirection
 from core.security import get_current_active_user, get_current_privilege_user
 from core.gstorage import bucket
 from endpoints.helpers_tools.question_dependencies import (
@@ -30,7 +31,9 @@ from endpoints.helpers_tools.question_dependencies import (
     get_current_question,
     get_current_question_w_valid_owner,
     get_current_question_w_valid_editor,
+    get_image_data_from_question,
 )
+from endpoints.helpers_tools.generic import rotate_image
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
@@ -59,7 +62,6 @@ async def get_question(
 
 
 # TODO: delete question ?
-# TODO: rotate image
 # TODO: format file
 
 
@@ -156,26 +158,19 @@ async def add_image_to_question(
 
 @router.delete("/{question_id}/images/{image_id}")
 async def delete_image_from_question(
-    image_id: str,
-    question: str = Depends(get_current_question_w_valid_editor),
+    question_id: str,
+    image_data: QuestionImageInDB = Depends(get_image_data_from_question),
     db: MongoClient = Depends(db.get_db),
 ):
-    # * get image metadata
-    image_data = list(filter(lambda image: image.image_id == image_id, question.images))
-
-    # * check if image metadata exists
-    if not image_data:
-        raise HTTPException(status_code=404, detail="Image not found")
-    image_data = image_data[0]
-
+    # TODO: return image data with question id
     # * delete image from storage
     blob = bucket.blob("questions/" + image_data.file_name)
     blob.delete()
 
     # * delete image metadata from question
     db.questions.update_one(
-        {"question_id": question.question_id},
-        {"$pull": {"images": {"image_id": image_id, "uploaded": True}}},
+        {"question_id": question_id},
+        {"$pull": {"images": {"image_id": image_data.image_id, "uploaded": True}}},
     )
     return Response(status_code=200)
 
@@ -195,4 +190,20 @@ async def answer_question(
     db.questions.update_one(
         {"question_id": question_id}, {"$set": {"answer": answerInDB.dict()}}
     )
+    return Response(status_code=200)
+
+
+@router.post("/{question_id}/images/{image_id}/rotate")
+async def rotate_image_in_question(
+    direction: RotateDirection,
+    image_data: QuestionImageInDB = Depends(get_image_data_from_question),
+):
+    # * download image
+    blob = bucket.blob("questions/" + image_data.file_name)
+    image = blob.download_as_bytes()
+    # * rotate image
+    rotated_image = rotate_image(image, direction.angle)
+    # * upload image to gstorage
+    blob.upload_from_string(rotated_image, content_type=blob.content_type)
+
     return Response(status_code=200)
