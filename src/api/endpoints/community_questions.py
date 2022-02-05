@@ -14,6 +14,7 @@ from models.user_questions import (
     CommentInDB,
     QuestionImage,
     Question,
+    QuestionImageInDB_w_qid,
     QuestionInDB,
     QuestionImageInDB,
     QuestionInResponse,
@@ -30,8 +31,8 @@ from endpoints.helpers_tools.question_dependencies import (
     get_question_id,
     get_current_question,
     get_current_question_w_valid_owner,
-    get_current_question_w_valid_editor,
-    get_image_data_from_question,
+    get_image_data_w_valid_editor,
+    get_image_data_qid_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import rotate_image
 
@@ -158,19 +159,17 @@ async def add_image_to_question(
 
 @router.delete("/{question_id}/images/{image_id}")
 async def delete_image_from_question(
-    question_id: str,
-    image_data: QuestionImageInDB = Depends(get_image_data_from_question),
+    image_data: QuestionImageInDB_w_qid = Depends(get_image_data_qid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
-    # TODO: return image data with question id
     # * delete image from storage
-    blob = bucket.blob("questions/" + image_data.file_name)
+    blob = bucket.blob("questions/" + image_data.image.file_name)
     blob.delete()
 
     # * delete image metadata from question
     db.questions.update_one(
-        {"question_id": question_id},
-        {"$pull": {"images": {"image_id": image_data.image_id, "uploaded": True}}},
+        {"question_id": image_data.question_id},
+        {"$pull": {"images": {"image_id": image_data.image.image_id, "uploaded": True}}},
     )
     return Response(status_code=200)
 
@@ -196,7 +195,7 @@ async def answer_question(
 @router.post("/{question_id}/images/{image_id}/rotate")
 async def rotate_image_in_question(
     direction: RotateDirection,
-    image_data: QuestionImageInDB = Depends(get_image_data_from_question),
+    image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
 ):
     # * download image
     blob = bucket.blob("questions/" + image_data.file_name)

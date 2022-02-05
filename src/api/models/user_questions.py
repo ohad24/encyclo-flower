@@ -46,6 +46,11 @@ class QuestionImageInDB(QuestionImage):
         return v
 
 
+class QuestionImageInDB_w_qid(BaseModel):
+    question_id: str
+    image: QuestionImageInDB
+
+
 class Comment(BaseModel):
     comment_text: str
 
