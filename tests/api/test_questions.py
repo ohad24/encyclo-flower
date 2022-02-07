@@ -9,14 +9,15 @@ def question_url(base_url):
     return base_url + "community/questions/"
 
 
-def create_user_question(question_url, auth_headers, question_data):
-    response = client.post(question_url, headers=auth_headers, json=question_data)
-    return response
+class QuestionTester:
 
+    # TODO: need to implement more method (add image, add comment, etc)
 
-class TestQuestion:
-    def test_create_question(self, question_url, auth_headers):
-        # * Arrange
+    def __init__(self, auth_headers, question_url):
+        self.auth_headers = auth_headers
+        self.question_url = question_url
+
+    def create(self, number_of_questions=1):
         question_data = {
             "question_text": "What is the meaning of life?",
             "images": [
@@ -35,9 +36,24 @@ class TestQuestion:
                 },
             ],
         }
+        responses = []
+        for i in range(number_of_questions):
+            response = client.post(
+                self.question_url, json=question_data, headers=self.auth_headers
+            )
+            responses.append(response)
+        return responses[0] if len(responses) == 1 else responses
+
+
+@pytest.fixture
+def user_question(auth_headers, question_url):
+    return QuestionTester(auth_headers, question_url)
+
+
+class TestQuestion:
+    def test_create_question(self, user_question):
         # * Act
-        # response = client.post(question_url, headers=auth_headers, json=question_data)
-        response = create_user_question(question_url, auth_headers, question_data)
+        response = user_question.create(number_of_questions=2)[1]
         # * Assert
         assert response.status_code == 200, response.text
         assert response.json()["question_id"][:2] == "q-"
@@ -130,14 +146,16 @@ class TestQuestion:
         assert response.status_code == 200
         assert response.json()["question_id"] == pytest.question_id
 
-    def test_get_all_questions(self, auth_headers, question_url):
+    def test_get_all_questions(self, auth_headers, question_url, user_question):
+        # * Arrange
+        user_question.create(number_of_questions=10)
         # * Act
         response = client.get(
             question_url, headers=auth_headers, params={"limit": 9, "skip": 0}
         )
         # * Assert
         assert response.status_code == 200
-        assert 9 >= len(response.json()) >= 1, response.text
+        assert 9 == len(response.json())
 
     def test_rotate_image(self, auth_headers, question_url):
         # * Arrange

@@ -2,6 +2,7 @@ import datetime
 from PIL import Image
 import io
 from models.generic import AngleEnum
+from typing import List
 
 
 def get_today_str() -> str:
@@ -52,3 +53,20 @@ def rotate_image(image: bytes, angle: AngleEnum) -> bytes:
     bytes = io.BytesIO()
     rotated.save(bytes, format=image.format)
     return bytes.getvalue()
+
+
+def get_first_uploaded_image(images: List[dict]) -> dict | None:
+    # * get only uploaded images
+    for img in images:
+        if img.get("uploaded", None):
+            return img
+    return None
+
+
+def format_obj_image_preview(user_obj: dict) -> dict:
+    """user_obj is question or observation in dict type"""
+    # * get only first image to new image key
+    user_obj["image"] = get_first_uploaded_image(user_obj["images"])
+    # * remove images key
+    user_obj.pop("images", None)
+    return user_obj

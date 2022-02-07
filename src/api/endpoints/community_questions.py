@@ -22,6 +22,7 @@ from models.user_questions import (
     Comment,
     Answer,
     AnswerInDB,
+    QuestionsPreview,
 )
 import models.user as user_model
 from models.generic import RotateDirection
@@ -34,25 +35,27 @@ from endpoints.helpers_tools.question_dependencies import (
     get_image_data_w_valid_editor,
     get_image_data_qid_w_valid_editor,
 )
-from endpoints.helpers_tools.generic import rotate_image
+from endpoints.helpers_tools.generic import rotate_image, format_obj_image_preview
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
 
-@router.get("/", response_model=List[QuestionInDB])
+@router.get("/", response_model=List[QuestionsPreview])
 async def get_all_questions(
     skip: int = Query(0, ge=0),
     limit: int = Query(9, le=9),
     db: MongoClient = Depends(db.get_db),
 ):
-    # TODO: SET MORE RELEVANT FIELDS (NO COMMENTS, ONE IMAGE)
     questions = (
-        db.questions.find({"deleted": False}, {"comments": 0})
+        db.questions.find(
+            {"deleted": False},
+            {"_id": 0, "comments": 0},
+        )
         .sort("created_dt", -1)
         .limit(limit)
         .skip(skip)
     )
-    return list(questions)
+    return list(map(format_obj_image_preview, questions))
 
 
 @router.get("/{question_id}", response_model=QuestionInDB)

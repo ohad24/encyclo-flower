@@ -85,6 +85,21 @@ class QuestionInDB(Question):
     deleted: bool = False
 
 
+class QuestionImagePreview(BaseModel):
+    # TODO: link to thumbnail
+    file_name: str
+    what_in_image: WhatInImage
+
+
+class QuestionsPreview(BaseModel):
+    question_id: str
+    question_text: str
+    answer: Optional[AnswerInDB]
+    image: Optional[QuestionImagePreview]
+    created_dt: datetime
+    user_id: str
+
+
 class ImagesInResponse(BaseModel):
     """
     response for added new images to question.
