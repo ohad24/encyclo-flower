@@ -7,7 +7,7 @@ from fastapi import (
     Response,
     Query,
 )
-from typing import List
+from typing import List, Optional
 import db
 from pymongo.mongo_client import MongoClient
 from models.user_questions import (
@@ -23,6 +23,8 @@ from models.user_questions import (
     Answer,
     AnswerInDB,
     QuestionsPreview,
+    AnswerFilterType,
+    GetQuestionsFilterPreviewQuery,
 )
 import models.user as user_model
 from models.generic import RotateDirection
@@ -40,15 +42,21 @@ from endpoints.helpers_tools.generic import rotate_image, format_obj_image_previ
 router = APIRouter(prefix="/questions", tags=["questions"])
 
 
-@router.get("/", response_model=List[QuestionsPreview])
+@router.get("/", response_model=List[Optional[QuestionsPreview]])
 async def get_all_questions(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(9, le=9),
+    answer_filter: AnswerFilterType = Query(
+        AnswerFilterType("all"),
+        description="Filter questions by answer status",
+    ),
+    skip: int = Query(0, ge=0, le=9),
+    limit: int = Query(9, ge=0, le=9),
     db: MongoClient = Depends(db.get_db),
 ):
+    qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter.value)
+    db_query = dict(deleted=False, **qp.answer_query)
     questions = (
         db.questions.find(
-            {"deleted": False},
+            db_query,
             {"_id": 0, "comments": 0},
         )
         .sort("created_dt", -1)
@@ -63,9 +71,6 @@ async def get_question(
     question: QuestionInDB = Depends(get_current_question),
 ):
     return question
-
-
-# TODO: format file
 
 
 @router.post("/{question_id}/comments", response_model=Comment)

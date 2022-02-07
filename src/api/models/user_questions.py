@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, HttpUrl, validator
-from typing import List, Optional
+from typing import List, Optional, Dict
 from enum import Enum
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
@@ -114,3 +114,25 @@ class QuestionInResponse(ImagesInResponse):
     """
 
     question_id: str
+
+
+class AnswerFilterType(str, Enum):
+    """get questions route - answer filter type"""
+
+    ALL = "all"
+    ANSWERED = "answered"
+    NOT_ANSWERED = "not_answered"
+
+
+class GetQuestionsFilterPreviewQuery(BaseModel):
+    answer_filter_value: AnswerFilterType
+    answer_query: Dict = {"$or": []}
+
+    @validator("answer_query", pre=True, always=True)
+    def prepare_answer_query(cls, v, values) -> Dict:
+        """query for answer filter. in db"""
+        if values["answer_filter_value"] in ["answered", "all"]:
+            v["$or"].append({"answer": {"$ne": None}})
+        if values["answer_filter_value"] in ["not_answered", "all"]:
+            v["$or"].append({"answer": {"$eq": None}})
+        return v
