@@ -11,6 +11,10 @@ def question_id_generator():
     return "q-" + id_generator()
 
 
+def observation_id_generator():
+    return "o-" + id_generator()
+
+
 def gen_uuid():
     return str(uuid.uuid4())
 

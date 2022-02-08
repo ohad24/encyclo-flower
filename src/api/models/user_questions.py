@@ -19,7 +19,7 @@ class ImageLocation(BaseModel):
     lat: float
     lon: float
     alt: float
-    location_name: str | None
+    location_name: str | None  # TODO: Need to create method to get location name from lat, lon
 
 
 class QuestionImage(BaseModel):
