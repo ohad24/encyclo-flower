@@ -1,12 +1,13 @@
-import datetime
+from datetime import datetime
 from PIL import Image
 import io
 from models.generic import AngleEnum
 from typing import List
+from exif import Image as ExifImage
 
 
 def get_today_str() -> str:
-    return datetime.datetime.utcnow().strftime("%Y%m%d")
+    return datetime.utcnow().strftime("%Y%m%d")
 
 
 # * filter generic result in external apis
@@ -70,3 +71,31 @@ def format_obj_image_preview(user_obj: dict) -> dict:
     # * remove images key
     user_obj.pop("images", None)
     return user_obj
+
+
+def decimal_coords(coords: tuple, ref: str) -> float:
+    """
+    convert gps coordinates tuple (degrees, minutes, seconds) + ref str (N,S,E,W) to decimal
+    """
+    decimal_degrees = coords[0] + coords[1] / 60 + coords[2] / 3600
+    if ref == "S" or ref == "W":
+        decimal_degrees = -decimal_degrees
+    return decimal_degrees
+
+
+def get_image_exif_data(image: bytes) -> tuple:
+    """return tuple with lon, lat, alt and image_dt"""
+    exif = ExifImage(image)
+    lon = None
+    lat = None
+    alt = None
+    image_dt = None
+    if exif.has_exif:
+        # * get coordinates
+        lon = decimal_coords(exif.gps_longitude, exif.gps_longitude_ref)
+        lat = decimal_coords(exif.gps_latitude, exif.gps_latitude_ref)
+        alt = exif.gps_altitude
+
+        #  * get image date (Date taken)
+        image_dt = datetime.strptime(exif.datetime_original, "%Y:%m:%d %H:%M:%S")
+    return lon, lat, alt, image_dt

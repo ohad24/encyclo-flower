@@ -29,6 +29,10 @@ class LocationCommonEnum(str, Enum):
 
 
 class LocationKMLtranslate(str, Enum):
+    """
+        key is the value in KML file
+        value is the value in db
+    """
     GalileeBeach = "galilee coast"
     CarmelBeach = "carmel coast"
     Sharon = "sharon"

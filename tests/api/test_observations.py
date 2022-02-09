@@ -33,6 +33,29 @@ class ObservationTester:
         ]
         return responses[0] if len(responses) == 1 else responses
 
+    def upload_image(self, image, image_name):
+        image_data = {
+            "description": "test image",
+            "what_in_image": "פרי",
+        }
+        files = [
+            (
+                "image",
+                (
+                    image_name,
+                    image,
+                ),
+            )
+        ]
+        self.auth_headers.pop("Content-Type", None)
+        response = client.post(
+            self.observation_url + self.observation_id + "/image",
+            files=files,
+            data=image_data,
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_observation(auth_headers, observation_url):
@@ -54,3 +77,12 @@ class TestObservation:
     def test_observation_id(self, user_observation):
         assert user_observation.observation_id is not None
         assert user_observation.observation_id[:2] == "o-"  # TODO: remove later
+
+    def test_observation_upload_image(self, user_observation):
+        # * Arrange
+        image_name = "IMG_with_exif.jpg"
+        image = Path(f"tests/assets/images/{image_name}").read_bytes()
+        # * Act
+        response = user_observation.upload_image(image, image_name)
+        # * Assert
+        assert response.status_code == 201, response.text

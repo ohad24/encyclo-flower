@@ -86,10 +86,13 @@ def create_polygons_dict(kml_name):
 KML_dictionary = create_polygons_dict("All_Israel_Polygons2")
 
 
-def find_point_location(coords):
+def find_point_location(coords: tuple):
     """
+    tuple first item is lon and second is lat
+
     check if coords in KML_dictionary and return location name
-    if not exists
+
+    if not exists return None
     """
     point = Point(coords)
     KML_dictionary.pop("Background", None)  # ! talk to Shahar about this

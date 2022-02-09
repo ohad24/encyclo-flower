@@ -3,23 +3,7 @@ from typing import List, Optional, Dict
 from enum import Enum
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-
-
-class WhatInImage(str, Enum):
-    a = "הצמח במלואו"
-    b = "פרי"
-    c = "פרח"
-    d = "עלים"
-    e = "זרעים"
-    f = "הצמח בבית הגידול"
-    g = "לא נבחר"
-
-
-class ImageLocation(BaseModel):
-    lat: float
-    lon: float
-    alt: float
-    location_name: str | None  # TODO: Need to create method to get location name from lat, lon
+from models.generic import WhatInImage, ImageLocation
 
 
 class QuestionImage(BaseModel):
