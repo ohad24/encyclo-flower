@@ -47,6 +47,12 @@ def auth_headers(auth_data):
     }
 
 
+@pytest.fixture(scope="session")
+def auth_headers_with_no_content_type(auth_headers):
+    auth_headers.pop("Content-Type", None)
+    return auth_headers
+
+
 @pytest.fixture
 def editor_user(request, db):
     db = get_db()
