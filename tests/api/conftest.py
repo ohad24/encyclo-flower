@@ -3,11 +3,13 @@ import string
 import random
 import sys
 import os
+import logging
 
 os.environ["MONGO_DB_NAME"] = "test"
 sys.path.append("./src/api/")
 
 from db import get_db
+from core.gstorage import bucket
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -81,14 +83,19 @@ def change_user_id(request, db):
     )
 
 
-# from core.config import get_settings, Settings
+@pytest.fixture(scope="session", autouse=True)
+def teardown(request):
+    def do_teardown():
+        logging.info("Finalizing tests. Teardown")
+        # * clear db collections
+        db = get_db()
+        db.users.delete_many({})
+        db.questions.delete_many({})
+        db.observations.delete_many({})
 
-# settings = get_settings()
+        # * clear google cloud storage
+        bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/*")))
+        bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/*")))
+        bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/*")))
 
-# def get_settings_override():
-#     return Settings(MONGO_DB_NAME="test")
-
-# app.dependency_overrides[get_settings] = get_settings_override
-
-# def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-#     return "".join(random.choice(chars) for _ in range(size))
+    request.addfinalizer(do_teardown)
