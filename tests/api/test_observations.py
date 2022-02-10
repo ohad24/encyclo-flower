@@ -86,3 +86,4 @@ class TestObservation:
         response = user_observation.upload_image(image, image_name)
         # * Assert
         assert response.status_code == 201, response.text
+        # TODO: parametrize with more images and different data

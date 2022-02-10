@@ -57,7 +57,7 @@ async def add_observation(
 # TODO: add image to observation
 @router.post("/{observation_id}/image")
 async def add_image_to_observation(
-    observation: str = Depends(get_current_observation_w_valid_owner),
+    observation: ObservationInDB = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
     description: str = Form(None),
     plant_id: str = Form(None),  # TODO: create validation if value not in db
