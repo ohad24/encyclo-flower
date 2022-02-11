@@ -13,6 +13,7 @@ from models.user_observations import (
     ObservationInDB,
     ObservationInResponse,
     ObservationImageInDB,
+    ObservationImageInDB_w_oid,
 )
 from models.user import User
 from models.generic import WhatInImage, ImageLocation
@@ -20,7 +21,9 @@ from core.security import get_current_active_user, get_current_privilege_user
 import db
 from pymongo.mongo_client import MongoClient
 from endpoints.helpers_tools.observation_dependencies import (
+    get_current_observation,
     get_current_observation_w_valid_owner,
+    get_image_data_oid_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import get_image_exif_data
 from core.gstorage import bucket
@@ -29,7 +32,6 @@ router = APIRouter(prefix="/observations", tags=["observations"])
 
 # TODO: edit observation
 # TODO: delete observation
-# TODO: add image to observation
 # TODO: delete image from observation
 # TODO: rotate image
 # TODO: add comment to observation
@@ -40,6 +42,14 @@ router = APIRouter(prefix="/observations", tags=["observations"])
 @router.get("/")
 async def get_all_observations():
     return "Hello World"
+
+
+# get one observation
+@router.get("/{observation_id}")
+async def get_observation_by_id(
+    observation: ObservationInDB = Depends(get_current_observation),
+):
+    return observation
 
 
 # TODO: create new observation
@@ -93,3 +103,25 @@ async def add_image_to_observation(
         {"$push": {"images": image_metadata.dict()}},
     )
     return Response(status_code=201)
+
+
+# TODO: delete image from observation
+@router.delete("/{observation_id}/image/{image_id}")
+async def delete_image_from_observation(
+    image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
+    db: MongoClient = Depends(db.get_db),
+):
+    # * delete image from storage
+    blob = bucket.blob("observations/" + image_data.image.file_name)
+    blob.delete()
+
+    # * delete image metadata from question
+    db.questions.update_one(
+        {"observation_id": image_data.observation_id},
+        {
+            "$pull": {
+                "images": {"image_id": image_data.image.image_id, "uploaded": True}
+            }
+        },
+    )
+    return Response(status_code=204)

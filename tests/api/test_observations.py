@@ -30,6 +30,12 @@ class ObservationTester:
         )
         return response
 
+    def get_observation(self, observation_id):
+        response = client.get(
+            self.observation_url + observation_id, headers=self.auth_headers
+        )
+        return response
+
     def create(self, number_of_observations=1):
         responses = [
             self.__create_one_observation() for x in range(number_of_observations)
@@ -42,6 +48,13 @@ class ObservationTester:
             files=files,
             data=metadata,
             headers=self.file_auth_headers,
+        )
+        return response
+
+    def delete_image(self, image_id):
+        response = client.delete(
+            self.observation_url + self.observation_id + "/image/" + image_id,
+            headers=self.auth_headers,
         )
         return response
 
@@ -133,7 +146,7 @@ class TestObservation:
         upload_file_multi_params,
         ids=[x["test_name"] for x in upload_file_multi_params],
     )
-    def test_observation_upload_image(self, user_observation, file_data):
+    def test_upload_image(self, user_observation, file_data):
         # * Arrange
         # * read file as bytes and set it in file_data
         file_data["files"][0][1].append(
@@ -146,3 +159,16 @@ class TestObservation:
         # * Assert
         assert response.status_code == 201, response.text
         # TODO: parametrize with more images and different data
+
+    def test_delete_image(self, user_observation):
+        # * Arrange
+        observation = user_observation.get_observation(user_observation.observation_id)
+        # * Act
+        response = user_observation.delete_image(
+            observation.json()["images"][0]["image_id"]
+        )
+        # * Assert
+        assert response.status_code == 204, response.text
+
+
+# TODO: test get image
