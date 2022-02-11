@@ -4,6 +4,8 @@ from PIL import Image
 from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
 from fastapi import HTTPException
+from models.helpers import gen_uuid
+from datetime import datetime
 
 
 class GPSTranslateOut(BaseModel):
@@ -62,3 +64,13 @@ class ImageLocation(Coordinates):
         kml_location = find_point_location((values.get("lon"), values.get("lat")))
         if kml_location:
             return LocationKMLtranslate[kml_location].value
+
+
+class Comment(BaseModel):
+    comment_text: str
+
+
+class CommentInDB(Comment):
+    comment_id: str = Field(default_factory=gen_uuid)
+    comment_dt: datetime = Field(default_factory=datetime.utcnow)
+    user_id: str

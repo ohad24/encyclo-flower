@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 from enum import Enum
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import WhatInImage, ImageLocation
+from models.generic import WhatInImage, ImageLocation, CommentInDB
 
 
 class QuestionImage(BaseModel):
@@ -33,16 +33,6 @@ class QuestionImageInDB(QuestionImage):
 class QuestionImageInDB_w_qid(BaseModel):
     question_id: str
     image: QuestionImageInDB
-
-
-class Comment(BaseModel):
-    comment_text: str
-
-
-class CommentInDB(Comment):
-    comment_id: str = Field(default_factory=gen_uuid)
-    comment_dt: datetime = Field(default_factory=datetime.utcnow)
-    user_id: str
 
 
 class Question(BaseModel):

@@ -19,7 +19,6 @@ from models.user_questions import (
     QuestionImageInDB,
     QuestionInResponse,
     ImagesInResponse,
-    Comment,
     Answer,
     AnswerInDB,
     QuestionsPreview,
@@ -27,7 +26,7 @@ from models.user_questions import (
     GetQuestionsFilterPreviewQuery,
 )
 import models.user as user_model
-from models.generic import RotateDirection
+from models.generic import RotateDirection, Comment
 from core.security import get_current_active_user, get_current_privilege_user
 from core.gstorage import bucket
 from endpoints.helpers_tools.question_dependencies import (
