@@ -91,11 +91,13 @@ def get_image_exif_data(image: bytes) -> tuple:
     alt = None
     image_dt = None
     if exif.has_exif:
-        # * get coordinates
-        lon = decimal_coords(exif.gps_longitude, exif.gps_longitude_ref)
-        lat = decimal_coords(exif.gps_latitude, exif.gps_latitude_ref)
-        alt = exif.gps_altitude
+        if hasattr(exif, "gps_longitude") and hasattr(exif, "gps_latitude"):
+            # * get coordinates
+            lon = decimal_coords(exif.gps_longitude, exif.gps_longitude_ref)
+            lat = decimal_coords(exif.gps_latitude, exif.gps_latitude_ref)
+            alt = exif.gps_altitude
 
-        #  * get image date (Date taken)
-        image_dt = datetime.strptime(exif.datetime_original, "%Y:%m:%d %H:%M:%S")
+        if hasattr(exif, "datetime_original"):
+            #  * get image date (Date taken)
+            image_dt = datetime.strptime(exif.datetime_original, "%Y:%m:%d %H:%M:%S")
     return lon, lat, alt, image_dt
