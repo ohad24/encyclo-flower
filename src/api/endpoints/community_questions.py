@@ -11,7 +11,6 @@ from typing import List, Optional
 import db
 from pymongo.mongo_client import MongoClient
 from models.user_questions import (
-    CommentInDB,
     QuestionImage,
     Question,
     QuestionImageInDB_w_qid,
@@ -26,7 +25,7 @@ from models.user_questions import (
     GetQuestionsFilterPreviewQuery,
 )
 import models.user as user_model
-from models.generic import RotateDirection, Comment
+from models.generic import RotateDirection, Comment, CommentInDB
 from core.security import get_current_active_user, get_current_privilege_user
 from core.gstorage import bucket
 from endpoints.helpers_tools.question_dependencies import (

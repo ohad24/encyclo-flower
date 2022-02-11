@@ -58,6 +58,14 @@ class ObservationTester:
         )
         return response
 
+    def add_comment(self, comment_text):
+        response = client.post(
+            self.observation_url + self.observation_id + "/comment",
+            json={"comment_text": comment_text},
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_observation(auth_headers, auth_headers_with_no_content_type, observation_url):
@@ -170,5 +178,14 @@ class TestObservation:
         # * Assert
         assert response.status_code == 204, response.text
 
+    def test_add_comment(self, user_observation):
+        # * Arrange
+        comment_text = "Here is some new comment"
+        # * Act
+        response = user_observation.add_comment(comment_text)
+        observation = user_observation.get_observation(user_observation.observation_id)
+        # * Assert
+        assert response.status_code == 201, response.text
+        assert observation.json()["comments"][0]["comment_text"] == comment_text
 
 # TODO: test get image

@@ -16,7 +16,7 @@ from models.user_observations import (
     ObservationImageInDB_w_oid,
 )
 from models.user import User
-from models.generic import WhatInImage, ImageLocation
+from models.generic import WhatInImage, ImageLocation, Comment, CommentInDB
 from core.security import get_current_active_user, get_current_privilege_user
 import db
 from pymongo.mongo_client import MongoClient
@@ -24,6 +24,7 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_current_observation,
     get_current_observation_w_valid_owner,
     get_image_data_oid_w_valid_editor,
+    get_observation_id,
 )
 from endpoints.helpers_tools.generic import get_image_exif_data
 from core.gstorage import bucket
@@ -34,7 +35,6 @@ router = APIRouter(prefix="/observations", tags=["observations"])
 # TODO: delete observation
 # TODO: delete image from observation
 # TODO: rotate image
-# TODO: add comment to observation
 # TODO: format file
 
 
@@ -125,3 +125,18 @@ async def delete_image_from_observation(
         },
     )
     return Response(status_code=204)
+
+
+# TODO: add comment to observation
+@router.post("/{observation_id}/comment")
+async def add_comment(
+    comment: Comment,
+    observation_id: str = Depends(get_observation_id),
+    user: User = Depends(get_current_active_user),
+    db: MongoClient = Depends(db.get_db),
+):
+    comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
+    db.observations.update_one(
+        {"observation_id": observation_id}, {"$push": {"comments": comment_data.dict()}}
+    )
+    return Response(status_code=201)
