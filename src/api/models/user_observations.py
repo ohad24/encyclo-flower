@@ -3,10 +3,13 @@ from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
 from models.generic import WhatInImage, ImageLocation
+from models.custom_types import MonthHebLiteral, LocationHebLiteral
 
 
 class Observation(BaseModel):
     observation_text: str
+    month: Optional[MonthHebLiteral | None] = None
+    location: Optional[LocationHebLiteral | None] = None
 
 
 class ObservationInResponse(BaseModel):
@@ -50,4 +53,5 @@ class ObservationInDB(Observation):
     comments: List = []  # TODO: add comment class
     user_id: str
     created_dt: datetime = Field(default_factory=datetime.utcnow)
+    submitted: bool = False
     deleted: bool = False

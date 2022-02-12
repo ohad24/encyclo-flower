@@ -38,7 +38,7 @@ router = APIRouter(prefix="/observations", tags=["observations"])
 # TODO: format file
 
 
-# TODO: get all observations
+# TODO: get all observations (only submitted)
 @router.get("/")
 async def get_all_observations():
     return "Hello World"
@@ -64,7 +64,11 @@ async def add_observation(
     return ObservationInResponse(observation_id=observationInDB.observation_id)
 
 
-# TODO: add image to observation
+# TODO: edit observation (first and later). allow not submitted
+
+# TODO: submit observation. when not submitted
+
+# TODO: separate image bytes and metadata. allow not submitted
 @router.post("/{observation_id}/image")
 async def add_image_to_observation(
     observation: ObservationInDB = Depends(get_current_observation_w_valid_owner),
