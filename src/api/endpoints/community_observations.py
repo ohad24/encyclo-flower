@@ -14,6 +14,7 @@ from models.user_observations import (
     ObservationInResponse,
     ObservationImageInDB,
     ObservationImageInDB_w_oid,
+    ObservationImageMeta,
 )
 from models.user import User
 from models.generic import WhatInImage, ImageLocation, Comment, CommentInDB
@@ -25,8 +26,9 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_current_observation_w_valid_owner,
     get_image_data_oid_w_valid_editor,
     get_observation_id,
+    get_current_observation_w_valid_editor,
 )
-from endpoints.helpers_tools.generic import get_image_exif_data
+from endpoints.helpers_tools.generic import get_image_exif_data, find_image_location
 from core.gstorage import bucket
 
 router = APIRouter(prefix="/observations", tags=["observations"])
@@ -65,48 +67,100 @@ async def add_observation(
 
 
 # TODO: edit observation (first and later). allow not submitted
-
-# TODO: submit observation. when not submitted
-
-# TODO: separate image bytes and metadata. allow not submitted
-@router.post("/{observation_id}/image")
-async def add_image_to_observation(
-    observation: ObservationInDB = Depends(get_current_observation_w_valid_owner),
-    image: UploadFile = File(...),
-    description: str = Form(None),
-    plant_id: str = Form(None),  # TODO: create validation if value not in db
-    what_in_image: WhatInImage = Form(None),
+@router.put("/{observation_id}", description="Edit observation header")
+async def edit_observation(
+    observation_data: Observation,
+    observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
-    # * get image exif data
-    lon, lat, alt, image_dt = get_image_exif_data(image.file)
+    db.observations.update_one(
+        {"observation_id": observationInDB.observation_id},
+        {"$set": observation_data.dict()},
+    )
+    return Response(status_code=204)
 
-    # * init image class
-    image_metadata = ObservationImageInDB(
+
+# TODO: submit observation. when not submitted
+@router.put("/{observation_id}/submit")
+async def submit_observation(
+    observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_owner),
+    db: MongoClient = Depends(db.get_db),
+):
+    db.observations.update_one(
+        {"observation_id": observationInDB.observation_id},
+        {"$set": {"submitted": True}},
+    )
+    return Response(status_code=204)
+
+
+# TODO: upload one image to observation. no metadata
+@router.post(
+    "/{observation_id}/image",
+    response_model=ObservationImageInDB,
+)
+async def add_image_to_observation(
+    observationInDB: str = Depends(get_current_observation_w_valid_owner),
+    image: UploadFile = File(...),
+    db: MongoClient = Depends(db.get_db),
+):
+
+    # * get image exif data
+    # TODO: do in one function
+    lon, lat, alt, image_dt = get_image_exif_data(image.file)
+    il = find_image_location(lon, lat, alt)
+
+    imageInDB = ObservationImageInDB(
         orig_file_name=image.filename,
-        description=description,
-        plant_id=plant_id,
-        what_in_image=what_in_image,
+        location_name=il.location_name,
+        coordinates=il.coordinates,
         image_dt=image_dt,
-        location=ImageLocation(lat=lat, lon=lon, alt=alt) if lon and lat else None,
     )
 
     # * seek 0 and upload image to storage
     image.file.seek(0)
-    blob = bucket.blob("observations/" + image_metadata.file_name)
+    blob = bucket.blob("observations/" + imageInDB.file_name)
     blob.upload_from_file(image.file, content_type=image.content_type)
 
     # * update links from storage
-    image_metadata.self_link = blob.self_link
-    image_metadata.media_link = blob.media_link
-    image_metadata.public_url = blob.public_url
+    imageInDB.self_link = blob.self_link
+    imageInDB.media_link = blob.media_link
+    imageInDB.public_url = blob.public_url
 
-    # * add image to observation (db, push to images array)
     db.observations.update_one(
-        {"observation_id": observation.observation_id},
-        {"$push": {"images": image_metadata.dict()}},
+        {"observation_id": observationInDB.observation_id},
+        {"$push": {"images": imageInDB.dict()}},
     )
-    return Response(status_code=201)
+    return imageInDB
+
+
+# TODO: update image metadata
+@router.put("/{observation_id}/image/{image_id}")
+async def update_image_metadata(
+    user_image_metadata: ObservationImageMeta,
+    image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
+    db: MongoClient = Depends(db.get_db),
+):
+
+    db.observations.update_one(
+        {
+            "observation_id": image_data.observation_id,
+            "images.image_id": image_data.image.image_id,
+        },
+        {
+            "$set": {
+                "images.$.description": user_image_metadata.description
+                or image_data.image.description,
+                "images.$.location_name": user_image_metadata.location_name
+                or image_data.image.location_name,
+                "images.$.what_in_image": user_image_metadata.what_in_image
+                or image_data.image.what_in_image,
+                "images.$.image_dt": user_image_metadata.image_dt
+                or image_data.image.image_dt,
+                "images.$.uploaded": True,
+            }
+        },
+    )
+    return Response(status_code=204)
 
 
 # TODO: delete image from observation

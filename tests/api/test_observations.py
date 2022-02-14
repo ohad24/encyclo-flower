@@ -42,13 +42,21 @@ class ObservationTester:
         ]
         return responses[0] if len(responses) == 1 else responses
 
+    def set_image_metadata(self, image_id, image_metadata):
+        response = client.put(
+            self.observation_url + self.observation_id + "/image/" + image_id,
+            json=image_metadata,
+            headers=self.auth_headers,
+        )
+        return response
+
     def upload_image(self, files, metadata):
         response = client.post(
             self.observation_url + self.observation_id + "/image",
             files=files,
-            data=metadata,
             headers=self.file_auth_headers,
         )
+        self.set_image_metadata(response.json()["image_id"], metadata)
         return response
 
     def delete_image(self, image_id):
@@ -62,6 +70,21 @@ class ObservationTester:
         response = client.post(
             self.observation_url + self.observation_id + "/comment",
             json={"comment_text": comment_text},
+            headers=self.auth_headers,
+        )
+        return response
+
+    def submit_observation(self, observation_id):
+        response = client.put(
+            self.observation_url + observation_id + "/submit",
+            headers=self.auth_headers,
+        )
+        return response
+
+    def edit_observation(self, observation_id, header_data):
+        response = client.put(
+            self.observation_url + observation_id,
+            json=header_data,
             headers=self.auth_headers,
         )
         return response
@@ -83,7 +106,6 @@ class TestObservation:
         assert response.json()["observation_id"][:2] == "o-"
 
         # * set observation_id for next tests
-        # pytest.observation_id = response.json()["observation_id"]
         user_observation.observation_id = response.json()["observation_id"]
 
     def test_observation_id(self, user_observation):
@@ -165,8 +187,7 @@ class TestObservation:
             files=file_data["files"], metadata=file_data["metadata"]
         )
         # * Assert
-        assert response.status_code == 201, response.text
-        # TODO: parametrize with more images and different data
+        assert response.status_code == 200, response.text
 
     def test_delete_image(self, user_observation):
         # * Arrange
@@ -187,5 +208,41 @@ class TestObservation:
         # * Assert
         assert response.status_code == 201, response.text
         assert observation.json()["comments"][0]["comment_text"] == comment_text
+
+    def test_submit_observation(self, user_observation):
+        # * Act
+        response = user_observation.submit_observation(user_observation.observation_id)
+        # * Assert
+        assert response.status_code == 204, response.text
+
+    def test_get_one_observation(self, user_observation):
+        # * Act
+        response = user_observation.get_observation(user_observation.observation_id)
+        # * Assert
+        assert response.status_code == 200, response.text
+        assert response.json()["observation_id"] == user_observation.observation_id
+
+    def test_edit_header(self, user_observation):
+        # * Arrange
+        header_data = {
+            "observation_text": "new description",
+            "month": "מרץ",
+            "location": "כרמל",
+        }
+        # * Act
+        response = user_observation.edit_observation(
+            user_observation.observation_id,
+            header_data=header_data,
+        )
+        # * Assert
+        assert response.status_code == 204, response.text
+
+        # * Get updated observation
+        observation = user_observation.get_observation(user_observation.observation_id)
+        # * Verify data
+        assert observation.json()["observation_text"] == header_data["observation_text"]
+        assert observation.json()["month"] == header_data["month"]
+        assert observation.json()["location"] == header_data["location"]
+
 
 # TODO: test get image

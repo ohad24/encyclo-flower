@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, HttpUrl, validator
 from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
-from models.generic import WhatInImage, ImageLocation
+from models.generic import Coordinates, ImageLocationText, WhatInImage
 from models.custom_types import MonthHebLiteral, LocationHebLiteral
 
 
@@ -20,13 +20,16 @@ class ObservationInResponse(BaseModel):
     observation_id: str
 
 
-class ObservationImageInDB(BaseModel):
-    # TODO: merge this class with QuestionImageInDB - if possible
-    image_id: str = Field(default_factory=gen_uuid)
+class ObservationImageMeta(ImageLocationText):
     description: str | None = None
     what_in_image: WhatInImage | None = None
-    location: Optional[ImageLocation]
-    image_dt: Optional[datetime]
+    image_dt: Optional[datetime | None] = None  # TODO: set type to DateTimeHebLiteral
+
+
+class ObservationImageInDB(ObservationImageMeta):
+    # TODO: merge this class with QuestionImageInDB - if possible
+    image_id: str = Field(default_factory=gen_uuid)
+    coordinates: Coordinates = Coordinates(lat=0, lon=0, alt=0)
     orig_file_name: str = Field(default="image1.jpg")
     file_name: str | None = None
     plant_id: str | None = None
@@ -44,7 +47,7 @@ class ObservationImageInDB(BaseModel):
 
 class ObservationImageInDB_w_oid(BaseModel):
     observation_id: str
-    image: ObservationImageInDB
+    image: ObservationImageMeta
 
 
 class ObservationInDB(Observation):

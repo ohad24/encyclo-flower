@@ -1,9 +1,11 @@
 from datetime import datetime
 from PIL import Image
 import io
-from models.generic import AngleEnum
+from models.generic import AngleEnum, ImageLocation
 from typing import List
 from exif import Image as ExifImage
+from endpoints.helpers_tools.GPS_translate import find_point_location
+from models.plant import LocationKMLtranslate
 
 
 def get_today_str() -> str:
@@ -86,9 +88,9 @@ def decimal_coords(coords: tuple, ref: str) -> float:
 def get_image_exif_data(image: bytes) -> tuple:
     """return tuple with lon, lat, alt and image_dt"""
     exif = ExifImage(image)
-    lon = None
-    lat = None
-    alt = None
+    lon = 0
+    lat = 0
+    alt = 0
     image_dt = None
     if exif.has_exif:
         if hasattr(exif, "gps_longitude") and hasattr(exif, "gps_latitude"):
@@ -101,3 +103,13 @@ def get_image_exif_data(image: bytes) -> tuple:
             #  * get image date (Date taken)
             image_dt = datetime.strptime(exif.datetime_original, "%Y:%m:%d %H:%M:%S")
     return lon, lat, alt, image_dt
+
+
+def find_image_location(
+    lon: float, lat: float, alt: float
+) -> ImageLocation:
+    il = ImageLocation(coordinates=dict(lat=lat, lon=lon, alt=alt))
+    kml_location = find_point_location((lon, lat))
+    if kml_location:
+        il.location_name = LocationKMLtranslate[kml_location].value
+    return il

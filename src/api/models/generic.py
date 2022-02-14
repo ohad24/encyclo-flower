@@ -5,6 +5,7 @@ from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
 from fastapi import HTTPException
 from models.helpers import gen_uuid
+from models.custom_types import MonthHebLiteral, LocationHebLiteral
 from datetime import datetime
 
 
@@ -56,14 +57,24 @@ class Coordinates(BaseModel):
     alt: float | None = Field(default=None, description="altitude")
 
 
-class ImageLocation(Coordinates):
+class ImageLocationText(BaseModel):
+    # TODO: set type to LocationHebLiteral
     location_name: str | None = None
 
-    @validator("location_name", always=True, pre=True)
-    def validate_location_name(cls, v, values):
-        kml_location = find_point_location((values.get("lon"), values.get("lat")))
-        if kml_location:
-            return LocationKMLtranslate[kml_location].value
+
+# class ImageLocation(Coordinates):
+class ImageLocation(ImageLocationText):
+    # TODO: refactor later
+    coordinates: Coordinates | None = None
+
+    # @validator("location_name", always=True, pre=True)
+    # def validate_location_name(cls, v, values):
+    #     print(f"values: {values}")
+    #     kml_location = find_point_location(
+    #         (values.get("lon"), values.get("lat"))
+    #     )
+    #     if kml_location:
+    #         return LocationKMLtranslate[kml_location].value
 
 
 class Comment(BaseModel):

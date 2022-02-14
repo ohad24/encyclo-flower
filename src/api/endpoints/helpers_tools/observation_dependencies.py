@@ -85,6 +85,6 @@ async def get_image_data_oid_w_valid_editor(
 
 
 # async def get_image_data_w_valid_editor(
-#     image_data: QuestionImageInDB = Depends(validate_image_by_id),
-# ) -> QuestionImageInDB:
+#     image_data: ObservationImageInDB = Depends(validate_image_by_id),
+# ) -> ObservationImageInDB:
 #     return image_data.image

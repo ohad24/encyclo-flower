@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Query
 from models.generic import ImageLocation, GPSTranslateOut
+from endpoints.helpers_tools.generic import find_image_location
 
 router = APIRouter()
 
@@ -11,5 +12,6 @@ async def translate_gps(
     # TODO: remove default values
     # * test with https://www.latlong.net/
     # * tranlate location from GPS to location name using LocationKMLtranslate
-    coords = ImageLocation(lat=lat, lon=lon)
-    return GPSTranslateOut(location=coords.location_name)
+    # coords = ImageLocation(lat=lat, lon=lon)
+    il = find_image_location(lon, lat, alt=0)
+    return GPSTranslateOut(location=il.location_name, coordinates=il.coordinates)
