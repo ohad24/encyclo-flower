@@ -89,6 +89,14 @@ class ObservationTester:
         )
         return response
 
+    def get_observations(self, limit=9, skip=0):
+        response = client.get(
+            self.observation_url,
+            params={"limit": limit, "skip": skip},
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_observation(auth_headers, auth_headers_with_no_content_type, observation_url):
@@ -243,6 +251,13 @@ class TestObservation:
         assert observation.json()["observation_text"] == header_data["observation_text"]
         assert observation.json()["month"] == header_data["month"]
         assert observation.json()["location"] == header_data["location"]
+
+    def test_get_observations(self, user_observation):
+        # * Act
+        response = user_observation.get_observations()
+        # * Assert
+        assert response.status_code == 200, response.text
+        assert len(response.json()) > 0
 
 
 # TODO: test get image

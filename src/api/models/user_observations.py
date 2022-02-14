@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, HttpUrl, validator
 from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
-from models.generic import Coordinates, ImageLocationText, WhatInImage
+from models.generic import Coordinates, ImageLocationText, WhatInImage, ImagePreview
 from models.custom_types import MonthHebLiteral, LocationHebLiteral
 
 
@@ -58,3 +58,11 @@ class ObservationInDB(Observation):
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     submitted: bool = False
     deleted: bool = False
+
+
+class ObservationsPreview(BaseModel):
+    observation_id: str
+    observation_text: str
+    image: Optional[ImagePreview]
+    created_dt: datetime
+    user_id: str

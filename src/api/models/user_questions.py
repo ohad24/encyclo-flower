@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 from enum import Enum
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import WhatInImage, ImageLocation, CommentInDB
+from models.generic import WhatInImage, ImageLocation, CommentInDB, ImagePreview
 
 
 class QuestionImage(BaseModel):
@@ -59,17 +59,11 @@ class QuestionInDB(Question):
     deleted: bool = False
 
 
-class QuestionImagePreview(BaseModel):
-    # TODO: link to thumbnail
-    file_name: str
-    what_in_image: WhatInImage
-
-
 class QuestionsPreview(BaseModel):
     question_id: str
     question_text: str
     answer: Optional[AnswerInDB]
-    image: Optional[QuestionImagePreview]
+    image: Optional[ImagePreview]
     created_dt: datetime
     user_id: str
 

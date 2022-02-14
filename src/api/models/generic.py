@@ -85,3 +85,9 @@ class CommentInDB(Comment):
     comment_id: str = Field(default_factory=gen_uuid)
     comment_dt: datetime = Field(default_factory=datetime.utcnow)
     user_id: str
+
+
+class ImagePreview(BaseModel):
+    # TODO: link to thumbnail
+    file_name: str
+    what_in_image: WhatInImage | None

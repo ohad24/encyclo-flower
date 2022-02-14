@@ -15,6 +15,7 @@ from models.user_observations import (
     ObservationImageInDB,
     ObservationImageInDB_w_oid,
     ObservationImageMeta,
+    ObservationsPreview,
 )
 from models.user import User
 from models.generic import WhatInImage, ImageLocation, Comment, CommentInDB
@@ -28,22 +29,39 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_observation_id,
     get_current_observation_w_valid_editor,
 )
-from endpoints.helpers_tools.generic import get_image_exif_data, find_image_location
+from endpoints.helpers_tools.generic import (
+    get_image_exif_data,
+    find_image_location,
+    format_obj_image_preview,
+)
 from core.gstorage import bucket
+from typing import List, Optional
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
-# TODO: edit observation
 # TODO: delete observation
-# TODO: delete image from observation
 # TODO: rotate image
 # TODO: format file
 
 
 # TODO: get all observations (only submitted)
-@router.get("/")
-async def get_all_observations():
-    return "Hello World"
+@router.get("/", response_model=List[Optional[ObservationsPreview]])
+async def get_all_observations(
+    skip: int = Query(0, ge=0, le=9),
+    limit: int = Query(9, ge=0, le=9),
+    db: MongoClient = Depends(db.get_db),
+):
+    db_query = dict(deleted=False, submitted=True)
+    observations = (
+        db.observations.find(
+            db_query,
+            {"_id": 0, "comments": 0},
+        )
+        .sort("created_dt", -1)
+        .limit(limit)
+        .skip(skip)
+    )
+    return list(map(format_obj_image_preview, observations))
 
 
 # get one observation

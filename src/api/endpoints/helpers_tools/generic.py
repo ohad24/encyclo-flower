@@ -70,6 +70,10 @@ def format_obj_image_preview(user_obj: dict) -> dict:
     """user_obj is question or observation in dict type"""
     # * get only first image to new image key
     user_obj["image"] = get_first_uploaded_image(user_obj["images"])
+    if not user_obj["image"]:
+        # TODO: this if only for observation
+        # TODO: need to check if can i remove the upload key from questions
+        user_obj["image"] = user_obj["images"][0]
     # * remove images key
     user_obj.pop("images", None)
     return user_obj
