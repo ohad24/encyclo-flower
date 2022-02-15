@@ -6,6 +6,7 @@ from models.user_observations import (
     Observation,
     ObservationInDB,
     ObservationImageInDB_w_oid,
+    ObservationImageInDB,
 )
 from core.security import get_current_active_user, check_privilege_user
 
@@ -84,7 +85,7 @@ async def get_image_data_oid_w_valid_editor(
     return image_data
 
 
-# async def get_image_data_w_valid_editor(
-#     image_data: ObservationImageInDB = Depends(validate_image_by_id),
-# ) -> ObservationImageInDB:
-#     return image_data.image
+async def get_image_data_w_valid_editor(
+    image_data: ObservationImageInDB = Depends(validate_image_by_id),
+) -> ObservationImageInDB:
+    return image_data.image

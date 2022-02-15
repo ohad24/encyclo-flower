@@ -97,6 +97,14 @@ class ObservationTester:
         )
         return response
 
+    def rotate_image(self, observation_id, image_id, direction):
+        response = client.post(
+            self.observation_url + observation_id + "/images/" + image_id + "/rotate",
+            json={"direction": direction},
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_observation(auth_headers, auth_headers_with_no_content_type, observation_url):
@@ -258,6 +266,17 @@ class TestObservation:
         # * Assert
         assert response.status_code == 200, response.text
         assert len(response.json()) > 0
+
+    def test_rotate_image(self, user_observation):
+        # * Arrange
+        observation = user_observation.get_observation(user_observation.observation_id)
+        image_id = observation.json()["images"][0]["image_id"]
+        # * Act
+        response = user_observation.rotate_image(
+            user_observation.observation_id, image_id, "R"
+        )
+        # * Assert
+        assert response.status_code == 204, response.text
 
 
 # TODO: test get image

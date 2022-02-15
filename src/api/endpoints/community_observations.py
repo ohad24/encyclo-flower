@@ -18,7 +18,13 @@ from models.user_observations import (
     ObservationsPreview,
 )
 from models.user import User
-from models.generic import WhatInImage, ImageLocation, Comment, CommentInDB
+from models.generic import (
+    WhatInImage,
+    ImageLocation,
+    Comment,
+    CommentInDB,
+    RotateDirection,
+)
 from core.security import get_current_active_user, get_current_privilege_user
 import db
 from pymongo.mongo_client import MongoClient
@@ -28,11 +34,13 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_image_data_oid_w_valid_editor,
     get_observation_id,
     get_current_observation_w_valid_editor,
+    get_image_data_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import (
     get_image_exif_data,
     find_image_location,
     format_obj_image_preview,
+    rotate_image,
 )
 from core.gstorage import bucket
 from typing import List, Optional
@@ -40,7 +48,6 @@ from typing import List, Optional
 router = APIRouter(prefix="/observations", tags=["observations"])
 
 # TODO: delete observation
-# TODO: rotate image
 # TODO: format file
 
 
@@ -192,13 +199,9 @@ async def delete_image_from_observation(
     blob.delete()
 
     # * delete image metadata from question
-    db.questions.update_one(
+    db.observations.update_one(
         {"observation_id": image_data.observation_id},
-        {
-            "$pull": {
-                "images": {"image_id": image_data.image.image_id, "uploaded": True}
-            }
-        },
+        {"$pull": {"images": {"image_id": image_data.image.image_id}}},
     )
     return Response(status_code=204)
 
@@ -216,3 +219,20 @@ async def add_comment(
         {"observation_id": observation_id}, {"$push": {"comments": comment_data.dict()}}
     )
     return Response(status_code=201)
+
+
+# TODO: rotate image
+@router.post("/{observation_id}/images/{image_id}/rotate")
+async def rotate_image_in_observation(
+    direction: RotateDirection,
+    image_data: ObservationImageInDB = Depends(get_image_data_w_valid_editor),
+):
+    # * download image
+    blob = bucket.blob("observations/" + image_data.file_name)
+    image = blob.download_as_bytes()
+    # * rotate image
+    rotated_image = rotate_image(image, direction.angle)
+    # * upload image to gstorage
+    blob.upload_from_string(rotated_image, content_type=blob.content_type)
+
+    return Response(status_code=204)

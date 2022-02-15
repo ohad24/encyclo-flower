@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from models.helpers import gen_uuid
 from models.custom_types import MonthHebLiteral, LocationHebLiteral
 from datetime import datetime
+from typing import Literal
 
 
 class GPSTranslateOut(BaseModel):
@@ -28,13 +29,9 @@ class AngleEnum(IntEnum):
 
 
 class RotateDirection(BaseModel):
-    angle: str = Field(default="R", description="Rotation direction, R or L")
-
-    @validator("angle")
-    def validate_angle(cls, v):
-        if v not in list(x.name for x in AngleEnum):
-            raise ValueError(f"{v} is not a valid angle")
-        return v
+    angle: Literal["L", "R"] = Field(
+        default="R", description="Rotation direction, R or L"
+    )
 
 
 class WhatInImage(str, Enum):
