@@ -94,8 +94,8 @@ def teardown(request):
         db.observations.delete_many({})
 
         # * clear google cloud storage
-        bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/*")))
-        bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/*")))
-        bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/*")))
+        bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/")))
+        bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/")))
+        bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/")))
 
     request.addfinalizer(do_teardown)
