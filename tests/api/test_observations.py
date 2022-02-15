@@ -240,11 +240,7 @@ class TestObservation:
 
     def test_edit_header(self, user_observation):
         # * Arrange
-        header_data = {
-            "observation_text": "new description",
-            "month": "מרץ",
-            "location": "כרמל",
-        }
+        header_data = {"observation_text": "new description"}
         # * Act
         response = user_observation.edit_observation(
             user_observation.observation_id,
@@ -257,8 +253,6 @@ class TestObservation:
         observation = user_observation.get_observation(user_observation.observation_id)
         # * Verify data
         assert observation.json()["observation_text"] == header_data["observation_text"]
-        assert observation.json()["month"] == header_data["month"]
-        assert observation.json()["location"] == header_data["location"]
 
     def test_get_observations(self, user_observation):
         # * Act

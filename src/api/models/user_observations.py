@@ -7,9 +7,7 @@ from models.custom_types import MonthHebLiteral, LocationHebLiteral
 
 
 class Observation(BaseModel):
-    observation_text: str
-    month: Optional[MonthHebLiteral | None] = None
-    location: Optional[LocationHebLiteral | None] = None
+    observation_text: str = Field(min_length=5, max_length=2000)
 
 
 class ObservationInResponse(BaseModel):
