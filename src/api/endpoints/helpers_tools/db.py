@@ -32,7 +32,7 @@ def prepare_search_query(search_input) -> dict:
         query_and.append({"colors": {"$in": search_input.colors}})
     if search_input.location_names:
         for location_name in search_input.location_names:
-            query_and.append({f"locations.{location_name}": {"$exists": True}})
+            query_and.append({"locations.location_name": location_name})
     if search_input.petals:
         query_and.append({"petal_num": {"$in": search_input.petals}})
     if search_input.life_forms:

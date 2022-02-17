@@ -91,6 +91,17 @@ class PlantImage(BaseModel):
         return level or "e"
 
 
+class PlantLocation(BaseModel):
+    location_name: str = Field(description="Hebrew name of the location")
+    commoness: LocationCommonEnum | None
+
+    @validator("commoness", pre=True, always=True)
+    def set_location_common(cls, v):
+        if v:
+            return LocationCommonEnum(v).value
+        return None
+
+
 class Plant(DBBaseModel):
     science_name: str
     heb_name: str
@@ -107,7 +118,7 @@ class Plant(DBBaseModel):
     invasive: bool
     synonym_names_eng: List[str]
     synonym_names_heb: List[str]
-    locations: Dict
+    locations: List[PlantLocation]
     images_data: Optional[List[Dict]]
     habitats: List[str]
     flowering_seasons: Optional[List[int]]
@@ -155,7 +166,7 @@ class SearchOut(BaseModel):
             # * get the first image
             __pydantic_self__.image = plant.images[0].file_name
 
-        commoness = set(plant.locations.values())
+        commoness = set([x.commoness.value for x in plant.locations])
 
         # * get most commoness by LocationCommonEnum
         commoness = sorted(commoness, key=lambda x: LocationCommonEnum(x).value)

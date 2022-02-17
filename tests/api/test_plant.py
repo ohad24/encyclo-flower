@@ -85,7 +85,7 @@ class TestSearch:
         [
             {
                 "colors": ["אדום"],
-                "location_names": ["hula valley", "golan"],
+                "location_names": ["עמק החולה", "גולן"],
                 "seasons": ["4"],
                 "petals": ["חסר עלי כותרת"],
             },
