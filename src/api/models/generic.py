@@ -5,7 +5,7 @@ from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
 from fastapi import HTTPException
 from models.helpers import gen_uuid
-from models.custom_types import MonthHebLiteral, LocationHebLiteral
+from models.custom_types import LocationHebLiteral
 from datetime import datetime
 from typing import Literal
 
@@ -55,8 +55,7 @@ class Coordinates(BaseModel):
 
 
 class ImageLocationText(BaseModel):
-    # TODO: set type to LocationHebLiteral
-    location_name: str | None = None
+    location_name: LocationHebLiteral | None = None
 
 
 # class ImageLocation(Coordinates):

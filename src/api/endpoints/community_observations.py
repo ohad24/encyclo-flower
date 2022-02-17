@@ -72,7 +72,7 @@ async def get_all_observations(
 
 
 # get one observation
-@router.get("/{observation_id}")
+@router.get("/{observation_id}", response_model=ObservationInDB)
 async def get_observation_by_id(
     observation: ObservationInDB = Depends(get_current_observation),
 ):
@@ -131,14 +131,14 @@ async def add_image_to_observation(
 
     # * get image exif data
     # TODO: do in one function
-    lon, lat, alt, image_dt = get_image_exif_data(image.file)
+    lon, lat, alt, image_dt, image_heb_month = get_image_exif_data(image.file)
     il = find_image_location(lon, lat, alt)
 
     imageInDB = ObservationImageInDB(
         orig_file_name=image.filename,
         location_name=il.location_name,
         coordinates=il.coordinates,
-        image_dt=image_dt,
+        image_dt=image_heb_month,
     )
 
     # * seek 0 and upload image to storage

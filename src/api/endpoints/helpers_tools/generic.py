@@ -6,6 +6,7 @@ from typing import List
 from exif import Image as ExifImage
 from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
+from models.custom_types import HebMonths
 
 
 def get_today_str() -> str:
@@ -95,7 +96,8 @@ def get_image_exif_data(image: bytes) -> tuple:
     lon = 0
     lat = 0
     alt = 0
-    image_dt = None
+    image_dt = None  # TODO: remove this
+    image_heb_month = None
     if exif.has_exif:
         if hasattr(exif, "gps_longitude") and hasattr(exif, "gps_latitude"):
             # * get coordinates
@@ -106,12 +108,11 @@ def get_image_exif_data(image: bytes) -> tuple:
         if hasattr(exif, "datetime_original"):
             #  * get image date (Date taken)
             image_dt = datetime.strptime(exif.datetime_original, "%Y:%m:%d %H:%M:%S")
-    return lon, lat, alt, image_dt
+            image_heb_month = HebMonths[image_dt.month - 1]
+    return lon, lat, alt, image_dt, image_heb_month
 
 
-def find_image_location(
-    lon: float, lat: float, alt: float
-) -> ImageLocation:
+def find_image_location(lon: float, lat: float, alt: float) -> ImageLocation:
     il = ImageLocation(coordinates=dict(lat=lat, lon=lon, alt=alt))
     kml_location = find_point_location((lon, lat))
     if kml_location:

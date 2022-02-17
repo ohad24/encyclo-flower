@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
 from models.generic import Coordinates, ImageLocationText, WhatInImage, ImagePreview
-from models.custom_types import MonthHebLiteral, LocationHebLiteral
+from models.custom_types import HebMonthLiteral, LocationHebLiteral
 
 
 class Observation(BaseModel):
@@ -21,7 +21,7 @@ class ObservationInResponse(BaseModel):
 class ObservationImageMeta(ImageLocationText):
     description: str | None = None
     what_in_image: WhatInImage | None = None
-    image_dt: Optional[datetime | None] = None  # TODO: set type to DateTimeHebLiteral
+    image_dt: Optional[HebMonthLiteral | None] = None  # TODO: change key name
 
 
 class ObservationImageInDB(ObservationImageMeta):

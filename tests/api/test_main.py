@@ -283,7 +283,7 @@ class TestHelpers:
         )
         # * Assert
         assert response.status_code == 200
-        assert response.json()["location"] == "golan"
+        assert response.json()["location"] == "גולן"
 
         # * Arrange invalid data
         lat: float = 1

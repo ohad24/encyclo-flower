@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Literal, Tuple, get_args
 
-MonthHebLiteral = Literal[
+HebMonthLiteral = Literal[
     "ינואר",
     "פברואר",
     "מרץ",
@@ -14,6 +14,9 @@ MonthHebLiteral = Literal[
     "נובמבר",
     "דצמבר",
 ]
+
+# * from https://stackoverflow.com/questions/64522040/typing-dynamically-create-literal-alias-from-list-of-valid-values
+HebMonths: Tuple[HebMonthLiteral] = get_args(HebMonthLiteral)
 
 LocationHebLiteral = Literal[
     "חוף הגליל",
