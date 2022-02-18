@@ -3,22 +3,23 @@ from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
 from models.user import User
 from models.user_observations import (
-    Observation,
     ObservationInDB,
     ObservationImageInDB_w_oid,
     ObservationImageInDB,
 )
 from core.security import get_current_active_user, check_privilege_user
+from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 
 async def validate_observation_by_id(
     observation_id: str, db: MongoClient = Depends(db.get_db)
 ) -> ObservationInDB:
-    observation = db.observations.find_one(
-        {"observation_id": observation_id, "deleted": False}
-    )
+    query_filter = dict(observation_id=observation_id, deleted=False)
+    pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
+    observation = next(db.observations.aggregate(pipeline), None)
     if not observation:
         raise HTTPException(status_code=404, detail="Observation not found")
+    observation["user_data"] = observation["user_data"][0]
     return ObservationInDB(**observation)
 
 

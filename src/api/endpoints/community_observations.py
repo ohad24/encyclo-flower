@@ -44,6 +44,7 @@ from endpoints.helpers_tools.generic import (
 )
 from core.gstorage import bucket
 from typing import List, Optional
+from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
@@ -58,16 +59,9 @@ async def get_all_observations(
     limit: int = Query(9, ge=0, le=9),
     db: MongoClient = Depends(db.get_db),
 ):
-    db_query = dict(deleted=False, submitted=True)
-    observations = (
-        db.observations.find(
-            db_query,
-            {"_id": 0, "comments": 0},
-        )
-        .sort("created_dt", -1)
-        .limit(limit)
-        .skip(skip)
-    )
+    query_filter = dict(deleted=False, submitted=True)
+    pipeline = prepare_aggregate_pipeline_w_users(query_filter, skip, limit)
+    observations = db.observations.aggregate(pipeline)
     return list(map(format_obj_image_preview, observations))
 
 

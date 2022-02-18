@@ -99,8 +99,35 @@ def prepare_query_detect_image(
         # TODO: need to be stranslate to heb
         # TODO: need to filter words like "family"
         query_or.append({"taxon.family": {"$in": result_search_by_vision_api.labels}})
-        query_or.append({"taxon.subfamily": {"$in": result_search_by_vision_api.labels}})
+        query_or.append(
+            {"taxon.subfamily": {"$in": result_search_by_vision_api.labels}}
+        )
         query_or.append({"taxon.genus": {"$in": result_search_by_vision_api.labels}})
     from pprint import pprint
+
     pprint(query_or)
     return {"$or": query_or}
+
+
+def prepare_aggregate_pipeline_w_users(query_filter: dict, skip: int, limit: int) -> list:
+    """
+    In use in preview_list, questions and observations
+
+    The pipeline joins the user collection with main collection
+    """
+    aggregate_pipeline = [
+        {"$match": query_filter},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "user_id",
+                "as": "user_data",
+            }
+        },
+        {"$project": {"_id": 0, "user_data.password": 0, "user_data._id": 0}},
+        {"$sort": {"created_dt": -1}},
+        {"$skip": skip},
+        {"$limit": limit},
+    ]
+    return aggregate_pipeline

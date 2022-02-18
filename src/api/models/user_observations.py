@@ -4,7 +4,7 @@ from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
 from models.generic import Coordinates, ImageLocationText, WhatInImage, ImagePreview
 from models.custom_types import HebMonthLiteral, LocationHebLiteral
-
+from models.user import BaseUserOut
 
 class Observation(BaseModel):
     observation_text: str = Field(min_length=5, max_length=2000)
@@ -56,6 +56,7 @@ class ObservationInDB(Observation):
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     submitted: bool = False
     deleted: bool = False
+    user_data: BaseUserOut | None = None
 
 
 class ObservationsPreview(BaseModel):
@@ -64,3 +65,4 @@ class ObservationsPreview(BaseModel):
     image: Optional[ImagePreview]
     created_dt: datetime
     user_id: str
+    username: str

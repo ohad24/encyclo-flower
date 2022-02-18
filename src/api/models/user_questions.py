@@ -4,7 +4,7 @@ from enum import Enum
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
 from models.generic import WhatInImage, ImageLocation, CommentInDB, ImagePreview
-
+from models.user import BaseUserOut
 
 class QuestionImage(BaseModel):
     orig_file_name: str = Field(default="image1.jpg")
@@ -57,6 +57,7 @@ class QuestionInDB(Question):
     comments: List[Optional[CommentInDB]] = []
     images: List[QuestionImageInDB]
     deleted: bool = False
+    user_data: BaseUserOut | None = None
 
 
 class QuestionsPreview(BaseModel):
@@ -66,6 +67,7 @@ class QuestionsPreview(BaseModel):
     image: Optional[ImagePreview]
     created_dt: datetime
     user_id: str
+    username: str
 
 
 class ImagesInResponse(BaseModel):

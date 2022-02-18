@@ -36,6 +36,7 @@ from endpoints.helpers_tools.question_dependencies import (
     get_image_data_qid_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import rotate_image, format_obj_image_preview
+from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
@@ -51,16 +52,9 @@ async def get_all_questions(
     db: MongoClient = Depends(db.get_db),
 ):
     qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter.value)
-    db_query = dict(deleted=False, **qp.answer_query)
-    questions = (
-        db.questions.find(
-            db_query,
-            {"_id": 0, "comments": 0},
-        )
-        .sort("created_dt", -1)
-        .limit(limit)
-        .skip(skip)
-    )
+    query_filter = dict(deleted=False, **qp.answer_query)
+    pipeline = prepare_aggregate_pipeline_w_users(query_filter, skip, limit)
+    questions = db.questions.aggregate(pipeline)
     return list(map(format_obj_image_preview, questions))
 
 
