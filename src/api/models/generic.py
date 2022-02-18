@@ -49,8 +49,8 @@ class WhatInImage(str, Enum):
 
 
 class Coordinates(BaseModel):
-    lat: float = Field(default=33.106251, description="latitude")
-    lon: float = Field(default=35.719422, description="longitude")
+    lat: float = Field(example=33.106251, description="latitude")
+    lon: float = Field(example=35.719422, description="longitude")
     alt: float | None = Field(default=None, description="altitude")
 
 
