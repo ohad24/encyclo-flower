@@ -48,7 +48,6 @@ from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
-# TODO: delete observation
 # TODO: format file
 
 
@@ -229,4 +228,19 @@ async def rotate_image_in_observation(
     # * upload image to gstorage
     blob.upload_from_string(rotated_image, content_type=blob.content_type)
 
+    return Response(status_code=204)
+
+
+# TODO: delete observation
+@router.delete("/{observation_id}")
+async def delete_observation(
+    observation: ObservationInDB = Depends(get_current_observation_w_valid_owner),
+    db: MongoClient = Depends(db.get_db),
+):
+    """
+    Only set deleted flag to true in DB
+    """
+    db.observations.update_one(
+        {"observation_id": observation.observation_id}, {"$set": {"deleted": True}}
+    )
     return Response(status_code=204)

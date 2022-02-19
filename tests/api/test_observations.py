@@ -105,6 +105,13 @@ class ObservationTester:
         )
         return response
 
+    def delete_observation(self, observation_id):
+        response = client.delete(
+            self.observation_url + observation_id,
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_observation(auth_headers, auth_headers_with_no_content_type, observation_url):
@@ -271,6 +278,16 @@ class TestObservation:
         )
         # * Assert
         assert response.status_code == 204, response.text
+
+    def test_delete_observation(self, user_observation):
+        # * Act
+        response = user_observation.delete_observation(user_observation.observation_id)
+        # * Assert
+        assert response.status_code == 204, response.text
+
+        # * try to get deleted observation
+        response = user_observation.get_observation(user_observation.observation_id)
+        assert response.status_code == 404, response.text
 
 
 # TODO: test get image
