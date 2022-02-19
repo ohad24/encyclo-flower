@@ -3,8 +3,9 @@ from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
 from models.generic import Coordinates, ImageLocationText, WhatInImage, ImagePreview
-from models.custom_types import HebMonthLiteral, LocationHebLiteral
+from models.custom_types import HebMonthLiteral
 from models.user import BaseUserOut
+
 
 class Observation(BaseModel):
     observation_text: str = Field(min_length=5, max_length=2000)
@@ -20,8 +21,16 @@ class ObservationInResponse(BaseModel):
 
 class ObservationImageMeta(ImageLocationText):
     description: str | None = None
-    what_in_image: WhatInImage | None = None
-    image_dt: Optional[HebMonthLiteral | None] = None  # TODO: change key name
+    what_in_image: WhatInImage | None = None  # TODO: more suitable key name
+    month_taken: Optional[HebMonthLiteral | None] = Field(
+        None, description="Hebrew month"
+    )
+    plant_id: Optional[None | str] = Field(
+        None,
+        example=None,
+        description="Plant ID",
+        nullable=True,
+    )
 
 
 class ObservationImageInDB(ObservationImageMeta):
@@ -30,7 +39,6 @@ class ObservationImageInDB(ObservationImageMeta):
     coordinates: Coordinates = Coordinates(lat=0, lon=0, alt=0)
     orig_file_name: str = Field(default="image1.jpg")
     file_name: str | None = None
-    plant_id: str | None = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     self_link: HttpUrl | None = None
     media_link: HttpUrl | None = None

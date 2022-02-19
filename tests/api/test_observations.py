@@ -153,6 +153,7 @@ class TestObservation:
                 "description": "test image",
                 "what_in_image": "פרי",
                 "plant_id": "sfdm76",
+                "month_taken": "דצמבר",
             },
             "files": [
                 (
@@ -211,6 +212,57 @@ class TestObservation:
         )
         # * Assert
         assert response.status_code == 200, response.text
+
+    def test_image_metadata(self, user_observation):
+        """test 2nd image metadata"""
+        # * act
+        response = user_observation.get_observation(user_observation.observation_id)
+        # * assert
+        assert (
+            response.json()["images"][1]["month_taken"]
+            == self.upload_file_multi_params[1]["metadata"]["month_taken"]
+        ), response.text
+
+    def test_update_image_metadata(self, user_observation):
+        """update 2nd image metadata"""
+        # * arrange
+        metadata = {
+            "month_taken": "יוני",
+            "what_in_image": "פרי",
+            "plant_id": "sfdm76",
+            "description": "test image",
+            "location_name": "בקעת הירדן",
+        }
+        observation = user_observation.get_observation(user_observation.observation_id)
+        second_image_id = observation.json()["images"][1]["image_id"]
+        # * act
+        response = user_observation.set_image_metadata(
+            second_image_id,
+            metadata,
+        )
+        # * assert
+        assert response.status_code == 204, response.text
+
+        # * verify
+        # * act
+        response = user_observation.get_observation(user_observation.observation_id)
+        second_image_updated_metadata = response.json()["images"][1]
+        # * assert
+        assert (
+            second_image_updated_metadata["month_taken"] == metadata["month_taken"]
+        ), response.text
+        assert (
+            second_image_updated_metadata["what_in_image"] == metadata["what_in_image"]
+        ), response.text
+        assert (
+            second_image_updated_metadata["plant_id"] == metadata["plant_id"]
+        ), response.text
+        assert (
+            second_image_updated_metadata["description"] == metadata["description"]
+        ), response.text
+        assert (
+            second_image_updated_metadata["location_name"] == metadata["location_name"]
+        ), response.text
 
     def test_delete_image(self, user_observation):
         # * Arrange
@@ -288,6 +340,3 @@ class TestObservation:
         # * try to get deleted observation
         response = user_observation.get_observation(user_observation.observation_id)
         assert response.status_code == 404, response.text
-
-
-# TODO: test get image

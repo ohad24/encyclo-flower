@@ -87,15 +87,25 @@ def change_user_id(request, db):
 def teardown(request):
     def do_teardown():
         logging.info("Finalizing tests. Teardown")
-        # * clear db collections
-        db = get_db()
-        db.users.delete_many({})
-        db.questions.delete_many({})
-        db.observations.delete_many({})
+        logging.info("Check if tests failed")
+        test_failed = False
+        for item in request.node.items:
+            if item.session.exitstatus != 0:
+                test_failed = True
+                break
+        if not test_failed:
+            logging.info("No tests failed. Deleting test data")
+            # * clear db collections
+            db = get_db()
+            db.users.delete_many({})
+            db.questions.delete_many({})
+            db.observations.delete_many({})
 
-        # * clear google cloud storage
-        bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/")))
-        bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/")))
-        bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/")))
+            # * clear google cloud storage
+            bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/")))
+            bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/")))
+            bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/")))
+        else:
+            logging.info("Tests failed. Not deleting test data")
 
     request.addfinalizer(do_teardown)

@@ -3,8 +3,6 @@ from fastapi import (
     Depends,
     File,
     UploadFile,
-    Form,
-    HTTPException,
     Response,
     Query,
 )
@@ -19,13 +17,11 @@ from models.user_observations import (
 )
 from models.user import User
 from models.generic import (
-    WhatInImage,
-    ImageLocation,
     Comment,
     CommentInDB,
     RotateDirection,
 )
-from core.security import get_current_active_user, get_current_privilege_user
+from core.security import get_current_active_user
 import db
 from pymongo.mongo_client import MongoClient
 from endpoints.helpers_tools.observation_dependencies import (
@@ -48,10 +44,7 @@ from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
-# TODO: format file
 
-
-# TODO: get all observations (only submitted)
 @router.get("/", response_model=List[Optional[ObservationsPreview]])
 async def get_all_observations(
     skip: int = Query(0, ge=0, le=9),
@@ -64,7 +57,6 @@ async def get_all_observations(
     return list(map(format_obj_image_preview, observations))
 
 
-# get one observation
 @router.get("/{observation_id}", response_model=ObservationInDB)
 async def get_observation_by_id(
     observation: ObservationInDB = Depends(get_current_observation),
@@ -72,7 +64,6 @@ async def get_observation_by_id(
     return observation
 
 
-# TODO: create new observation
 @router.post("/", response_model=ObservationInResponse)
 async def add_observation(
     observation: Observation,
@@ -84,8 +75,7 @@ async def add_observation(
     return ObservationInResponse(observation_id=observationInDB.observation_id)
 
 
-# TODO: edit observation (first and later). allow not submitted
-@router.put("/{observation_id}", description="Edit observation header")
+@router.put("/{observation_id}", description="Edit observation header", status_code=204)
 async def edit_observation(
     observation_data: Observation,
     observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_editor),
@@ -98,8 +88,7 @@ async def edit_observation(
     return Response(status_code=204)
 
 
-# TODO: submit observation. when not submitted
-@router.put("/{observation_id}/submit")
+@router.put("/{observation_id}/submit", status_code=204)
 async def submit_observation(
     observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
@@ -111,7 +100,6 @@ async def submit_observation(
     return Response(status_code=204)
 
 
-# TODO: upload one image to observation. no metadata
 @router.post(
     "/{observation_id}/image",
     response_model=ObservationImageInDB,
@@ -131,7 +119,7 @@ async def add_image_to_observation(
         orig_file_name=image.filename,
         location_name=il.location_name,
         coordinates=il.coordinates,
-        image_dt=image_heb_month,
+        month_taken=image_heb_month,
     )
 
     # * seek 0 and upload image to storage
@@ -148,16 +136,22 @@ async def add_image_to_observation(
         {"observation_id": observationInDB.observation_id},
         {"$push": {"images": imageInDB.dict()}},
     )
+    # TODO: remove coords from imageInDB response
     return imageInDB
 
 
-# TODO: update image metadata
-@router.put("/{observation_id}/image/{image_id}")
+@router.put("/{observation_id}/image/{image_id}", status_code=204)
 async def update_image_metadata(
     user_image_metadata: ObservationImageMeta,
     image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
+    # * check if plant_id is valid
+    plant = db.plants.find_one({"plant_id": user_image_metadata.plant_id})
+    if plant:
+        plant_id = plant["plant_id"]
+    else:
+        plant_id = None
 
     db.observations.update_one(
         {
@@ -172,8 +166,9 @@ async def update_image_metadata(
                 or image_data.image.location_name,
                 "images.$.what_in_image": user_image_metadata.what_in_image
                 or image_data.image.what_in_image,
-                "images.$.image_dt": user_image_metadata.image_dt
-                or image_data.image.image_dt,
+                "images.$.month_taken": user_image_metadata.month_taken
+                or image_data.image.month_taken,
+                "images.$.plant_id": plant_id,
                 "images.$.uploaded": True,
             }
         },
@@ -181,8 +176,7 @@ async def update_image_metadata(
     return Response(status_code=204)
 
 
-# TODO: delete image from observation
-@router.delete("/{observation_id}/image/{image_id}")
+@router.delete("/{observation_id}/image/{image_id}", status_code=204)
 async def delete_image_from_observation(
     image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
@@ -199,8 +193,7 @@ async def delete_image_from_observation(
     return Response(status_code=204)
 
 
-# TODO: add comment to observation
-@router.post("/{observation_id}/comment")
+@router.post("/{observation_id}/comment", status_code=201)
 async def add_comment(
     comment: Comment,
     observation_id: str = Depends(get_observation_id),
@@ -214,8 +207,7 @@ async def add_comment(
     return Response(status_code=201)
 
 
-# TODO: rotate image
-@router.post("/{observation_id}/images/{image_id}/rotate")
+@router.post("/{observation_id}/images/{image_id}/rotate", status_code=204)
 async def rotate_image_in_observation(
     direction: RotateDirection,
     image_data: ObservationImageInDB = Depends(get_image_data_w_valid_editor),
@@ -231,8 +223,7 @@ async def rotate_image_in_observation(
     return Response(status_code=204)
 
 
-# TODO: delete observation
-@router.delete("/{observation_id}")
+@router.delete("/{observation_id}", status_code=204)
 async def delete_observation(
     observation: ObservationInDB = Depends(get_current_observation_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
