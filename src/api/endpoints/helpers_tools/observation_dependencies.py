@@ -36,8 +36,8 @@ async def get_current_observation(
 
 
 async def validate_user_is_observation_owner(
-    observation: ObservationInDB = Depends(get_current_observation),
     user: User = Depends(get_current_active_user),
+    observation: ObservationInDB = Depends(get_current_observation),
 ) -> ObservationInDB:
     if user.user_id != observation.user_id:
         raise HTTPException(
@@ -53,8 +53,8 @@ async def get_current_observation_w_valid_owner(
 
 
 async def get_current_observation_w_valid_editor(
-    observation: ObservationInDB = Depends(get_current_observation),
     user: User = Depends(get_current_active_user),
+    observation: ObservationInDB = Depends(get_current_observation),
 ) -> ObservationInDB:
     """
     valid editor is the observation owner or an admin/editor

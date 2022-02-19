@@ -196,8 +196,8 @@ async def delete_image_from_observation(
 @router.post("/{observation_id}/comment", status_code=201)
 async def add_comment(
     comment: Comment,
-    observation_id: str = Depends(get_observation_id),
     user: User = Depends(get_current_active_user),
+    observation_id: str = Depends(get_observation_id),
     db: MongoClient = Depends(db.get_db),
 ):
     comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
