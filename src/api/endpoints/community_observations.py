@@ -20,6 +20,7 @@ from models.generic import (
     Comment,
     CommentInDB,
     RotateDirection,
+    CommentOut,
 )
 from core.security import get_current_active_user
 import db
@@ -40,7 +41,10 @@ from endpoints.helpers_tools.generic import (
 )
 from core.gstorage import bucket
 from typing import List, Optional
-from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
+from endpoints.helpers_tools.db import (
+    prepare_aggregate_pipeline_w_users,
+    prepare_aggregate_pipeline_comments_w_users,
+)
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
@@ -200,11 +204,30 @@ async def add_comment(
     observation_id: str = Depends(get_observation_id),
     db: MongoClient = Depends(db.get_db),
 ):
-    comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
-    db.observations.update_one(
-        {"observation_id": observation_id}, {"$push": {"comments": comment_data.dict()}}
+    comment_data = CommentInDB(
+        user_id=user.user_id,
+        type="observation",
+        object_id=observation_id,
+        **comment.dict()
     )
+    db.comments.insert_one(comment_data.dict())
     return Response(status_code=201)
+
+
+@router.get("/{observation_id}/comments", response_model=List[CommentOut])
+async def get_comments(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(9, ge=1, le=9),
+    observation_id: str = Depends(get_observation_id),
+    db: MongoClient = Depends(db.get_db),
+):
+    query_filter = dict(
+        type="observation",
+        object_id=observation_id,
+    )
+    pipeline = prepare_aggregate_pipeline_comments_w_users(query_filter, skip, limit)
+    comments = list(db.comments.aggregate(pipeline))
+    return comments
 
 
 @router.post("/{observation_id}/images/{image_id}/rotate", status_code=204)

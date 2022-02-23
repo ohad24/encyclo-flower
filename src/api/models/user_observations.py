@@ -59,7 +59,6 @@ class ObservationImageInDB_w_oid(BaseModel):
 class ObservationInDB(Observation):
     observation_id: str = Field(default_factory=observation_id_generator)
     images: List[Optional[ObservationImageInDB]] = []  # TODO: add image class
-    comments: List = []  # TODO: add comment class
     user_id: str
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     submitted: bool = False

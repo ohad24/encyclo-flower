@@ -79,8 +79,23 @@ class Comment(BaseModel):
 
 class CommentInDB(Comment):
     comment_id: str = Field(default_factory=gen_uuid)
-    comment_dt: datetime = Field(default_factory=datetime.utcnow)
+    create_dt: datetime = Field(default_factory=datetime.utcnow)
+    type: Literal["observation", "question"]
+    object_id: str
     user_id: str
+
+
+class UserDataOut(BaseModel):
+    user_id: str
+    username: str
+    f_name: str
+    l_name: str
+
+
+class CommentOut(Comment):
+    comment_id: str
+    create_dt: datetime
+    user_data: UserDataOut
 
 
 class ImagePreview(BaseModel):

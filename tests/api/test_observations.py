@@ -74,6 +74,14 @@ class ObservationTester:
         )
         return response
 
+    def get_comments(self, observation_id, limit=9, skip=0):
+        response = client.get(
+            self.observation_url + observation_id + "/comments",
+            params={"limit": limit, "skip": skip},
+            headers=self.auth_headers,
+        )
+        return response
+
     def submit_observation(self, observation_id):
         response = client.put(
             self.observation_url + observation_id + "/submit",
@@ -279,10 +287,18 @@ class TestObservation:
         comment_text = "Here is some new comment"
         # * Act
         response = user_observation.add_comment(comment_text)
-        observation = user_observation.get_observation(user_observation.observation_id)
+        # observation = user_observation.get_observation(user_observation.observation_id)
         # * Assert
         assert response.status_code == 201, response.text
-        assert observation.json()["comments"][0]["comment_text"] == comment_text
+        # assert observation.json()["comments"][0]["comment_text"] == comment_text
+
+    def test_get_comments(self, user_observation):
+        # * Act
+        response = user_observation.get_comments(user_observation.observation_id)
+        # * Assert
+        assert response.status_code == 200, response.text
+        assert response.json()[0]["comment_text"] == "Here is some new comment"
+        # TODO: add more comments (over 50) and check order
 
     def test_submit_observation(self, user_observation):
         # * Act

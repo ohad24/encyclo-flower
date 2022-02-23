@@ -109,7 +109,9 @@ def prepare_query_detect_image(
     return {"$or": query_or}
 
 
-def prepare_aggregate_pipeline_w_users(query_filter: dict, skip: int, limit: int) -> list:
+def prepare_aggregate_pipeline_w_users(
+    query_filter: dict, skip: int, limit: int
+) -> list:
     """
     In use in preview_list, questions and observations
 
@@ -125,7 +127,52 @@ def prepare_aggregate_pipeline_w_users(query_filter: dict, skip: int, limit: int
                 "as": "user_data",
             }
         },
-        {"$project": {"_id": 0, "user_data.password": 0, "user_data._id": 0}},
+        {
+            "$project": {
+                "_id": 0,
+                "user_data.password": 0,
+                "user_data._id": 0,
+                "comments": 0,
+            }
+        },
+        {"$sort": {"created_dt": -1}},
+        {"$skip": skip},
+        {"$limit": limit},
+    ]
+    return aggregate_pipeline
+
+
+def prepare_aggregate_pipeline_comments_w_users(
+    query_filter: dict, skip: int, limit: int
+) -> list:
+    """
+    In use in get comments, questions and observations
+
+    The pipeline joins the user collection with main collection
+    """
+    aggregate_pipeline = [
+        {"$match": query_filter},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "user_id",
+                "as": "user_data",
+            }
+        },
+        {"$unwind": "$user_data"},
+        {
+            "$project": {
+                "comment_id": 1,
+                "comment_text": 1,
+                "create_dt": 1,
+                "user_data.f_name": 1,
+                "user_data.l_name": 1,
+                "user_data.username": 1,
+                "user_data.user_id": 1,
+                "_id": 0,
+            }
+        },
         {"$sort": {"created_dt": -1}},
         {"$skip": skip},
         {"$limit": limit},
