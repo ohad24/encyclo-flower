@@ -2,11 +2,11 @@ from datetime import datetime
 from PIL import Image
 import io
 from models.generic import AngleEnum, ImageLocation
-from typing import List
+from typing import List, Tuple
 from exif import Image as ExifImage
 from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
-from models.custom_types import HebMonths
+from models.custom_types import HebMonths, HebMonthLiteral
 
 
 def get_today_str() -> str:
@@ -99,8 +99,7 @@ def get_image_exif_data(image: bytes) -> tuple:
     lon = 0
     lat = 0
     alt = 0
-    image_dt = None  # TODO: remove this
-    image_heb_month = None
+    image_heb_month_taken = None
     if exif.has_exif:
         if hasattr(exif, "gps_longitude") and hasattr(exif, "gps_latitude"):
             # * get coordinates
@@ -111,13 +110,23 @@ def get_image_exif_data(image: bytes) -> tuple:
         if hasattr(exif, "datetime_original"):
             #  * get image date (Date taken)
             image_dt = datetime.strptime(exif.datetime_original, "%Y:%m:%d %H:%M:%S")
-            image_heb_month = HebMonths[image_dt.month - 1]
-    return lon, lat, alt, image_dt, image_heb_month
+            image_heb_month_taken = HebMonths[image_dt.month - 1]
+    return lon, lat, alt, image_heb_month_taken
 
 
 def find_image_location(lon: float, lat: float, alt: float) -> ImageLocation:
-    il = ImageLocation(coordinates=dict(lat=lat, lon=lon, alt=alt))
+    image_location = ImageLocation(coordinates=dict(lat=lat, lon=lon, alt=alt))
     kml_location = find_point_location((lon, lat))
     if kml_location:
-        il.location_name = LocationKMLtranslate[kml_location].value
-    return il
+        image_location.location_name = LocationKMLtranslate[kml_location].value
+    return image_location
+
+
+def get_image_data(image: bytes) -> Tuple[ImageLocation, HebMonthLiteral]:
+    """
+    Get image location (ImageLocation, name and coordinates)
+    and month taken (in Hebrew) from exif data.
+    """
+    lon, lat, alt, image_heb_month_taken = get_image_exif_data(image)
+    image_location = find_image_location(lon, lat, alt)
+    return image_location, image_heb_month_taken

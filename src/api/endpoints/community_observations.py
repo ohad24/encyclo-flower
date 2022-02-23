@@ -34,8 +34,7 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_image_data_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import (
-    get_image_exif_data,
-    find_image_location,
+    get_image_data,
     format_obj_image_preview,
     rotate_image,
 )
@@ -115,15 +114,12 @@ async def add_image_to_observation(
 ):
 
     # * get image exif data
-    # TODO: do in one function
-    lon, lat, alt, image_dt, image_heb_month = get_image_exif_data(image.file)
-    il = find_image_location(lon, lat, alt)
+    image_location, image_heb_month_taken = get_image_data(image.file)
 
     imageInDB = ObservationImageInDB(
         orig_file_name=image.filename,
-        location_name=il.location_name,
-        coordinates=il.coordinates,
-        month_taken=image_heb_month,
+        month_taken=image_heb_month_taken,
+        **image_location.dict(),
     )
 
     # * seek 0 and upload image to storage
@@ -208,7 +204,7 @@ async def add_comment(
         user_id=user.user_id,
         type="observation",
         object_id=observation_id,
-        **comment.dict()
+        **comment.dict(),
     )
     db.comments.insert_one(comment_data.dict())
     return Response(status_code=201)
