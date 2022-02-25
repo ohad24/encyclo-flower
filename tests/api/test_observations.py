@@ -161,7 +161,7 @@ class TestObservation:
         {
             "metadata": {
                 "description": "test image",
-                "what_in_image": "פרי",
+                "content_category": "פרי",
                 "plant_id": "sfdm76",
                 "month_taken": "דצמבר",
                 "location_name": "כרמל",
@@ -243,7 +243,7 @@ class TestObservation:
         # * arrange
         metadata = {
             "month_taken": "יוני",
-            "what_in_image": "פרי",
+            "content_category": "פרי",
             "plant_id": "sfdm76",
             "description": "test image",
             "location_name": "בקעת הירדן",
@@ -267,7 +267,8 @@ class TestObservation:
             second_image_updated_metadata["month_taken"] == metadata["month_taken"]
         ), response.text
         assert (
-            second_image_updated_metadata["what_in_image"] == metadata["what_in_image"]
+            second_image_updated_metadata["content_category"]
+            == metadata["content_category"]
         ), response.text
         assert (
             second_image_updated_metadata["plant_id"] == metadata["plant_id"]

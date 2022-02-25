@@ -25,14 +25,14 @@ class QuestionTester:
                     "orig_file_name": "58NY77V207Q7H06.jpg",
                     "description": "test image",
                     "notes": "test notes",
-                    "what_in_image": "פרי",
+                    "content_category": "פרי",
                     "location": {"lat": 0, "lon": 0, "alt": 0},
                 },
                 {
                     "orig_file_name": "I3YOFNKFFRVZOPN.jpg",
                     "description": "test image1",
                     "notes": "test notes1",
-                    "what_in_image": "הצמח במלואו",
+                    "content_category": "הצמח במלואו",
                 },
             ],
         }
@@ -71,7 +71,7 @@ class TestQuestion:
                 "orig_file_name": "new_image.jpg",
                 "description": "new image",
                 "notes": "new notes",
-                "what_in_image": "פרי",
+                "content_category": "פרי",
                 "location": {"lat": 0, "lon": 0, "alt": 0},
             }
         ]

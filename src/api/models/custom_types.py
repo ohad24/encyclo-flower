@@ -51,3 +51,12 @@ LocationHebLiteral = Literal[
     "מואב",
     "אדום",
 ]
+
+ImageContentCategoryLiteral = Literal[
+    "הצמח במלואו",
+    "פרי",
+    "פרח",
+    "עלים",
+    "זרעים",
+    "פרח בבית הגידול",
+]

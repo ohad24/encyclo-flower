@@ -2,8 +2,12 @@ from pydantic import BaseModel, Field, HttpUrl, validator
 from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
-from models.generic import Coordinates, ImageLocationText, WhatInImage, ImagePreview
-from models.custom_types import HebMonthLiteral, LocationHebLiteral
+from models.generic import Coordinates, ImageLocationText, ImagePreview
+from models.custom_types import (
+    HebMonthLiteral,
+    LocationHebLiteral,
+    ImageContentCategoryLiteral,
+)
 from models.user import BaseUserOut
 
 
@@ -21,7 +25,7 @@ class ObservationInResponse(BaseModel):
 
 class ObservationImageMeta(ImageLocationText):
     description: str | None = None
-    what_in_image: WhatInImage | None = None  # TODO: more suitable key name
+    content_category: ImageContentCategoryLiteral | None = None
     month_taken: Optional[HebMonthLiteral | None] = Field(
         None, description="Hebrew month"
     )

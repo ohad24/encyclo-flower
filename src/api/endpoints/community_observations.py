@@ -163,8 +163,8 @@ async def update_image_metadata(
                 or image_data.image.description,
                 "images.$.location_name": user_image_metadata.location_name
                 or image_data.image.location_name,
-                "images.$.what_in_image": user_image_metadata.what_in_image
-                or image_data.image.what_in_image,
+                "images.$.content_category": user_image_metadata.content_category
+                or image_data.image.content_category,
                 "images.$.month_taken": user_image_metadata.month_taken
                 or image_data.image.month_taken,
                 "images.$.plant_id": plant_id,

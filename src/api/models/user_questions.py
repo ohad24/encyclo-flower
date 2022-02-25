@@ -3,14 +3,16 @@ from typing import List, Optional, Dict
 from enum import Enum
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import WhatInImage, ImageLocation, CommentInDB, ImagePreview
+from models.generic import ImageLocation, CommentInDB, ImagePreview
 from models.user import BaseUserOut
+from models.custom_types import ImageContentCategoryLiteral
+
 
 class QuestionImage(BaseModel):
     orig_file_name: str = Field(default="image1.jpg")
     description: str | None = None
     notes: str | None = None
-    what_in_image: WhatInImage
+    content_category: ImageContentCategoryLiteral
     location: Optional[ImageLocation]
     photo_taken_dt: Optional[datetime]
 

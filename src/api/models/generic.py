@@ -5,9 +5,12 @@ from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
 from fastapi import HTTPException
 from models.helpers import gen_uuid
-from models.custom_types import LocationHebLiteral
+from models.custom_types import LocationHebLiteral, ImageContentCategoryLiteral
 from datetime import datetime
 from typing import Literal
+
+
+# TODO: refactor file
 
 
 class GPSTranslateOut(BaseModel):
@@ -32,20 +35,6 @@ class RotateDirection(BaseModel):
     angle: Literal["L", "R"] = Field(
         default="R", description="Rotation direction, R or L"
     )
-
-
-class WhatInImage(str, Enum):
-    """
-    for user to specify what is in the image
-    """
-
-    a = "הצמח במלואו"
-    b = "פרי"
-    c = "פרח"
-    d = "עלים"
-    e = "זרעים"
-    f = "הצמח בבית הגידול"
-    g = "לא נבחר"
 
 
 class Coordinates(BaseModel):
@@ -101,4 +90,4 @@ class CommentOut(Comment):
 class ImagePreview(BaseModel):
     # TODO: link to thumbnail
     file_name: str
-    what_in_image: WhatInImage | None
+    content_category: ImageContentCategoryLiteral | None
