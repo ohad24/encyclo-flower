@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
 from models.generic import Coordinates, ImageLocationText, WhatInImage, ImagePreview
-from models.custom_types import HebMonthLiteral
+from models.custom_types import HebMonthLiteral, LocationHebLiteral
 from models.user import BaseUserOut
 
 
@@ -25,6 +25,7 @@ class ObservationImageMeta(ImageLocationText):
     month_taken: Optional[HebMonthLiteral | None] = Field(
         None, description="Hebrew month"
     )
+    location_name: LocationHebLiteral | None = None
     plant_id: Optional[None | str] = Field(
         None,
         example=None,
@@ -49,6 +50,11 @@ class ObservationImageInDB(ObservationImageMeta):
         if not v:
             return gen_image_file_name(values["orig_file_name"])
         return v
+
+
+class ObservationImageOut(ObservationImageMeta):
+    image_id: str
+    file_name: str
 
 
 class ObservationImageInDB_w_oid(BaseModel):

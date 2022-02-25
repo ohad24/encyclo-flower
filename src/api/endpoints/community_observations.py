@@ -11,6 +11,7 @@ from models.user_observations import (
     ObservationInDB,
     ObservationInResponse,
     ObservationImageInDB,
+    ObservationImageOut,
     ObservationImageInDB_w_oid,
     ObservationImageMeta,
     ObservationsPreview,
@@ -34,7 +35,7 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_image_data_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import (
-    get_image_data,
+    get_image_metadata,
     format_obj_image_preview,
     rotate_image,
 )
@@ -103,18 +104,15 @@ async def submit_observation(
     return Response(status_code=204)
 
 
-@router.post(
-    "/{observation_id}/image",
-    response_model=ObservationImageInDB,
-)
+@router.post("/{observation_id}/image", response_model=ObservationImageOut)
 async def add_image_to_observation(
     observationInDB: str = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
     db: MongoClient = Depends(db.get_db),
 ):
 
-    # * get image exif data
-    image_location, image_heb_month_taken = get_image_data(image.file)
+    # * get image metadata from exif
+    image_location, image_heb_month_taken = get_image_metadata(image.file)
 
     imageInDB = ObservationImageInDB(
         orig_file_name=image.filename,
@@ -132,11 +130,11 @@ async def add_image_to_observation(
     imageInDB.media_link = blob.media_link
     imageInDB.public_url = blob.public_url
 
+    # * add image to observation
     db.observations.update_one(
         {"observation_id": observationInDB.observation_id},
         {"$push": {"images": imageInDB.dict()}},
     )
-    # TODO: remove coords from imageInDB response
     return imageInDB
 
 

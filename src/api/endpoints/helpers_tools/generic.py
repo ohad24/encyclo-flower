@@ -122,7 +122,7 @@ def find_image_location(lon: float, lat: float, alt: float) -> ImageLocation:
     return image_location
 
 
-def get_image_data(image: bytes) -> Tuple[ImageLocation, HebMonthLiteral]:
+def get_image_metadata(image: bytes) -> Tuple[ImageLocation, HebMonthLiteral]:
     """
     Get image location (ImageLocation, name and coordinates)
     and month taken (in Hebrew) from exif data.

@@ -1,3 +1,4 @@
+import logging
 from test_main import client
 import pytest
 from pathlib import Path
@@ -56,6 +57,7 @@ class ObservationTester:
             files=files,
             headers=self.file_auth_headers,
         )
+        # logging.info(metadata)
         self.set_image_metadata(response.json()["image_id"], metadata)
         return response
 
@@ -162,6 +164,7 @@ class TestObservation:
                 "what_in_image": "פרי",
                 "plant_id": "sfdm76",
                 "month_taken": "דצמבר",
+                "location_name": "כרמל",
             },
             "files": [
                 (
@@ -229,7 +232,11 @@ class TestObservation:
         assert (
             response.json()["images"][1]["month_taken"]
             == self.upload_file_multi_params[1]["metadata"]["month_taken"]
-        ), response.text
+        ), response.json()["images"][1]["month_taken"]
+        assert (
+            response.json()["images"][1]["location_name"]
+            == self.upload_file_multi_params[1]["metadata"]["location_name"]
+        ), response.json()["images"][1]["location_name"]
 
     def test_update_image_metadata(self, user_observation):
         """update 2nd image metadata"""
