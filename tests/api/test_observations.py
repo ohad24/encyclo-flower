@@ -110,7 +110,7 @@ class ObservationTester:
     def rotate_image(self, observation_id, image_id, direction):
         response = client.post(
             self.observation_url + observation_id + "/images/" + image_id + "/rotate",
-            json={"direction": direction},
+            json={"angle": direction},
             headers=self.auth_headers,
         )
         return response

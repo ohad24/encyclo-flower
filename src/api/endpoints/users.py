@@ -28,7 +28,7 @@ async def read_current_user(
     return current_user.username
 
 
-@router.get("/{username}", response_model=user_model.BaseUserOut)
+@router.get("/{username}", response_model=user_model.UserOut)
 async def read_user(
     username: str,
     db: MongoClient = Depends(db.get_db),
@@ -39,7 +39,7 @@ async def read_user(
 
 @router.put(
     "/{username}",
-    response_model=user_model.BaseUserOut,
+    response_model=user_model.UserOut,
     summary="Update current user",
     description="Update current user with shown fields",
 )
@@ -66,7 +66,7 @@ async def update_user(
 
 
 @router.post(
-    "/", response_model=user_model.UserCreateOut, response_model_exclude_none=True
+    "/", response_model=user_model.UserOut, response_model_exclude_none=True
 )
 async def create_user(
     user_in: user_model.UserCreateIn = Body(...), db: MongoClient = Depends(db.get_db)

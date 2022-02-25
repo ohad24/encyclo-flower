@@ -66,23 +66,29 @@ class UserCreateIn(BaseUserIn):
         return v
 
 
-class UserCreateOut(BaseModel):
-    user_id: str
-    username: str
-    f_name: str
-    l_name: str
-    phone: Optional[str]
-    settlement: Optional[str]
-    sex: Optional[Sex]
-    email: EmailStr
-
-
 class Login(BaseModel):
     username: str
     password: str
 
 
 class BaseUserOut(BaseModel):
+    """
+    For general objects. (observations, questions, comments etc.)
+    """
+
+    user_id: str
+    username: str
+    f_name: str
+    l_name: str
+
+
+class UserOut(BaseUserOut):
+    """
+    Full user attributes out.
+
+    For user page
+    """
+
     username: str
     f_name: str
     l_name: str
@@ -90,3 +96,4 @@ class BaseUserOut(BaseModel):
     settlement: Optional[str]
     sex: Optional[Sex]
     create_dt: datetime
+    email: EmailStr
