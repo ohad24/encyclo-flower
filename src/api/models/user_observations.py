@@ -69,7 +69,10 @@ class ObservationInDB(Observation):
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     submitted: bool = False
     deleted: bool = False
-    user_data: BaseUserOut | None = None
+
+
+class ObservationOut(ObservationInDB):
+    user_data: BaseUserOut
 
 
 class ObservationsPreview(BaseModel):

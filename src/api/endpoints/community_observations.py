@@ -8,6 +8,7 @@ from fastapi import (
 )
 from models.user_observations import (
     Observation,
+    ObservationOut,
     ObservationInDB,
     ObservationInResponse,
     ObservationImageInDB,
@@ -40,7 +41,7 @@ from endpoints.helpers_tools.generic import (
     rotate_image,
 )
 from core.gstorage import bucket
-from typing import List, Optional
+from typing import List
 from endpoints.helpers_tools.db import (
     prepare_aggregate_pipeline_w_users,
     prepare_aggregate_pipeline_comments_w_users,
@@ -49,10 +50,10 @@ from endpoints.helpers_tools.db import (
 router = APIRouter(prefix="/observations", tags=["observations"])
 
 
-@router.get("/", response_model=List[Optional[ObservationsPreview]])
+@router.get("/", response_model=List[ObservationsPreview])
 async def get_all_observations(
-    skip: int = Query(0, ge=0, le=9),
-    limit: int = Query(9, ge=0, le=9),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(9, ge=1, le=9),
     db: MongoClient = Depends(db.get_db),
 ):
     query_filter = dict(deleted=False, submitted=True)
@@ -61,9 +62,9 @@ async def get_all_observations(
     return list(map(format_obj_image_preview, observations))
 
 
-@router.get("/{observation_id}", response_model=ObservationInDB)
+@router.get("/{observation_id}", response_model=ObservationOut)
 async def get_observation_by_id(
-    observation: ObservationInDB = Depends(get_current_observation),
+    observation: ObservationOut = Depends(get_current_observation),
 ):
     return observation
 

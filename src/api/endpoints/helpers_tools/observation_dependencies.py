@@ -3,7 +3,7 @@ from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
 from models.user import User
 from models.user_observations import (
-    ObservationInDB,
+    ObservationOut,
     ObservationImageInDB_w_oid,
     ObservationImageInDB,
 )
@@ -13,32 +13,32 @@ from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 async def validate_observation_by_id(
     observation_id: str, db: MongoClient = Depends(db.get_db)
-) -> ObservationInDB:
+) -> ObservationOut:
     query_filter = dict(observation_id=observation_id, deleted=False)
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
     observation = next(db.observations.aggregate(pipeline), None)
     if not observation:
         raise HTTPException(status_code=404, detail="Observation not found")
     observation["user_data"] = observation["user_data"][0]
-    return ObservationInDB(**observation)
+    return ObservationOut(**observation)
 
 
 async def get_observation_id(
-    observation: ObservationInDB = Depends(validate_observation_by_id),
+    observation: ObservationOut = Depends(validate_observation_by_id),
 ) -> str:
     return observation.observation_id
 
 
 async def get_current_observation(
-    observation: ObservationInDB = Depends(validate_observation_by_id),
-) -> ObservationInDB:
+    observation: ObservationOut = Depends(validate_observation_by_id),
+) -> ObservationOut:
     return observation
 
 
 async def validate_user_is_observation_owner(
     user: User = Depends(get_current_active_user),
-    observation: ObservationInDB = Depends(get_current_observation),
-) -> ObservationInDB:
+    observation: ObservationOut = Depends(get_current_observation),
+) -> ObservationOut:
     if user.user_id != observation.user_id:
         raise HTTPException(
             status_code=403, detail="User is not owner of this observation"
@@ -47,15 +47,15 @@ async def validate_user_is_observation_owner(
 
 
 async def get_current_observation_w_valid_owner(
-    observation: ObservationInDB = Depends(validate_user_is_observation_owner),
-) -> ObservationInDB:
+    observation: ObservationOut = Depends(validate_user_is_observation_owner),
+) -> ObservationOut:
     return observation
 
 
 async def get_current_observation_w_valid_editor(
     user: User = Depends(get_current_active_user),
-    observation: ObservationInDB = Depends(get_current_observation),
-) -> ObservationInDB:
+    observation: ObservationOut = Depends(get_current_observation),
+) -> ObservationOut:
     """
     valid editor is the observation owner or an admin/editor
     """
@@ -68,7 +68,7 @@ async def get_current_observation_w_valid_editor(
 
 async def validate_image_by_id(
     image_id: str,
-    observation: ObservationInDB = Depends(get_current_observation_w_valid_editor),
+    observation: ObservationOut = Depends(get_current_observation_w_valid_editor),
 ) -> ObservationImageInDB_w_oid:
     image_data = list(
         filter(lambda image: image.image_id == image_id, observation.images)
