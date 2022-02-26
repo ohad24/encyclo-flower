@@ -24,7 +24,6 @@ from models.generic import (
     CommentInDB,
     RotateDirection,
     CommentOut,
-    ExceptionResponse,
 )
 from core.security import get_current_active_user
 import db
@@ -36,7 +35,6 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_observation_id,
     get_current_observation_w_valid_editor,
     get_image_data_w_valid_editor,
-    responses,
 )
 from endpoints.helpers_tools.generic import (
     get_image_metadata,
@@ -49,6 +47,12 @@ from endpoints.helpers_tools.db import (
     prepare_aggregate_pipeline_w_users,
     prepare_aggregate_pipeline_comments_w_users,
 )
+from models.exceptions import (
+    ExceptionObservationImageNotFound,
+    ExceptionObservationNotFound,
+    ExceptionObservationImageCountLimit,
+)
+from typing import Union
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
@@ -113,10 +117,13 @@ async def submit_observation(
     response_model=ObservationImageOut,
     description="Add image to observation. 10 images max per observation.",
     responses={
-        **responses,
         400: {
-            "description": "10 images allowed per observation.",
-            "model": ExceptionResponse,
+            "description": ExceptionObservationImageCountLimit().detail,
+            "model": ExceptionObservationImageCountLimit,
+        },
+        404: {
+            "description": ExceptionObservationNotFound().detail,
+            "model": ExceptionObservationNotFound,
         },
     },
 )
@@ -157,7 +164,18 @@ async def add_image_to_observation(
     return imageInDB
 
 
-@router.put("/{observation_id}/image/{image_id}", status_code=204)
+@router.put(
+    "/{observation_id}/image/{image_id}",
+    status_code=204,
+    responses={
+        404: {
+            "description": "Not Found",
+            "model": Union[
+                ExceptionObservationImageNotFound, ExceptionObservationNotFound
+            ],
+        }
+    },
+)
 async def update_image_metadata(
     user_image_metadata: ObservationImageMeta,
     image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),

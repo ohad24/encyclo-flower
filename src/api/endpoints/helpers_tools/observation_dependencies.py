@@ -7,7 +7,10 @@ from models.user_observations import (
     ObservationImageInDB_w_oid,
     ObservationImageInDB,
 )
-from models.generic import ExceptionResponse
+from models.exceptions import (
+    ExceptionObservationImageNotFound,
+    ExceptionObservationNotFound,
+)
 from core.security import get_current_active_user, check_privilege_user
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
@@ -15,10 +18,14 @@ from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 # TODO: show responses options in the documentation (POC in add image to observation)
 # https://fastapi.tiangolo.com/advanced/additional-responses/?h=responses#combine-predefined-responses-and-custom-ones
 # * cant use multi status code in fastapi (?)
-responses = {
-    404: {"description": "Observation not found", "model": ExceptionResponse},
+# https://github.com/tiangolo/fastapi/issues/518
+# responses = {
+#     404: {
+#         "description": ExceptionObservationNotFound().detail,
+#         "model": ExceptionResponse,
+#     },
     #   {"description": "Image not found", "model": ExceptionResponse}],
-}
+# }
 
 
 async def validate_observation_by_id(
@@ -28,7 +35,8 @@ async def validate_observation_by_id(
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
     observation = next(db.observations.aggregate(pipeline), None)
     if not observation:
-        raise HTTPException(status_code=404, detail=responses[404]["description"])
+        # raise HTTPException(status_code=404, detail=responses[404]["description"])
+        raise HTTPException(status_code=404, detail=ExceptionObservationNotFound().detail)
     observation["user_data"] = observation["user_data"][0]
     return ObservationOut(**observation)
 

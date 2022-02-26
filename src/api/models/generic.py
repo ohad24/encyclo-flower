@@ -70,7 +70,3 @@ class ImagePreview(BaseModel):
     # TODO: link to thumbnail
     file_name: str
     content_category: ImageContentCategoryLiteral
-
-
-class ExceptionResponse(BaseModel):
-    detail: str
