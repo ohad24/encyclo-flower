@@ -82,7 +82,7 @@ class ObservationOut(ObservationInDB):
 class ObservationsPreview(BaseModel):
     observation_id: str
     observation_text: str
-    image: Optional[ImagePreview]
+    image: ImagePreview | None
     created_dt: datetime
     user_id: str
     username: str

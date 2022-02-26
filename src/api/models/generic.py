@@ -69,4 +69,8 @@ class CommentOut(Comment):
 class ImagePreview(BaseModel):
     # TODO: link to thumbnail
     file_name: str
-    content_category: ImageContentCategoryLiteral | None
+    content_category: ImageContentCategoryLiteral
+
+
+class ExceptionResponse(BaseModel):
+    detail: str

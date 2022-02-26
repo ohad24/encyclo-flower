@@ -6,6 +6,7 @@ from fastapi import (
     Response,
     Query,
 )
+from fastapi.responses import JSONResponse
 from models.user_observations import (
     Observation,
     ObservationOut,
@@ -23,6 +24,7 @@ from models.generic import (
     CommentInDB,
     RotateDirection,
     CommentOut,
+    ExceptionResponse,
 )
 from core.security import get_current_active_user
 import db
@@ -34,6 +36,7 @@ from endpoints.helpers_tools.observation_dependencies import (
     get_observation_id,
     get_current_observation_w_valid_editor,
     get_image_data_w_valid_editor,
+    responses,
 )
 from endpoints.helpers_tools.generic import (
     get_image_metadata,
@@ -105,13 +108,28 @@ async def submit_observation(
     return Response(status_code=204)
 
 
-@router.post("/{observation_id}/image", response_model=ObservationImageOut)
+@router.post(
+    "/{observation_id}/image",
+    response_model=ObservationImageOut,
+    description="Add image to observation. 10 images max per observation.",
+    responses={
+        **responses,
+        400: {
+            "description": "10 images allowed per observation.",
+            "model": ExceptionResponse,
+        },
+    },
+)
 async def add_image_to_observation(
     observationInDB: str = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
     db: MongoClient = Depends(db.get_db),
 ):
-
+    if len(observationInDB.images) >= 10:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Too many images in observation."},
+        )
     # * get image metadata from exif
     image_location, image_heb_month_taken = get_image_metadata(image.file)
 

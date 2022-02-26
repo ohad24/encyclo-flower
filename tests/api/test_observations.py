@@ -57,8 +57,9 @@ class ObservationTester:
             files=files,
             headers=self.file_auth_headers,
         )
-        # logging.info(metadata)
-        self.set_image_metadata(response.json()["image_id"], metadata)
+        # logging.info(response.status_code)
+        if response.status_code == 200:
+            self.set_image_metadata(response.json()["image_id"], metadata)
         return response
 
     def delete_image(self, image_id):
@@ -67,6 +68,11 @@ class ObservationTester:
             headers=self.auth_headers,
         )
         return response
+
+    def delete_all_images(self, observation_id):
+        observation = self.get_observation(observation_id)
+        for image in observation.json()["images"]:
+            self.delete_image(image["image_id"])
 
     def add_comment(self, comment_text):
         response = client.post(
@@ -354,6 +360,43 @@ class TestObservation:
         )
         # * Assert
         assert response.status_code == 204, response.text
+
+    def test_images_limit(self, user_observation):
+        """Test upload more then 10 images"""
+        # * Arrange
+        observation = user_observation.get_observation(user_observation.observation_id)
+        current_images_count = len(observation.json()["images"])
+        # * Act
+        while current_images_count < 11:
+            response = user_observation.upload_image(
+                files=self.upload_file_multi_params[0]["files"],
+                metadata=self.upload_file_multi_params[0]["metadata"],
+            )
+            current_images_count += 1
+        # * Assert
+        assert response.status_code == 400, response.text
+        assert (
+            "Too many images in observation." == response.json()["detail"]
+        ), response.text
+
+    def test_get_observation_w_no_images(self, user_observation):
+        """
+        Delete all images.
+        Test empty list on observation page
+        Test none value on observation preview
+        """
+        # * Arrange
+        user_observation.delete_all_images(user_observation.observation_id)
+
+        # * Act
+        observation = user_observation.get_observation(user_observation.observation_id)
+        # * Assert observation page
+        assert observation.json()["images"] == []
+
+        # * Act
+        observations = user_observation.get_observations()
+        # * Assert observation preview list
+        assert observations.json()[0]["image"] is None
 
     def test_delete_observation(self, user_observation):
         # * Act
