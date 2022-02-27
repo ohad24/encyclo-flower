@@ -99,4 +99,4 @@ uvloop==0.16.0
 watchgod==0.7
 websockets==10.2
 wrapt==1.13.3
-wsproto==1.0.0
+wsproto==1.1.0
