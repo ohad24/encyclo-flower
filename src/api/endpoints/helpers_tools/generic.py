@@ -128,3 +128,15 @@ def get_image_metadata(image: bytes) -> Tuple[ImageLocation, HebMonthLiteral]:
     lon, lat, alt, image_heb_month_taken = get_image_exif_data(image)
     image_location = find_image_location(lon, lat, alt)
     return image_location, image_heb_month_taken
+
+
+def create_thumbnail(image: bytes) -> bytes:
+    """
+    create thumbnail from image
+    """
+    MAX_SIZE = (200, 200)
+    image = Image.open(io.BytesIO(image))
+    image.thumbnail(MAX_SIZE)
+    bytes = io.BytesIO()
+    image.save(bytes, format=image.format)
+    return bytes.getvalue()

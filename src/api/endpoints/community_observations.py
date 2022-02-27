@@ -5,6 +5,7 @@ from fastapi import (
     UploadFile,
     Response,
     Query,
+    BackgroundTasks,
 )
 from fastapi.responses import JSONResponse
 from models.user_observations import (
@@ -40,7 +41,9 @@ from endpoints.helpers_tools.generic import (
     get_image_metadata,
     format_obj_image_preview,
     rotate_image,
+    create_thumbnail,
 )
+from endpoints.helpers_tools.storage import upload_to_gstorage
 from core.gstorage import bucket
 from typing import List
 from endpoints.helpers_tools.db import (
@@ -53,8 +56,13 @@ from models.exceptions import (
     ExceptionObservationImageCountLimit,
 )
 from typing import Union
+from pathlib import Path
 
 router = APIRouter(prefix="/observations", tags=["observations"])
+
+
+OBSERVATIONS_IMAGES_PATH = Path("observations")
+OBSERVATION_THUMBNAILS_PATH = OBSERVATIONS_IMAGES_PATH / "thumbnails"
 
 
 @router.get("/", response_model=List[ObservationsPreview])
@@ -130,37 +138,51 @@ async def submit_observation(
 async def add_image_to_observation(
     observationInDB: str = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: MongoClient = Depends(db.get_db),
 ):
     if len(observationInDB.images) >= 10:
+        # TODO: use ExceptionObservationImageCountLimit class for content
         return JSONResponse(
             status_code=400,
             content={"detail": "Too many images in observation."},
         )
-    # * get image metadata from exif
-    image_location, image_heb_month_taken = get_image_metadata(image.file)
 
+    # * setup image variables
+    image_bytes = image.file.read()
+    content_type = image.content_type
+
+    # * get image metadata from exif
+    image_location, image_heb_month_taken = get_image_metadata(image_bytes)
+
+    # * set model
     imageInDB = ObservationImageInDB(
         orig_file_name=image.filename,
         month_taken=image_heb_month_taken,
         **image_location.dict(),
     )
 
-    # * seek 0 and upload image to storage
-    image.file.seek(0)
-    blob = bucket.blob("observations/" + imageInDB.file_name)
-    blob.upload_from_file(image.file, content_type=image.content_type)
+    # * create thumbnail and upload to gstorage
+    thumbnail_bytes = create_thumbnail(image_bytes)
+    upload_to_gstorage(
+        imageInDB.file_name, OBSERVATION_THUMBNAILS_PATH, thumbnail_bytes, content_type
+    )
 
-    # * update links from storage
-    imageInDB.self_link = blob.self_link
-    imageInDB.media_link = blob.media_link
-    imageInDB.public_url = blob.public_url
+    # * upload image to gstorage as background task
+    background_tasks.add_task(
+        upload_to_gstorage,
+        imageInDB.file_name,
+        OBSERVATIONS_IMAGES_PATH,
+        image_bytes,
+        content_type,
+    )
 
     # * add image to observation
     db.observations.update_one(
         {"observation_id": observationInDB.observation_id},
         {"$push": {"images": imageInDB.dict()}},
     )
+
     return imageInDB
 
 

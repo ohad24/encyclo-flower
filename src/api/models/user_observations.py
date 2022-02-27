@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 from datetime import datetime
 from models.helpers import observation_id_generator, gen_uuid, gen_image_file_name
@@ -45,9 +45,6 @@ class ObservationImageInDB(ObservationImageMeta):
     orig_file_name: str = Field(default="image1.jpg")
     file_name: str | None = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
-    self_link: HttpUrl | None = None
-    media_link: HttpUrl | None = None
-    public_url: HttpUrl | None = None
 
     @validator("file_name", pre=True, always=True)
     def set_file_name(cls, v, values):
