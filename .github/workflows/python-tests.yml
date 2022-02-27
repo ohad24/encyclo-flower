@@ -32,10 +32,11 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - uses: google-github-actions/setup-gcloud@master
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v0'
       with:
-        service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        export_default_credentials: true
+        credentials_json: '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}'
       # TODO: restore tests after create online database service and pass the database connection string
     # - name: Test with pytest
     #   run: |
