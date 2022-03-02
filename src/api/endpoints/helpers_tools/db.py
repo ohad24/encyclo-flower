@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from models.plant import SearchIn
 
 
 def prepare_query_plant_name_text(name_text):
@@ -22,7 +23,7 @@ def prepare_query_plant_name_text(name_text):
     return {"$or": name_text_or}
 
 
-def prepare_search_query(search_input) -> dict:
+def prepare_search_query(search_input: SearchIn) -> dict:
     query_and = []
     if search_input.name_text:
         query_and.append(prepare_query_plant_name_text(search_input.name_text))
