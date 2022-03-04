@@ -7,6 +7,8 @@ from exif import Image as ExifImage
 from endpoints.helpers_tools.GPS_translate import find_point_location
 from models.plant import LocationKMLtranslate
 from models.custom_types import HebMonths, HebMonthLiteral
+from endpoints.helpers_tools.storage import download_from_gstorage, upload_to_gstorage
+from pathlib import Path
 
 
 def get_today_str() -> str:
@@ -140,3 +142,15 @@ def create_thumbnail(image: bytes) -> bytes:
     bytes = io.BytesIO()
     image.save(bytes, format=image.format)
     return bytes.getvalue()
+
+
+def rotate_storage_image(file_name: str, file_path: Path, angle: AngleEnum):
+    """
+    Download, rotate and upload image. Image or thumbnail.
+    """
+    # * download image
+    image_bytes, content_type = download_from_gstorage(file_name, file_path)
+    # * rotate image
+    rotated_image_bytes = rotate_image(image_bytes, angle)
+    # * upload image
+    upload_to_gstorage(file_name, file_path, rotated_image_bytes, content_type)

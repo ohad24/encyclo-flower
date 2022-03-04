@@ -40,11 +40,13 @@ from endpoints.helpers_tools.observation_dependencies import (
 from endpoints.helpers_tools.generic import (
     get_image_metadata,
     format_obj_image_preview,
-    rotate_image,
     create_thumbnail,
+    rotate_storage_image,
 )
-from endpoints.helpers_tools.storage import upload_to_gstorage
-from core.gstorage import bucket
+from endpoints.helpers_tools.storage import (
+    upload_to_gstorage,
+    delete_from_gstorage,
+)
 from typing import List
 from endpoints.helpers_tools.db import (
     prepare_aggregate_pipeline_w_users,
@@ -238,9 +240,9 @@ async def delete_image_from_observation(
     image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
-    # * delete image from storage
-    blob = bucket.blob("observations/" + image_data.image.file_name)
-    blob.delete()
+    # * delete image and thumbnail from storage
+    delete_from_gstorage(image_data.image.file_name, OBSERVATIONS_IMAGES_PATH)
+    delete_from_gstorage(image_data.image.file_name, OBSERVATION_THUMBNAILS_PATH)
 
     # * delete image metadata from question
     db.observations.update_one(
@@ -287,15 +289,20 @@ async def get_comments(
 async def rotate_image_in_observation(
     direction: RotateDirection,
     image_data: ObservationImageInDB = Depends(get_image_data_w_valid_editor),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
-    # * download image
-    blob = bucket.blob("observations/" + image_data.file_name)
-    image = blob.download_as_bytes()
-    # * rotate image
-    rotated_image = rotate_image(image, direction.angle)
-    # * upload image to gstorage
-    blob.upload_from_string(rotated_image, content_type=blob.content_type)
+    # * thumbnail
+    rotate_storage_image(
+        image_data.file_name, OBSERVATION_THUMBNAILS_PATH, direction.angle
+    )
 
+    # * image as background task
+    background_tasks.add_task(
+        rotate_storage_image,
+        image_data.file_name,
+        OBSERVATIONS_IMAGES_PATH,
+        direction.angle,
+    )
     return Response(status_code=204)
 
 
