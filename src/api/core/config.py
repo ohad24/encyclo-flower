@@ -10,11 +10,8 @@ load_dotenv()
 class Settings(BaseSettings):
     APP_NAME: str = "encyclo-flower API"
     API_PREFIX: str = "/api/v1"
-    MONGO_HOST: str = "localhost"
-    MONGO_PORT: str = "27017"
-    MONGO_DB_NAME: str = "dev"
-    MONGO_USERNAME: str = "root"
-    MONGO_PASSWORD: str = "example"
+    MONGO_URI: str = os.getenv("MONGO_URI", "mongodb://root:example@localhost:27017")
+    MONGO_DB_NAME: str = os.getenv("MONGO_DB_NAME", "dev")
 
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
