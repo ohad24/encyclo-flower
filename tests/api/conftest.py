@@ -100,6 +100,8 @@ def teardown(request):
             db.users.delete_many({})
             db.questions.delete_many({})
             db.observations.delete_many({})
+            db.comments.delete_many({})
+            db.images_detections.delete_many({})
 
             # * clear google cloud storage
             bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/")))
