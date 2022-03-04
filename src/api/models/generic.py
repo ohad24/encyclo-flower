@@ -69,4 +69,4 @@ class CommentOut(Comment):
 class ImagePreview(BaseModel):
     # TODO: link to thumbnail
     file_name: str
-    content_category: ImageContentCategoryLiteral
+    content_category: ImageContentCategoryLiteral | None = None

@@ -4,7 +4,6 @@ from fastapi import (
     File,
     UploadFile,
     Response,
-    Query,
     BackgroundTasks,
 )
 from fastapi.responses import JSONResponse
@@ -59,6 +58,7 @@ from models.exceptions import (
 )
 from typing import Union
 from pathlib import Path
+from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
@@ -69,12 +69,13 @@ OBSERVATION_THUMBNAILS_PATH = OBSERVATIONS_IMAGES_PATH / "thumbnails"
 
 @router.get("/", response_model=List[ObservationsPreview])
 async def get_all_observations(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(9, ge=1, le=9),
+    search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
     db: MongoClient = Depends(db.get_db),
 ):
     query_filter = dict(deleted=False, submitted=True)
-    pipeline = prepare_aggregate_pipeline_w_users(query_filter, skip, limit)
+    pipeline = prepare_aggregate_pipeline_w_users(
+        query_filter, search_params.skip, search_params.limit
+    )
     observations = db.observations.aggregate(pipeline)
     return list(map(format_obj_image_preview, observations))
 
@@ -144,10 +145,9 @@ async def add_image_to_observation(
     db: MongoClient = Depends(db.get_db),
 ):
     if len(observationInDB.images) >= 10:
-        # TODO: use ExceptionObservationImageCountLimit class for content
         return JSONResponse(
             status_code=400,
-            content={"detail": "Too many images in observation."},
+            content={"detail": ExceptionObservationImageCountLimit().detail},
         )
 
     # * setup image variables
@@ -271,8 +271,7 @@ async def add_comment(
 
 @router.get("/{observation_id}/comments", response_model=List[CommentOut])
 async def get_comments(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(9, ge=1, le=9),
+    search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
     observation_id: str = Depends(get_observation_id),
     db: MongoClient = Depends(db.get_db),
 ):
@@ -280,7 +279,9 @@ async def get_comments(
         type="observation",
         object_id=observation_id,
     )
-    pipeline = prepare_aggregate_pipeline_comments_w_users(query_filter, skip, limit)
+    pipeline = prepare_aggregate_pipeline_comments_w_users(
+        query_filter, search_params.skip, search_params.limit
+    )
     comments = list(db.comments.aggregate(pipeline))
     return comments
 

@@ -376,7 +376,8 @@ class TestObservation:
         # * Assert
         assert response.status_code == 400, response.text
         assert (
-            "Too many images in observation." == response.json()["detail"]
+            "Too many images. Only 10 images allowed per observation."
+            == response.json()["detail"]
         ), response.text
 
     def test_get_observation_w_no_images(self, user_observation):

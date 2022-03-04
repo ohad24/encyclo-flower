@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class ExceptionObservationNotFound(BaseModel):
-    detail: str = "Observation not found1"
+    detail: str = "Observation not found"
 
 
 class ExceptionObservationImageNotFound(BaseModel):
@@ -10,4 +10,4 @@ class ExceptionObservationImageNotFound(BaseModel):
 
 
 class ExceptionObservationImageCountLimit(BaseModel):
-    detail: str = "10 images allowed per observation"
+    detail: str = "Too many images. Only 10 images allowed per observation."
