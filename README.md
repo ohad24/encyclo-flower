@@ -46,7 +46,8 @@ uvicorn main:app --reload
 ```
 
 
-
+### quick setup test environment
+    curl https://raw.githubusercontent.com/ohad24/encyclo-flower/main/scripts/test-environment.sh | bash
 
 
 ### dev environment:
