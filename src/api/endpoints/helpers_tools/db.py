@@ -26,8 +26,6 @@ def prepare_query_plant_name_text(name_text):
 def prepare_search_query(search_input: SearchIn) -> dict:
     query_and = [prepare_query_plant_name_text(search_input.name_text)] if search_input.name_text else []
     for field, value in search_input.dict(exclude_none=True, exclude_unset=True).items():
-        if field == 'petals':
-            field = 'petal_num'
         if field == 'location_names':
             query_and += [{"locations.location_name": location_name} for location_name in value]
         elif isinstance(value, list):
