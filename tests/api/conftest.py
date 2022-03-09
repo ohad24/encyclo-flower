@@ -9,7 +9,7 @@ os.environ["MONGO_DB_NAME"] = "test"
 sys.path.append("./src/api/")
 
 from db import get_db
-from core.gstorage import bucket
+from core.gstorage import bucket, check_google_credentials_file_exists
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -104,10 +104,17 @@ def teardown(request):
             db.images_detections.delete_many({})
 
             # * clear google cloud storage
-            bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/")))
-            bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/")))
-            bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/")))
+            if bucket:
+                bucket.delete_blobs(list(bucket.list_blobs(prefix="questions/")))
+                bucket.delete_blobs(list(bucket.list_blobs(prefix="observations/")))
+                bucket.delete_blobs(list(bucket.list_blobs(prefix="image_api_files/")))
         else:
             logging.info("Tests failed. Not deleting test data")
 
     request.addfinalizer(do_teardown)
+
+
+google_credential_not_found = pytest.mark.skipif(
+    check_google_credentials_file_exists() is False,
+    reason="GOOGLE_APPLICATION_CREDENTIALS file not found",
+)

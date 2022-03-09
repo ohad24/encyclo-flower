@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 import json
 from main import app
 import pytest
+from conftest import google_credential_not_found
 
 
 client = TestClient(app)
@@ -297,6 +298,7 @@ class TestHelpers:
         assert response.json()["detail"] == "location not found"
 
 
+@google_credential_not_found
 class TestDetectImage:
     def test_detect_image(self, auth_headers, get_detect_image_url):
         # * Arrange
