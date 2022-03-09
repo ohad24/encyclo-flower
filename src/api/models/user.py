@@ -1,7 +1,7 @@
 from typing import Optional, Dict
 from models.base import DBBaseModel
-from pydantic import BaseModel, Field, EmailStr, SecretStr, validator
-import uuid
+from pydantic import BaseModel, Field, EmailStr, SecretStr
+from models.helpers import user_id_generator
 from datetime import datetime
 from enum import Enum
 
@@ -37,6 +37,17 @@ class BaseUserIn(BaseModel):
         None, min_length=2, max_length=20, example="Haifa"
     )
     sex: Optional[Sex]
+    username: str = Field(..., min_length=5, max_length=20, example="username1")
+    email: EmailStr = Field(..., example="example@exampe.com")
+    password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
+    accept_terms_of_service: bool = Field(False, example=True)
+
+
+class UpdateUserIn(BaseModel):
+    f_name: Optional[str]
+    l_name: Optional[str]
+    phone: Optional[str]
+    settlement: Optional[str]
 
 
 class UserCounters(BaseModel):
@@ -44,26 +55,14 @@ class UserCounters(BaseModel):
     # TODO: add login counter (per day)
 
 
-class UserCreateIn(BaseUserIn):
-    username: str = Field(..., min_length=5, max_length=20, example="username1")
-    email: EmailStr = Field(..., example="example@exampe.com")
-    password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
-    accept_terms_of_service: bool = Field(..., example=True)
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        object.__setattr__(self, "is_active", True)
-        object.__setattr__(self, "is_superuser", False)
-        object.__setattr__(self, "is_editor", False)
-        object.__setattr__(self, "user_id", uuid.uuid4().hex)
-        object.__setattr__(self, "create_dt", datetime.utcnow())
-        object.__setattr__(self, "counters", UserCounters())
-
-    @validator("accept_terms_of_service")
-    def check_accept_terms_of_service(cls, v):
-        if not v:
-            raise ValueError("Terms of service must be accepted")
-        return v
+class UserInDB(BaseUserIn):
+    user_id: str = Field(default_factory=user_id_generator)
+    password: str  # TODO: change to SecretStr
+    is_active: bool = True
+    is_superuser: bool = False
+    is_editor: bool = False
+    create_dt: datetime = Field(default_factory=datetime.utcnow)
+    counters: UserCounters = UserCounters()
 
 
 class Login(BaseModel):

@@ -63,8 +63,8 @@ class TestCreateUser:
         # * Assert
         assert response.status_code == 422
         assert (
-            response.json()["detail"][0]["msg"] == "Terms of service must be accepted"
-        )
+            response.json()["detail"] == "Terms of service must be accepted"
+        ), response.json()
 
     def test_create_user(self):
         # * Act
@@ -73,7 +73,7 @@ class TestCreateUser:
             data=self._login_json,
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 201
 
     def test_create_user_duplicate(self):
         # * Act
@@ -256,7 +256,7 @@ class TestUserUpdateData:
             json={"f_name": "new_f_name", "l_name": "new_l_name"},
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 200, response.json()
         assert response.json()["f_name"] == "new_f_name"
         # * Assert phone didn't change
         assert response.json()["phone"] == self.phone

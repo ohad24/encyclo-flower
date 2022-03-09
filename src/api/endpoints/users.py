@@ -1,34 +1,43 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import RedirectResponse
-from typing import Any, List
+from typing import List
 from pymongo.mongo_client import MongoClient
 import db
-import models.user as user_model
+from models.user import User, UserOut, BaseUserIn, UserInDB, UpdateUserIn
 from core.security import (
     get_password_hash,
     get_current_active_user,
     get_current_active_superuser,
 )
+from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
+from endpoints.helpers_tools.user_dependencies import (
+    validate_accept_terms_of_service,
+    validate_username_and_email_not_in_db,
+)
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[user_model.User])
+@router.get(
+    "/",
+    response_model=List[User],
+    dependencies=[Depends(get_current_active_superuser)],
+)
 async def read_users(
     db: MongoClient = Depends(db.get_db),
-    current_user: user_model.User = Depends(get_current_active_superuser),
+    search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
 ):
-    return list(db.users.find({}))
+    return list(db.users.find({}).skip(search_params.skip).limit(search_params.limit))
 
 
 @router.get("/me", response_class=RedirectResponse)
 async def read_current_user(
-    current_user: user_model.User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     return current_user.username
 
 
-@router.get("/{username}", response_model=user_model.UserOut)
+@router.get("/{username}", response_model=UserOut)
 async def read_user(
     username: str,
     db: MongoClient = Depends(db.get_db),
@@ -39,15 +48,15 @@ async def read_user(
 
 @router.put(
     "/{username}",
-    response_model=user_model.UserOut,
+    response_model=UserOut,
     summary="Update current user",
     description="Update current user with shown fields",
 )
 async def update_user(
     username: str,
-    user_in: user_model.BaseUserIn,
+    user_in: UpdateUserIn,
     db: MongoClient = Depends(db.get_db),
-    current_user: user_model.User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     # * check if user is the same
     if current_user.username != username:
@@ -56,9 +65,11 @@ async def update_user(
             detail="The user is not allowed to edit this user",
         )
 
-    # * remove None values from user input
-    user_dict = {k: v for k, v in user_in.dict().items() if v is not None}
-    db.users.update_one({"username": username}, {"$set": user_dict})
+    # * update db
+    db.users.update_one(
+        {"username": username},
+        {"$set": user_in.dict(exclude_none=True, exclude_unset=True)},
+    )
 
     # * retrive updated user
     user_out = db.users.find_one({"username": username})
@@ -66,20 +77,28 @@ async def update_user(
 
 
 @router.post(
-    "/", response_model=user_model.UserOut, response_model_exclude_none=True
+    "/",
+    status_code=201,
+    dependencies=[
+        Depends(validate_accept_terms_of_service),
+        Depends(validate_username_and_email_not_in_db),
+    ],
 )
 async def create_user(
-    user_in: user_model.UserCreateIn = Body(...), db: MongoClient = Depends(db.get_db)
-) -> Any:
-    user = db.users.find_one(
-        {"$or": [{"username": user_in.username}, {"email": user_in.email}]}
-    )
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this username or email already exists in the system.",
-        )
-    user_in.password = get_password_hash(user_in.password.get_secret_value())
-    inserted_id = db.users.insert_one(user_in.dict()).inserted_id
-    user = db.users.find_one({"_id": inserted_id})
-    return user
+    user_in: BaseUserIn,
+    db: MongoClient = Depends(db.get_db),
+):
+    # TODO: add additional responses
+    # TODO: add password checking (1 and 2 is matching)
+    # TODO: add email verification
+
+    # * hash the password
+    hash_password = get_password_hash(user_in.password.get_secret_value())
+
+    # * setup userInDB with hash password
+    userInDB = UserInDB(**user_in.dict(exclude={"password"}), password=hash_password)
+
+    # * insert user
+    db.users.insert_one(userInDB.dict())
+
+    return Response(status_code=201)
