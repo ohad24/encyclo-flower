@@ -2,6 +2,7 @@ import logging
 from test_main import client
 import pytest
 from pathlib import Path
+from conftest import google_credential_not_found
 
 
 @pytest.fixture(scope="module")
@@ -212,6 +213,7 @@ class TestObservation:
         },
     ]
 
+    @google_credential_not_found
     @pytest.mark.parametrize(
         "file_data",
         upload_file_multi_params,
@@ -230,6 +232,7 @@ class TestObservation:
         # * Assert
         assert response.status_code == 200, response.text
 
+    @google_credential_not_found
     def test_image_metadata(self, user_observation):
         """test 2nd image metadata"""
         # * act
@@ -244,6 +247,7 @@ class TestObservation:
             == self.upload_file_multi_params[1]["metadata"]["location_name"]
         ), response.json()["images"][1]["location_name"]
 
+    @google_credential_not_found
     def test_update_image_metadata(self, user_observation):
         """update 2nd image metadata"""
         # * arrange
@@ -286,6 +290,7 @@ class TestObservation:
             second_image_updated_metadata["location_name"] == metadata["location_name"]
         ), response.text
 
+    @google_credential_not_found
     def test_delete_image(self, user_observation):
         # * Arrange
         observation = user_observation.get_observation(user_observation.observation_id)
@@ -350,6 +355,7 @@ class TestObservation:
         assert response.status_code == 200, response.text
         assert len(response.json()) > 0
 
+    @google_credential_not_found
     def test_rotate_image(self, user_observation):
         # * Arrange
         observation = user_observation.get_observation(user_observation.observation_id)
@@ -361,6 +367,7 @@ class TestObservation:
         # * Assert
         assert response.status_code == 204, response.text
 
+    @google_credential_not_found
     def test_images_limit(self, user_observation):
         """Test upload more then 10 images"""
         # * Arrange

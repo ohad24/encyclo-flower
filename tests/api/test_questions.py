@@ -1,6 +1,7 @@
 from test_main import client
 import pytest
 from pathlib import Path
+from conftest import google_credential_not_found
 
 
 @pytest.fixture(scope="module")
@@ -84,6 +85,7 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200, response.text
 
+    @google_credential_not_found
     def test_add_images(self, auth_headers, question_url):
         # * Arrange
         files = [
@@ -158,6 +160,7 @@ class TestQuestion:
         assert response.status_code == 200
         assert 9 == len(response.json())
 
+    @google_credential_not_found
     def test_rotate_image(self, auth_headers, question_url):
         # * Arrange
         data = {
@@ -173,6 +176,7 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200, response.text
 
+    @google_credential_not_found
     def test_delete_image(self, auth_headers, question_url):
         # * Act
         response = client.delete(
@@ -183,6 +187,7 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200, response.text
 
+    @google_credential_not_found
     @pytest.mark.usefixtures("change_user_id")
     @pytest.mark.usefixtures("editor_user")
     def test_delete_image_as_editor(self, auth_headers, question_url):
@@ -208,8 +213,10 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200, response.text
 
+    @google_credential_not_found
     @pytest.mark.usefixtures("editor_user")
     def test_delete_question(self, auth_headers, question_url):
+        # TODO: check if this remove images and data
         # * Act
         response = client.delete(
             question_url + f"{pytest.question_id}", headers=auth_headers
