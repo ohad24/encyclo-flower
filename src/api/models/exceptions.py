@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
 
+class ExceptionLogin(BaseModel):
+    detail: str = "Incorrect username or password"
+
+
 class ExceptionObservationNotFound(BaseModel):
     detail: str = "Observation not found"
 

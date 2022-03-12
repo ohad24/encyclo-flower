@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, Response
 from fastapi.responses import RedirectResponse
 from typing import List
 from pymongo.mongo_client import MongoClient

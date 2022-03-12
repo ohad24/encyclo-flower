@@ -1,38 +1,35 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-import db
-from pymongo.mongo_client import MongoClient
-from core.security import verify_password, create_access_token
+from core.security import create_access_token
 from core.config import get_settings
-from core.http_exceptions import e401
-from models import token as token_schema
-from models import user as user_model
+from models.token import Token
+from models.user import User
+from endpoints.helpers_tools.user_dependencies import get_user_for_login
+from models.exceptions import ExceptionLogin
 
 settings = get_settings()
 
 router = APIRouter()
 
 
-@router.post("/token", response_model=token_schema.Token)
+@router.post(
+    "/token",
+    response_model=Token,
+    summary="Login",
+    description="Login using username and password",
+    responses={
+        401: {"description": ExceptionLogin().detail, "model": ExceptionLogin},
+    },
+)
 def login_for_access_token(
-    db: MongoClient = Depends(db.get_db),
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    user: User = Depends(get_user_for_login),
 ):
-    user = db.users.find_one({"username": form_data.username})
-
-    if not user:
-        raise e401
-    user = user_model.Login(**user)
-
-    if not verify_password(form_data.password, user.password):
-        raise e401
-
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        user.username, expires_delta=access_token_expires
+        user.username,
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token(access_token=access_token)
+
 
 # TODO: activate reset password
 # @router.post("/reset-password/", response_model=schemas.Msg)
