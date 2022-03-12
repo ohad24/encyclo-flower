@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+
+google_cred.json
+GOOGLE_APPLICATION_CREDENTIALS.json
+
+docker-compose.yml
