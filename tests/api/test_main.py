@@ -256,7 +256,11 @@ class TestUserUpdateData:
             json={"f_name": "new_f_name", "l_name": "new_l_name"},
         )
         # * Assert
-        assert response.status_code == 200, response.json()
+        assert response.status_code == 204
+
+        # * Act (get user)
+        response = client.get(get_users_url + pytest.test_username, headers=auth_headers)
+        # * Assert f_name is changed
         assert response.json()["f_name"] == "new_f_name"
         # * Assert phone didn't change
         assert response.json()["phone"] == self.phone

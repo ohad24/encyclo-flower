@@ -48,6 +48,7 @@ class UpdateUserIn(BaseModel):
     l_name: Optional[str]
     phone: Optional[str]
     settlement: Optional[str]
+    sex: Optional[Sex]
 
 
 class UserCounters(BaseModel):

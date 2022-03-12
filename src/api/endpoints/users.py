@@ -13,6 +13,7 @@ from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
 from endpoints.helpers_tools.user_dependencies import (
     validate_accept_terms_of_service,
     validate_username_and_email_not_in_db,
+    validate_current_user_edit_itself,
 )
 
 router = APIRouter()
@@ -48,32 +49,21 @@ async def read_user(
 
 @router.put(
     "/{username}",
-    response_model=UserOut,
+    status_code=204,
     summary="Update current user",
     description="Update current user with shown fields",
+    dependencies=[Depends(validate_current_user_edit_itself)]
 )
 async def update_user(
     username: str,
     user_in: UpdateUserIn,
     db: MongoClient = Depends(db.get_db),
-    current_user: User = Depends(get_current_active_user),
 ):
-    # * check if user is the same
-    if current_user.username != username:
-        raise HTTPException(
-            status_code=400,
-            detail="The user is not allowed to edit this user",
-        )
-
-    # * update db
     db.users.update_one(
         {"username": username},
         {"$set": user_in.dict(exclude_none=True, exclude_unset=True)},
     )
-
-    # * retrive updated user
-    user_out = db.users.find_one({"username": username})
-    return user_out
+    return Response(status_code=204)
 
 
 @router.post(
