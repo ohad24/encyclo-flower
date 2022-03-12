@@ -1,0 +1,19 @@
+name: API Docker Image build test
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/api/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/api/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build src/api --file src/api/Dockerfile --tag encyclo-flower-api-test:$(date +%s)
