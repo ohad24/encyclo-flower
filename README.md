@@ -6,6 +6,12 @@ Environment variables:
 * MONGO_URI - MongoDB connection string. (default: mongodb://localhost:27017/)
 * MONGO_DB_NAME - MongoDB database name. (default: dev)
 
+#### Development libraries
+For testing + coverage, formatting and linting:
+```bash
+pip install pytest pytest-cov black flake8
+```
+
 #### Generic commands
 
 * Find all `todo:`s and urgent (`# !`) comments in the code (`src/api`).  
