@@ -7,8 +7,8 @@ from enum import Enum
 
 
 class Sex(str, Enum):
-    male = "male"
-    female = "female"
+    male = "זכר"
+    female = "נקבה"
 
 
 class User(DBBaseModel):

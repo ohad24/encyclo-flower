@@ -44,7 +44,7 @@ class TestCreateUser:
                 "l_name": "Salad",
                 "password": "test12",
                 "email": f"{pytest.test_username}@1.com",
-                "sex": "female",
+                "sex": "נקבה",
                 "phone": "+123456789",
                 "settlement": "Haifa",
                 "accept_terms_of_service": "true",
