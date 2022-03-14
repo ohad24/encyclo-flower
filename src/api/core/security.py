@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from core.config import get_settings
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
-from models.user import User
+from models.user import UserInDB
 from db import get_db
 from core.http_exceptions import e403
 
@@ -48,7 +48,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = db.users.find_one({"username": username})
     if user is None:
         raise credentials_exception
-    return User(**user)
+    return UserInDB(**user)
 
 
 def verify_user_in_token(token: str | None = Depends(oauth2_scheme)) -> dict:
@@ -70,14 +70,14 @@ def verify_user_in_token(token: str | None = Depends(oauth2_scheme)) -> dict:
     return user_data
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
+async def get_current_active_user(current_user: UserInDB = Depends(get_current_user)):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
 async def get_current_active_superuser(
-    current_user: User = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_active_user),
 ):
     if not current_user.is_superuser:
         raise e403
@@ -85,7 +85,7 @@ async def get_current_active_superuser(
 
 
 async def get_current_active_editor(
-    current_user: User = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_active_user),
 ):
     if not current_user.is_editor:
         raise e403
@@ -93,7 +93,7 @@ async def get_current_active_editor(
 
 
 def check_privilege_user(
-    current_user: User,
+    current_user: UserInDB,
 ):
     if not current_user.is_superuser | current_user.is_editor:
         return False
@@ -101,7 +101,7 @@ def check_privilege_user(
 
 
 async def get_current_privilege_user(
-    current_user: User = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_active_user),
 ):
     if not check_privilege_user(current_user):
         raise e403

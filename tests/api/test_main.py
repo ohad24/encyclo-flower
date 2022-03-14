@@ -43,6 +43,7 @@ class TestCreateUser:
                 "f_name": "Bob",
                 "l_name": "Salad",
                 "password": "test12",
+                "confirm_password": "test12",
                 "email": f"{pytest.test_username}@1.com",
                 "sex": "נקבה",
                 "phone": "+123456789",
@@ -61,10 +62,23 @@ class TestCreateUser:
             json=false_terms_of_service_data,
         )
         # * Assert
-        assert response.status_code == 422
+        assert response.status_code == 400
         assert (
             response.json()["detail"] == "Terms of service must be accepted"
         ), response.json()
+
+    def test_password_not_match(self):
+        # * Arrange
+        login_json = json.loads(self._login_json)
+        login_json["confirm_password"] = "test13"
+        # * Act
+        response = client.post(
+            self._users_url,
+            json=login_json,
+        )
+        # * Assert
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Passwords do not match"
 
     def test_create_user(self):
         # * Act
@@ -83,6 +97,10 @@ class TestCreateUser:
         )
         # * Assert
         assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "The user with this username or email already exists in the system."
+        )
 
 
 class TestLogin:
@@ -259,7 +277,9 @@ class TestUserUpdateData:
         assert response.status_code == 204
 
         # * Act (get user)
-        response = client.get(get_users_url + pytest.test_username, headers=auth_headers)
+        response = client.get(
+            get_users_url + pytest.test_username, headers=auth_headers
+        )
         # * Assert f_name is changed
         assert response.json()["f_name"] == "new_f_name"
         # * Assert phone didn't change

@@ -1,5 +1,4 @@
 from typing import Optional, Dict
-from models.base import DBBaseModel
 from pydantic import BaseModel, Field, EmailStr, SecretStr
 from models.helpers import user_id_generator
 from datetime import datetime
@@ -7,39 +6,26 @@ from enum import Enum
 
 
 class Sex(str, Enum):
+    # TODO: change to literal
     male = "זכר"
     female = "נקבה"
 
 
-class User(DBBaseModel):
-    user_id: str
-    username: str
-    f_name: str
-    l_name: str
+class User(BaseModel):
+    username: str = Field(..., min_length=5, max_length=20, example="username1")
+    f_name: str = Field(..., min_length=2, max_length=20, example="Bob")
+    l_name: str = Field(..., min_length=2, max_length=20, example="Salad")
     email: EmailStr
     phone: Optional[str]
     settlement: Optional[str]
     sex: Optional[Sex]
-    _password: SecretStr = Field(alias="password")
-    is_active: bool
-    is_editor: bool
-    is_superuser: bool
-    create_dt: datetime
 
 
-class BaseUserIn(BaseModel):
-    f_name: str = Field(..., min_length=2, max_length=20, example="Bob")
-    l_name: str = Field(..., min_length=2, max_length=20, example="Salad")
-    phone: Optional[str] = Field(
-        None, min_length=8, max_length=20, example="+123456789"
-    )
-    settlement: Optional[str] = Field(
-        None, min_length=2, max_length=20, example="Haifa"
-    )
-    sex: Optional[Sex]
-    username: str = Field(..., min_length=5, max_length=20, example="username1")
-    email: EmailStr = Field(..., example="example@exampe.com")
+class BaseUserIn(User):
     password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
+    password2: SecretStr = Field(
+        description="Confirm password", alias="confirm_password", example="123456"
+    )
     accept_terms_of_service: bool = Field(False, example=True)
 
 
@@ -56,9 +42,9 @@ class UserCounters(BaseModel):
     # TODO: add login counter (per day)
 
 
-class UserInDB(BaseUserIn):
+class UserInDB(User):
     user_id: str = Field(default_factory=user_id_generator)
-    password: str  # TODO: change to SecretStr
+    password: str
     is_active: bool = True
     is_superuser: bool = False
     is_editor: bool = False

@@ -10,7 +10,7 @@ from models.exceptions import ExceptionLogin
 
 async def validate_accept_terms_of_service(user_in: BaseUserIn):
     if not user_in.accept_terms_of_service:
-        raise HTTPException(status_code=422, detail="Terms of service must be accepted")
+        raise HTTPException(status_code=400, detail="Terms of service must be accepted")
 
 
 async def validate_username_and_email_not_in_db(
@@ -33,6 +33,14 @@ async def validate_current_user_edit_itself(
         raise HTTPException(
             status_code=400,
             detail="The user is not allowed to edit this user",
+        )
+
+
+async def validate_match_password(user_in: BaseUserIn):
+    if user_in.password.get_secret_value() != user_in.password2.get_secret_value():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match",
         )
 
 

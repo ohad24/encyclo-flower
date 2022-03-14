@@ -14,6 +14,7 @@ from endpoints.helpers_tools.user_dependencies import (
     validate_accept_terms_of_service,
     validate_username_and_email_not_in_db,
     validate_current_user_edit_itself,
+    validate_match_password,
 )
 
 router = APIRouter()
@@ -72,6 +73,7 @@ async def update_user(
     dependencies=[
         Depends(validate_accept_terms_of_service),
         Depends(validate_username_and_email_not_in_db),
+        Depends(validate_match_password),
     ],
 )
 async def create_user(
@@ -79,7 +81,6 @@ async def create_user(
     db: MongoClient = Depends(db.get_db),
 ):
     # TODO: add additional responses
-    # TODO: add password checking (1 and 2 is matching)
     # TODO: add email verification
 
     # * hash the password

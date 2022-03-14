@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, AnyUrl, validator
 from typing import Dict, List, Optional, Literal
 from db import get_db
 from bson.son import SON
-from models.base import DBBaseModel
 from datetime import datetime
 from enum import Enum
 
@@ -102,7 +101,7 @@ class PlantLocation(BaseModel):
         return None
 
 
-class Plant(DBBaseModel):
+class Plant(BaseModel):
     science_name: str
     heb_name: str
     fam_name_eng: Optional[str]
