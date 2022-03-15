@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from core.security import create_access_token
 from core.config import get_settings
 from models.token import Token
-from models.user import User
+from models.user import UserInDB
 from endpoints.helpers_tools.user_dependencies import get_user_for_login
 from models.exceptions import ExceptionLogin
 
@@ -22,7 +22,7 @@ router = APIRouter()
     },
 )
 def login_for_access_token(
-    user: User = Depends(get_user_for_login),
+    user: UserInDB = Depends(get_user_for_login),
 ):
     access_token = create_access_token(
         user.username,

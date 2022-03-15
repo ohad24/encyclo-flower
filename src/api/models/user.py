@@ -1,28 +1,31 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Literal
 from pydantic import BaseModel, Field, EmailStr, SecretStr
 from models.helpers import user_id_generator
 from datetime import datetime
-from enum import Enum
+
+SEX = Literal["זכר", "נקבה"]
 
 
-class Sex(str, Enum):
-    # TODO: change to literal
-    male = "זכר"
-    female = "נקבה"
+class UserBase(BaseModel):
+    """
+    Basic information.
+    """
 
-
-class User(BaseModel):
-    username: str = Field(..., min_length=5, max_length=20, example="username1")
-    f_name: str = Field(..., min_length=2, max_length=20, example="Bob")
-    l_name: str = Field(..., min_length=2, max_length=20, example="Salad")
+    username: str = Field(min_length=5, max_length=20, example="username1")
+    f_name: str = Field(min_length=2, max_length=20, example="Bob")
+    l_name: str = Field(min_length=2, max_length=20, example="Salad")
     email: EmailStr
     phone: Optional[str]
     settlement: Optional[str]
-    sex: Optional[Sex]
+    sex: Optional[SEX]
 
 
-class BaseUserIn(User):
-    password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
+class CreateUserIn(UserBase):
+    """
+    User input to create new user.
+    """
+
+    password: SecretStr = Field(min_length=6, max_length=50, example="123456")
     password2: SecretStr = Field(
         description="Confirm password", alias="confirm_password", example="123456"
     )
@@ -30,11 +33,15 @@ class BaseUserIn(User):
 
 
 class UpdateUserIn(BaseModel):
+    """
+    User input to update user.
+    """
+
     f_name: Optional[str]
     l_name: Optional[str]
     phone: Optional[str]
     settlement: Optional[str]
-    sex: Optional[Sex]
+    sex: Optional[SEX]
 
 
 class UserCounters(BaseModel):
@@ -42,7 +49,14 @@ class UserCounters(BaseModel):
     # TODO: add login counter (per day)
 
 
-class UserInDB(User):
+class UserInDB(UserBase):
+    """
+    User object in DB.
+
+    The defaults usage is to generate new data on init,
+    when the field is not set (in create new user).
+    """
+
     user_id: str = Field(default_factory=user_id_generator)
     password: str
     is_active: bool = True
@@ -53,6 +67,9 @@ class UserInDB(User):
 
 
 class Login(BaseModel):
+    """
+    User input to login.
+    """
     username: str
     password: str
 
@@ -78,8 +95,10 @@ class UserOut(BaseUserOut):
     username: str
     f_name: str
     l_name: str
-    phone: Optional[str]
     settlement: Optional[str]
-    sex: Optional[Sex]
+    sex: Optional[SEX]
     create_dt: datetime
-    email: EmailStr
+
+    # TODO: talk to shahar if anyone should see this information https://trello.com/c/8DqDO5Wa
+    # phone: Optional[str]
+    # email: EmailStr

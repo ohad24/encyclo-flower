@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from typing import List
 from pymongo.mongo_client import MongoClient
 import db
-from models.user import User, UserOut, BaseUserIn, UserInDB, UpdateUserIn
+from models.user import UserOut, CreateUserIn, UserInDB, UpdateUserIn
 from core.security import (
     get_password_hash,
     get_current_active_user,
@@ -22,8 +22,10 @@ router = APIRouter()
 
 @router.get(
     "/",
-    response_model=List[User],
+    response_model=List[UserInDB],
     dependencies=[Depends(get_current_active_superuser)],
+    summary="Get all users",
+    description="Get all users. Only superusers can do this.",
 )
 async def read_users(
     db: MongoClient = Depends(db.get_db),
@@ -32,18 +34,29 @@ async def read_users(
     return list(db.users.find({}).skip(search_params.skip).limit(search_params.limit))
 
 
-@router.get("/me", response_class=RedirectResponse)
+@router.get(
+    "/me",
+    response_class=RedirectResponse,
+    summary="Get current user",
+    description="Redirect to user profile",
+)
 async def read_current_user(
-    current_user: User = Depends(get_current_active_user),
+    current_user: UserOut = Depends(get_current_active_user),
 ):
     return current_user.username
 
 
-@router.get("/{username}", response_model=UserOut)
+@router.get(
+    "/{username}",
+    response_model=UserOut,
+    summary="User page",
+    description="Get user basic data",
+)
 async def read_user(
     username: str,
     db: MongoClient = Depends(db.get_db),
 ):
+    # TODO: return 404 if user not found
     user = db.users.find_one({"username": username})
     return user
 
@@ -53,13 +66,14 @@ async def read_user(
     status_code=204,
     summary="Update current user",
     description="Update current user with shown fields",
-    dependencies=[Depends(validate_current_user_edit_itself)]
+    dependencies=[Depends(validate_current_user_edit_itself)],
 )
 async def update_user(
     username: str,
     user_in: UpdateUserIn,
     db: MongoClient = Depends(db.get_db),
 ):
+    # TODO: return 404 if user not found
     db.users.update_one(
         {"username": username},
         {"$set": user_in.dict(exclude_none=True, exclude_unset=True)},
@@ -77,7 +91,7 @@ async def update_user(
     ],
 )
 async def create_user(
-    user_in: BaseUserIn,
+    user_in: CreateUserIn,
     db: MongoClient = Depends(db.get_db),
 ):
     # TODO: add additional responses
