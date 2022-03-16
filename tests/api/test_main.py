@@ -264,7 +264,9 @@ class TestUserUpdateData:
         # * Arrange
         self._users_url_me = get_users_url + "me"
         response = client.get(self._users_url_me, headers=auth_headers)
-        self.phone = response.json()["phone"]
+        # TODO: restore or remove base on Shahar decision
+        # self.phone = response.json()["phone"]
+        self.settlement = response.json()["settlement"]
 
     def test_update_user(self, auth_headers, get_users_url):
         # * Act
@@ -283,7 +285,9 @@ class TestUserUpdateData:
         # * Assert f_name is changed
         assert response.json()["f_name"] == "new_f_name"
         # * Assert phone didn't change
-        assert response.json()["phone"] == self.phone
+        # TODO: restore or remove base on Shahar decision
+        # assert response.json()["phone"] == self.phone
+        assert response.json()["settlement"] == self.settlement
 
     def test_update_different_user(self, auth_headers, get_users_url):
         # * Act
