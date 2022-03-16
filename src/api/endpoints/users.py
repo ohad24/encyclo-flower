@@ -15,6 +15,7 @@ from endpoints.helpers_tools.user_dependencies import (
     validate_username_and_email_not_in_db,
     validate_current_user_edit_itself,
     validate_match_password,
+    get_existing_user
 )
 
 router = APIRouter()
@@ -53,11 +54,9 @@ async def read_current_user(
     description="Get user basic data",
 )
 async def read_user(
-    username: str,
-    db: MongoClient = Depends(db.get_db),
+    user: UserOut = Depends(get_existing_user),
 ):
     # TODO: return 404 if user not found
-    user = db.users.find_one({"username": username})
     return user
 
 

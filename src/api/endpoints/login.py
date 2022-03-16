@@ -1,10 +1,9 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends
-from core.security import create_access_token
+from core.security import create_access_token, get_user_for_login
 from core.config import get_settings
 from models.token import Token
 from models.user import UserInDB
-from endpoints.helpers_tools.user_dependencies import get_user_for_login
 from models.exceptions import ExceptionLogin
 
 settings = get_settings()
@@ -23,7 +22,7 @@ router = APIRouter()
 )
 def login_for_access_token(
     user: UserInDB = Depends(get_user_for_login),
-):
+) -> Token:
     access_token = create_access_token(
         user.username,
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),

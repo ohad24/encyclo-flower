@@ -2,24 +2,48 @@ from fastapi import APIRouter, File, UploadFile, Depends, Request
 from endpoints.helpers_tools import detect_vision_api, detect_google_search
 from core.config import get_settings
 from pymongo.mongo_client import MongoClient
-import db
+from db import get_db
 from models.helpers import gen_image_file_name
-import datetime
-from core.security import verify_user_in_token
+from datetime import datetime
+from core.security import ALGORITHM
 from endpoints.helpers_tools.generic import get_today_str
 from endpoints.helpers_tools.db import prepare_query_detect_image
 from core.gstorage import bucket
+from jose import jwt, JWTError
 
 settings = get_settings()
 
 router = APIRouter()
 
 
+def extract_user_from_token(
+    token: str | None, db: MongoClient
+) -> dict:
+    """
+    Local function to extract user from token.
+
+    If exists, return user (username and user_id as dict).
+    If not, return empty dict
+    """
+    try:
+        payload = jwt.decode(
+            token.split("Bearer ")[-1], settings.SECRET_KEY, algorithms=[ALGORITHM]
+        )
+        username: str = payload.get("username")
+    except (JWTError, AttributeError):
+        return {}
+
+    user_data = db.users.find_one(
+        {"username": username}, {"_id": 0, "username": 1, "user_id": 1}
+    )
+    return user_data
+
+
 @router.post("/image/")
 async def images(
     request: Request,
     file: UploadFile = File(...),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     # TODO: add response model (list of plants)
     # * init respose model
@@ -56,7 +80,7 @@ async def images(
     blob.upload_from_file(file.file, content_type=file.content_type)
 
     # * check in auth headers
-    user_data = verify_user_in_token(request.headers.get("Authorization"))
+    user_data = extract_user_from_token(token=request.headers.get("Authorization"), db=db)
 
     # * save apis_result to DB
     additional_data = dict(
@@ -67,7 +91,7 @@ async def images(
         orig_file_name=file.filename,
         file_name=new_file_name,
         content_type=file.content_type,
-        ts=datetime.datetime.utcnow(),
+        ts=datetime.utcnow(),
     )
     result_data = dict(
         google_search_by_image=apis_result["google_search_by_image"].dict(),

@@ -1,11 +1,9 @@
-import db
+from db import get_db
 from pymongo.mongo_client import MongoClient
 from models.user import CreateUserIn, UserInDB, UserBase
 from fastapi import HTTPException, Depends, status
-from core.security import get_current_active_user  # TODO: move this to here ?
-from fastapi.security import OAuth2PasswordRequestForm
-from core.security import verify_password
-from models.exceptions import ExceptionLogin
+from core.security import get_current_active_user
+from models.exceptions import ExceptionUserNotFound
 
 
 async def validate_accept_terms_of_service(user_in: CreateUserIn):
@@ -14,7 +12,7 @@ async def validate_accept_terms_of_service(user_in: CreateUserIn):
 
 
 async def validate_username_and_email_not_in_db(
-    user_in: CreateUserIn, db: MongoClient = Depends(db.get_db)
+    user_in: CreateUserIn, db: MongoClient = Depends(get_db)
 ):
     user = db.users.find_one(
         {"$or": [{"username": user_in.username}, {"email": user_in.email}]}
@@ -44,17 +42,13 @@ async def validate_match_password(user_in: CreateUserIn):
         )
 
 
-# TODO: should move to security.py ?
-async def get_user_for_login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: MongoClient = Depends(db.get_db),
+async def get_existing_user(
+    username: str, db: MongoClient = Depends(get_db)
 ) -> UserInDB:
     """
-    Check if the user exists and the password is correct.
+    Check if given user is exists in DB.
     """
-    user = db.users.find_one({"username": form_data.username})
-    if not user or not verify_password(form_data.password, user.get("password")):
-        raise HTTPException(
-            **ExceptionLogin().dict(), status_code=status.HTTP_401_UNAUTHORIZED
-        )
+    user = db.users.find_one({"username": username})
+    if not user:
+        raise HTTPException(ExceptionUserNotFound())
     return UserInDB(**user)

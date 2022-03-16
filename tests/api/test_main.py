@@ -244,7 +244,7 @@ class TestBrokenToken:
         # * Post Assert
         request.addfinalizer(set_db_restore_username)
 
-    # * test removed user
+    # * test removed/not found user
     @pytest.mark.usefixtures("set_db_update_username")
     def test_access_removed_user(self, auth_headers):
         # * Arrange
@@ -253,7 +253,8 @@ class TestBrokenToken:
             headers=auth_headers,
         )
         # * Assert
-        assert request.status_code == 401
+        assert request.status_code == 404
+        assert request.json()["detail"] == "User not found"
 
 
 class TestUserUpdateData:
