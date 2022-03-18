@@ -147,7 +147,6 @@ async def create_user(
     user_in: CreateUserIn,
     db: MongoClient = Depends(get_db),
 ):
-    # TODO: add additional responses
     # TODO: add email verification
 
     # * hash the password
