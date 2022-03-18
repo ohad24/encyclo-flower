@@ -6,7 +6,11 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, HTTPException, status
 from models.user import UserInDB
-from models.exceptions import ExceptionUserNotFound, ExceptionLogin
+from models.exceptions import (
+    ExceptionUserNotFound,
+    ExceptionLogin,
+    ExceptionUserNotPrivilege,
+)
 from pymongo.mongo_client import MongoClient
 from db import get_db
 
@@ -20,7 +24,7 @@ ALGORITHM = "HS256"
 
 e403 = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
-    detail="The user does not have enough privileges",
+    detail=ExceptionUserNotPrivilege().detail,
 )
 
 

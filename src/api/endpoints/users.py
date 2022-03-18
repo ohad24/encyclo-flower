@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Response
 from fastapi.responses import RedirectResponse
-from typing import List
+from typing import List, Union
 from pymongo.mongo_client import MongoClient
-import db
+from db import get_db
 from models.user import UserOut, CreateUserIn, UserInDB, UpdateUserIn
 from core.security import (
     get_password_hash,
@@ -15,7 +15,17 @@ from endpoints.helpers_tools.user_dependencies import (
     validate_username_and_email_not_in_db,
     validate_current_user_edit_itself,
     validate_match_password,
-    get_existing_user
+    get_existing_user,
+)
+from models.exceptions import (
+    ExceptionUserNotPrivilege,
+    ExceptionUserNotAuthenticated,
+    ExceptionUserNotFound,
+    ExceptionUserNotAllowToEditThisUser,
+    ExceptionUserNotAcceptTermsOfService,
+    ExceptionUserOrEmailAlreadyExists,
+    ExceptionPasswordNotMatch,
+    DetailUserNotFound,
 )
 
 router = APIRouter()
@@ -27,11 +37,21 @@ router = APIRouter()
     dependencies=[Depends(get_current_active_superuser)],
     summary="Get all users",
     description="Get all users. Only superusers can do this.",
+    responses={
+        401: {
+            "description": ExceptionUserNotAuthenticated().detail,
+            "model": ExceptionUserNotAuthenticated,
+        },
+        403: {
+            "description": ExceptionUserNotPrivilege().detail,
+            "model": ExceptionUserNotPrivilege,
+        },
+    },
 )
 async def read_users(
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
-):
+) -> List[UserInDB]:
     return list(db.users.find({}).skip(search_params.skip).limit(search_params.limit))
 
 
@@ -40,10 +60,16 @@ async def read_users(
     response_class=RedirectResponse,
     summary="Get current user",
     description="Redirect to user profile",
+    responses={
+        401: {
+            "description": ExceptionUserNotAuthenticated().detail,
+            "model": ExceptionUserNotAuthenticated,
+        }
+    },
 )
 async def read_current_user(
     current_user: UserOut = Depends(get_current_active_user),
-):
+) -> RedirectResponse:
     return current_user.username
 
 
@@ -52,11 +78,16 @@ async def read_current_user(
     response_model=UserOut,
     summary="User page",
     description="Get user basic data",
+    responses={
+        404: {
+            "description": DetailUserNotFound().detail,
+            "model": DetailUserNotFound,
+        },
+    },
 )
 async def read_user(
     user: UserOut = Depends(get_existing_user),
-):
-    # TODO: return 404 if user not found
+) -> UserOut:
     return user
 
 
@@ -66,13 +97,26 @@ async def read_user(
     summary="Update current user",
     description="Update current user with shown fields",
     dependencies=[Depends(validate_current_user_edit_itself)],
+    responses={
+        400: {
+            "description": ExceptionUserNotAllowToEditThisUser().detail,
+            "model": ExceptionUserNotAllowToEditThisUser,
+        },
+        401: {
+            "description": ExceptionUserNotAuthenticated().detail,
+            "model": ExceptionUserNotAuthenticated,
+        },
+        404: {
+            "description": ExceptionUserNotFound().detail,
+            "model": ExceptionUserNotFound,
+        },
+    },
 )
 async def update_user(
     username: str,
     user_in: UpdateUserIn,
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
-    # TODO: return 404 if user not found
     db.users.update_one(
         {"username": username},
         {"$set": user_in.dict(exclude_none=True, exclude_unset=True)},
@@ -88,10 +132,20 @@ async def update_user(
         Depends(validate_username_and_email_not_in_db),
         Depends(validate_match_password),
     ],
+    responses={
+        400: {
+            "description": "Input Validation",
+            "model": Union[
+                ExceptionUserNotAcceptTermsOfService,
+                ExceptionUserOrEmailAlreadyExists,
+                ExceptionPasswordNotMatch,
+            ],
+        },
+    },
 )
 async def create_user(
     user_in: CreateUserIn,
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     # TODO: add additional responses
     # TODO: add email verification
