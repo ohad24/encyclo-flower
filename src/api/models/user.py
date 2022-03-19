@@ -98,7 +98,11 @@ class UserOut(BaseUserOut):
     settlement: Optional[str]
     sex: Optional[SEX]
     create_dt: datetime
+    phone: Optional[str]
+    email: Optional[EmailStr]
 
-    # TODO: talk to shahar if anyone should see this information https://trello.com/c/8DqDO5Wa
-    # phone: Optional[str]
-    # email: EmailStr
+
+class UserMinimalMetadataOut(BaseModel):
+    user_id: Optional[str]
+    username: Optional[str]
+    is_superuser: Optional[bool]

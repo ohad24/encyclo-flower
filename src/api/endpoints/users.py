@@ -3,11 +3,18 @@ from fastapi.responses import RedirectResponse
 from typing import List, Union
 from pymongo.mongo_client import MongoClient
 from db import get_db
-from models.user import UserOut, CreateUserIn, UserInDB, UpdateUserIn
+from models.user import (
+    UserOut,
+    CreateUserIn,
+    UserInDB,
+    UpdateUserIn,
+    UserMinimalMetadataOut,
+)
 from core.security import (
     get_password_hash,
     get_current_active_user,
     get_current_active_superuser,
+    get_current_user_if_exists,
 )
 from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
 from endpoints.helpers_tools.user_dependencies import (
@@ -86,9 +93,21 @@ async def read_current_user(
     },
 )
 async def read_user(
-    user: UserOut = Depends(get_existing_user),
+    requested_user: UserOut = Depends(get_existing_user),
+    current_user: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
 ) -> UserOut:
-    return user
+    """
+    exclude email and phone if the requested user is not the current user.
+    """
+
+    # TODO: add list of requested user observability
+    # TODO: add list of requested user questions
+    # TODO: add list of detection user
+    # TODO: liked plants (not developed yet)
+
+    if requested_user.username == current_user.username or current_user.is_superuser:
+        return requested_user
+    return requested_user.dict(exclude={"email", "phone"})
 
 
 @router.put(
