@@ -52,6 +52,8 @@ def extract_username_from_token(token: str) -> str:
     """
     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
     username: str = payload.get("username")
+
+    # TODO: check expiration date in token
     return username
 
 
@@ -146,7 +148,7 @@ async def get_user_for_login(
 
     Check if the user exists and the password is correct.
     """
-    user = db.users.find_one({"username": form_data.username})
+    user = db.users.find_one({"username": form_data.username, "is_active": True})
     if not user or not verify_password(form_data.password, user.get("password")):
         raise HTTPException(
             **ExceptionLogin().dict(), status_code=status.HTTP_401_UNAUTHORIZED

@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic import BaseSettings, EmailStr
 import secrets
 from functools import lru_cache
 from dotenv import load_dotenv
@@ -21,9 +21,12 @@ class Settings(BaseSettings):
     MONGO_DB_NAME: str = os.getenv("MONGO_DB_NAME", "dev")
 
     # * Google bucket settings
-    CLOUD_BUCKET: str = os.getenv(
-        "CLOUD_BUCKET", "test1-ohad"
-    )
+    CLOUD_BUCKET: str = os.getenv("CLOUD_BUCKET", "test1-ohad")
+
+    # * Email settings
+    # * SMTP_USER and SMTP_PASS should be in environment variables
+    EMAIL_ADDRESS: EmailStr = "encyclo.flower@gmail.com"
+    EMAIL_VERIFICATION_EXPIRES_MINUTES: int = 60 * 24 * 2  # 2 days
 
 
 @lru_cache()

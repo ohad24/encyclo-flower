@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from typing import List, Union
 from pymongo.mongo_client import MongoClient
@@ -23,6 +23,7 @@ from endpoints.helpers_tools.user_dependencies import (
     validate_current_user_edit_itself,
     validate_match_password,
     get_existing_user,
+    get_user_from_email_registration_token,
 )
 from models.exceptions import (
     ExceptionUserNotPrivilege,
@@ -34,6 +35,7 @@ from models.exceptions import (
     ExceptionPasswordNotMatch,
     DetailUserNotFound,
 )
+from endpoints.helpers_tools.email import setup_email_verification
 
 router = APIRouter()
 
@@ -151,6 +153,8 @@ async def update_user(
         Depends(validate_username_and_email_not_in_db),
         Depends(validate_match_password),
     ],
+    summary="Create new user",
+    description="After registration, user must verify email",
     responses={
         400: {
             "description": "Input Validation",
@@ -164,6 +168,8 @@ async def update_user(
 )
 async def create_user(
     user_in: CreateUserIn,
+    request: Request,
+    background_tasks: BackgroundTasks,
     db: MongoClient = Depends(get_db),
 ):
     # TODO: add email verification
@@ -174,7 +180,32 @@ async def create_user(
     # * setup userInDB with hash password
     userInDB = UserInDB(**user_in.dict(exclude={"password"}), password=hash_password)
 
+    # * email verification
+    background_tasks.add_task(
+        setup_email_verification,
+        userInDB.user_id,
+        userInDB.email,
+        request.base_url,
+    )
+
     # * insert user
     db.users.insert_one(userInDB.dict())
 
     return Response(status_code=201)
+
+
+@router.get(
+    "/verify-email/{token}",
+    status_code=204,
+    summary="Verify email",
+    description="Verify email with email verification token",
+)
+async def verify_email(
+    user_id: str = Depends(get_user_from_email_registration_token),
+    db: MongoClient = Depends(get_db),
+):
+    db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"email_verified": True, "is_active": True}},
+    )
+    return Response(status_code=204)

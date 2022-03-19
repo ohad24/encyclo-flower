@@ -10,6 +10,10 @@ from models.exceptions import (
     ExceptionUserOrEmailAlreadyExists,
     ExceptionPasswordNotMatch,
 )
+from datetime import timedelta, datetime
+from core.config import get_settings
+
+settings = get_settings()
 
 
 async def validate_accept_terms_of_service(user_in: CreateUserIn):
@@ -60,3 +64,22 @@ async def get_existing_user(
     if not user:
         raise HTTPException(**ExceptionUserNotFound().dict())
     return UserInDB(**user)
+
+
+async def get_user_from_email_registration_token(
+    token: str, db: MongoClient = Depends(get_db)
+) -> str:
+    """
+    Validate email registration token and return username.
+    """
+
+    verification_data = db.email_verification_tokens.find_one({"token": token})
+    expiration_minutes = timedelta(minutes=settings.EMAIL_VERIFICATION_EXPIRES_MINUTES)
+    if (
+        not verification_data
+        or verification_data["create_dt"] + expiration_minutes < datetime.utcnow()
+    ):
+        raise HTTPException(
+            status_code=404, detail="Email verification token not found"
+        )
+    return verification_data["user_id"]

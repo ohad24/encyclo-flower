@@ -59,9 +59,10 @@ class UserInDB(UserBase):
 
     user_id: str = Field(default_factory=user_id_generator)
     password: str
-    is_active: bool = True
+    is_active: bool = False
     is_superuser: bool = False
     is_editor: bool = False
+    email_verified: bool = False
     create_dt: datetime = Field(default_factory=datetime.utcnow)
     counters: UserCounters = UserCounters()
 
@@ -70,6 +71,7 @@ class Login(BaseModel):
     """
     User input to login.
     """
+
     username: str
     password: str
 
@@ -106,3 +108,9 @@ class UserMinimalMetadataOut(BaseModel):
     user_id: Optional[str]
     username: Optional[str]
     is_superuser: Optional[bool]
+
+
+class UserEmailVerification(BaseModel):
+    user_id: str
+    token: str
+    create_dt: datetime = Field(default_factory=datetime.utcnow)

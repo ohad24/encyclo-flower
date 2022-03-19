@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 import json
 from main import app
 import pytest
-from conftest import google_credential_not_found
+from conftest import google_credential_not_found, get_db
 
 
 client = TestClient(app)
@@ -101,6 +101,24 @@ class TestCreateUser:
             response.json()["detail"]
             == "The user with this username or email already exists in the system."
         )
+
+    def test_email_verification_fails(self):
+        # * Act
+        response = client.get(self._users_url + "verify-email/aaa")
+        # * Assert
+        assert response.status_code == 404
+
+    def test_email_verification_success(self):
+        # * Arrange
+        db = get_db()
+        data = next(
+            db.email_verification_tokens.find({}).sort("create_dt", -1).limit(1)
+        )
+        print(data)
+        # * Act
+        response = client.get(self._users_url + f"verify-email/{data['token']}")
+        # * Assert
+        assert response.status_code == 204
 
 
 class TestLogin:
