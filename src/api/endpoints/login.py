@@ -1,10 +1,18 @@
-from datetime import timedelta
-from fastapi import APIRouter, Depends
-from core.security import create_access_token, get_user_for_login
+from time import time
+from fastapi import APIRouter, Depends, Request, Response, BackgroundTasks
+from core.security import create_access_token, get_user_for_login, get_password_hash
 from core.config import get_settings
 from models.token import Token
-from models.user import UserInDB
+from models.user import UserInDB, ResetPasswordIn
 from models.exceptions import ExceptionLogin
+from db import get_db
+from pymongo import MongoClient
+from endpoints.helpers_tools.user_dependencies import (
+    get_user_from_email,
+    get_user_from_reset_password_token,
+    validate_match_passwords__reset_password,
+)
+from endpoints.helpers_tools.email import setup_reset_password_email
 
 settings = get_settings()
 
@@ -25,34 +33,50 @@ def login_for_access_token(
 ) -> Token:
     access_token = create_access_token(
         user.username,
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        user.password_iat,
     )
     return Token(access_token=access_token)
 
 
-# TODO: activate reset password
-# @router.post("/reset-password/", response_model=schemas.Msg)
-# def reset_password(
-#     token: str = Body(...),
-#     new_password: str = Body(...),
-#     db: Session = Depends(deps.get_db),
-# ) -> Any:
-#     """
-#     Reset password
-#     """
-#     email = verify_password_reset_token(token)
-#     if not email:
-#         raise HTTPException(status_code=400, detail="Invalid token")
-#     user = crud.user.get_by_email(db, email=email)
-#     if not user:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="The user with this username does not exist in the system.",
-#         )
-#     elif not crud.user.is_active(user):
-#         raise HTTPException(status_code=400, detail="Inactive user")
-#     hashed_password = get_password_hash(new_password)
-#     user.hashed_password = hashed_password
-#     db.add(user)
-#     db.commit()
-#     return {"msg": "Password updated successfully"}
+@router.post(
+    "/reset-password-request",
+    status_code=204,
+    summary="Reset password request",
+    description="""When the user forgot his password for login,
+        he can request for reset VIA his email using this endpoint.""",
+)
+def reset_password_request(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    user: UserInDB = Depends(get_user_from_email),
+):
+    # TODO: add more response codes
+    background_tasks.add_task(
+        setup_reset_password_email,
+        user.user_id,
+        user.email,
+        request.base_url,
+    )
+    return Response(status_code=204)
+
+
+@router.post(
+    "/reset-password",
+    status_code=204,
+    dependencies=[Depends(validate_match_passwords__reset_password)],
+    summary="Reset password",
+    description="Change user forgotten password with available reset password token.",
+)
+def reset_password(
+    passwords_data: ResetPasswordIn,
+    user_id: str = Depends(get_user_from_reset_password_token),
+    db: MongoClient = Depends(get_db),
+):
+    # TODO: add more response codes
+    hashed_password = get_password_hash(passwords_data.password.get_secret_value())
+    db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"password": hashed_password, "password_iat": time()}},
+    )
+    db.reset_password_tokens.update_one({"user_id": user_id}, {"$set": {"used": True}})
+    return Response(status_code=204)

@@ -1,7 +1,8 @@
 from typing import Optional, Dict, Literal
 from pydantic import BaseModel, Field, EmailStr, SecretStr
-from models.helpers import user_id_generator
+from models.helpers import user_id_generator, email_verification_token
 from datetime import datetime
+from time import time
 
 SEX = Literal["זכר", "נקבה"]
 
@@ -20,16 +21,27 @@ class UserBase(BaseModel):
     sex: Optional[SEX]
 
 
-class CreateUserIn(UserBase):
-    """
-    User input to create new user.
-    """
-
+class UserPasswordIn(BaseModel):
     password: SecretStr = Field(min_length=6, max_length=50, example="123456")
     password2: SecretStr = Field(
         description="Confirm password", alias="confirm_password", example="123456"
     )
+
+
+class CreateUserIn(UserBase, UserPasswordIn):
+    """
+    User input to create new user.
+    """
+
     accept_terms_of_service: bool = Field(False, example=True)
+
+
+class ResetPasswordIn(UserPasswordIn):
+    """
+    User input to reset password.
+    """
+
+    token: str
 
 
 class UpdateUserIn(BaseModel):
@@ -59,6 +71,7 @@ class UserInDB(UserBase):
 
     user_id: str = Field(default_factory=user_id_generator)
     password: str
+    password_iat: float = Field(default_factory=time)
     is_active: bool = False
     is_superuser: bool = False
     is_editor: bool = False
@@ -110,7 +123,24 @@ class UserMinimalMetadataOut(BaseModel):
     is_superuser: Optional[bool]
 
 
-class UserEmailVerification(BaseModel):
+class UserVerificationTokenData(BaseModel):
     user_id: str
-    token: str
+    token: str = Field(default_factory=email_verification_token)
     create_dt: datetime = Field(default_factory=datetime.utcnow)
+
+
+class UserVerificationTokenDataExt(UserVerificationTokenData):
+    """
+    Extended user verification token data for password reset.
+    Allow only one token use. IF token is used, it will be set to True.
+    """
+    used: bool = False
+
+
+class UserQueryParams(BaseModel):
+    """
+    User query - For find one user in DB.
+    """
+    username: str
+    password_iat: dict
+    email_verified: bool = True

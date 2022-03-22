@@ -1,8 +1,7 @@
 from envsmtp import EmailMessage
 from pydantic import EmailStr
 from core.config import get_settings
-from uuid import uuid4
-from models.user import UserEmailVerification
+from models.user import UserVerificationTokenData, UserVerificationTokenDataExt
 from db import get_db
 from pymongo import MongoClient
 import os
@@ -27,15 +26,17 @@ def setup_email_verification(
     Setup and send email verification token to user email.
     """
 
-    # * generate token
-    email_verification_token = uuid4().hex
+    # * create user email verification object
+    user_verification = UserVerificationTokenData(
+        user_id=user_id,
+    )
 
     # * set email body
     # TODO: setup a production email template
     body = f"""
     Hi,
     Please click the link below to verify your email address:
-    {base_url}{settings.API_PREFIX[1:]}/users/verify-email/{email_verification_token}
+    {base_url}{settings.API_PREFIX[1:]}/users/verify-email/{user_verification.token}
 
     The link will expire in 48 hours.
 
@@ -43,20 +44,52 @@ def setup_email_verification(
     The {settings.APP_NAME} Team
     """
 
-    # * create user email verification object
-    email_verification = UserEmailVerification(
-        user_id=user_id,
-        token=email_verification_token,
-    )
-
     # * store token in db
-    db.email_verification_tokens.insert_one(email_verification.dict())
+    db.email_verification_tokens.insert_one(user_verification.dict())
 
     # * send mail with token
     msg = EmailMessage(
         sender=settings.EMAIL_ADDRESS,
         receipients=email,
         subject="Email verification",
+        body=body,
+    )
+    send_email(msg)
+
+
+def setup_reset_password_email(
+    user_id: str, email: EmailStr, base_url: str, db: MongoClient = get_db()
+):
+    """
+    Setup and send email verification token to user email.
+    """
+
+    # * create user email verification object
+    user_verification = UserVerificationTokenDataExt(
+        user_id=user_id,
+    )
+
+    # * set email body
+    # TODO: setup a production email template
+    body = f"""
+    Hi,
+    Please click the link below to reset your password:
+    {base_url}{settings.API_PREFIX[1:]}/login/reset-password/{user_verification.token}
+
+    The link will expire in 24 hours.
+
+    Thanks,
+    The {settings.APP_NAME} Team
+    """
+
+    # * store token in db
+    db.reset_password_tokens.insert_one(user_verification.dict())
+
+    # * send mail with token
+    msg = EmailMessage(
+        sender=settings.EMAIL_ADDRESS,
+        receipients=email,
+        subject="Reset password",
         body=body,
     )
     send_email(msg)

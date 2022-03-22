@@ -5,12 +5,13 @@ from core.config import get_settings
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, HTTPException, status
-from models.user import UserInDB, UserMinimalMetadataOut
+from models.user import UserInDB, UserMinimalMetadataOut, UserQueryParams
 from models.exceptions import (
     ExceptionUserNotFound,
     ExceptionLogin,
     ExceptionUserNotPrivilege,
 )
+from models.token import TokenData
 from pymongo.mongo_client import MongoClient
 from db import get_db
 
@@ -30,10 +31,10 @@ e403 = HTTPException(
 )
 
 
-def create_access_token(username: str, expires_delta: timedelta) -> str:
-    expire = datetime.utcnow() + expires_delta
-    to_encode = {"exp": expire, "username": username}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+def create_access_token(username: str, password_iat: float) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode = TokenData(exp=expire, sub=username, iat=password_iat)
+    encoded_jwt = jwt.encode(to_encode.dict(), settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -45,16 +46,35 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def extract_username_from_token(token: str) -> str:
+def search_user_in_db_from_token(token_data: TokenData, db: MongoClient) -> dict:
     """
-    It might brake if the token is not valid.
-    Run this with a try/except block.
+    Search user in db from token data
     """
-    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-    username: str = payload.get("username")
+    user = db.users.find_one(
+        UserQueryParams(
+            username=token_data.sub, password_iat={"$lte": token_data.iat}
+        ).dict()
+    )
+    return user
 
-    # TODO: check expiration date in token
-    return username
+
+def extract_data_from_token(token: str) -> TokenData | None:
+    """
+    Extract data from token.
+    If not valid, return None.
+    """
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        return None
+    token_data = TokenData(**payload)
+    return token_data
+
+
+def validate_token_exists_and_not_expired(token_data: TokenData) -> bool:
+    if not token_data or token_data.exp < datetime.now(token_data.exp.tzinfo):
+        return True  # * something wrong with token
+    return False  # * token is OK
 
 
 async def get_current_user_if_exists(
@@ -66,34 +86,28 @@ async def get_current_user_if_exists(
     If exists, return user (username and user_id as dict).
     If not, return empty dict
     """
-    try:
-        username = extract_username_from_token(token)
-    except (JWTError, AttributeError):
+    token_data = extract_data_from_token(token)
+    if validate_token_exists_and_not_expired(token_data):
         return UserMinimalMetadataOut()
 
-    user_data = db.users.find_one(
-        {"username": username},
-        {"_id": 0, "username": 1, "user_id": 1, "is_superuser": 1},
-    )
-    return UserMinimalMetadataOut(**user_data)
+    user = search_user_in_db_from_token(token_data, db)
+    return UserMinimalMetadataOut(**user)
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: MongoClient = Depends(get_db)
+    token: str = Depends(oauth2_scheme),
+    db: MongoClient = Depends(get_db),
 ) -> UserInDB:
     """
     Validate the user in the token and db
     """
-    try:
-        username = extract_username_from_token(token)
-    except (JWTError, AttributeError):
+    token_data = extract_data_from_token(token)
+    if validate_token_exists_and_not_expired(token_data):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
         )
-
-    user = db.users.find_one({"username": username})
+    user = search_user_in_db_from_token(token_data, db)
     if not user:
         raise HTTPException(**ExceptionUserNotFound().dict())
     return UserInDB(**user)
@@ -148,7 +162,9 @@ async def get_user_for_login(
 
     Check if the user exists and the password is correct.
     """
-    user = db.users.find_one({"username": form_data.username, "is_active": True})
+    user = db.users.find_one(
+        {"username": form_data.username, "is_active": True, "email_verified": True}
+    )
     if not user or not verify_password(form_data.password, user.get("password")):
         raise HTTPException(
             **ExceptionLogin().dict(), status_code=status.HTTP_401_UNAUTHORIZED
