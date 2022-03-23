@@ -66,7 +66,7 @@
 
     - name: Ensure latest docker compose files for api
       get_url: 
-        url: "https://raw.githubusercontent.com/ohad24/encyclo-flower/server/server/{{ item }}"
+        url: "https://raw.githubusercontent.com/ohad24/encyclo-flower/main/server/{{ item }}"
         dest: "{{ api_user.home }}/{{ item }}"
         owner: "{{ api_user.name }}"
         group: "{{ api_user.group }}"
