@@ -1,0 +1,40 @@
+---
+services:
+  swag:
+    image: linuxserver/swag:latest
+    container_name: swag
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - swag:/config
+      - ./api.subfolder.conf:/config/nginx/proxy-confs/api.subfolder.conf
+    environment:
+      - PUID=2000
+      - PGID=2000
+      - TZ=Asia/Jerusalem
+      - URL=encyclo-flower.com
+      - SUBDOMAINS=dev
+      - ONLY_SUBDOMAINS=true
+      - EMAIL=encyclo.flower@gmail.com
+      - VALIDATION=http
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - web
+
+  # api:
+  #   image: ohad24/encyclo-flower:latest
+  #   container_name: api
+  #   restart: always
+  #   env_file:
+  #     - api.env
+  #   networks:
+  #     - web
+
+volumes:
+  swag:
+
+networks:
+  web:

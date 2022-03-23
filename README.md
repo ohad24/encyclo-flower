@@ -51,8 +51,13 @@ cd src/api
 uvicorn main:app --reload
 ```
 
-
-
+### Ansible
+    sudo apt install ansible
+    cd server
+    ansible-galaxy role install -r roles/requirements.yml
+    ansible-galaxy collection install -r roles/requirements.yml
+    # IF THAT FAILS: ansible-galaxy collection install community.general community.docker
+    ansible-playbook playbook.yml
 
 
 ### dev environment:

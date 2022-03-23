@@ -1,0 +1,82 @@
+---
+- hosts: test
+  become: True
+  # gather_facts: False
+  tasks:
+    - name: Update packages
+      apt:
+        autoclean: yes
+        autoremove: yes
+        update_cache: yes
+        upgrade: dist
+
+    - name: Set hostname
+      hostname:
+        # NOTE: Manually change this to www for production
+        name: dev.encyclo-flower.com
+
+    - name: Set timezone
+      community.general.timezone:
+        name: Asia/Jerusalem
+
+    - name: Create group for the api
+      group:
+        name: api
+        gid: 2000
+
+    - name: Create user for the api
+      user:
+        group: api
+        name: api
+        uid: 2000
+      register: api_user
+
+    - name: Remove default ubuntu user
+      user:
+        name: ubuntu
+        state: absent
+        remove: yes
+
+    - name: Harden ssh settings
+      include_role: 
+        name: ofersadan85.hardssh
+
+    - name: Install pip & docker packages
+      include_role:
+        name: geerlingguy.pip
+      vars:
+        pip_install_packages:
+          - docker
+          - docker-compose
+
+    - name: Install docker
+      include_role:
+        name: geerlingguy.docker
+      vars:
+        docker_package_state: latest
+        docker_install_compose: false
+        docker_users: 
+          - "{{ api_user.name }}"
+
+    - name: Install latest docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
+        dest: /usr/libexec/docker/cli-plugins/docker-compose
+        mode: 0755
+
+    - name: Ensure latest docker compose files for api
+      get_url: 
+        url: "https://raw.githubusercontent.com/ohad24/encyclo-flower/server/server/{{ item }}"
+        dest: "{{ api_user.home }}/{{ item }}"
+        owner: "{{ api_user.name }}"
+        group: "{{ api_user.group }}"
+        mode: 0440
+      loop:
+        - docker-compose.yml
+        - api.subfolder.conf
+
+    - name: Run docker services
+      community.docker.docker_compose:
+        project_src: "{{ api_user.home }}"
+        pull: yes
+        remove_orphans: yes
