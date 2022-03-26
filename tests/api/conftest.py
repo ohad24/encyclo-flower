@@ -6,6 +6,7 @@ import os
 import logging
 
 os.environ["MONGO_DB_NAME"] = "test"
+os.environ["SMTP_TEST"] = "encyclo.flower@gmail.com"  # * Test data https://github.com/ofersadan85/envsmtp
 sys.path.append("./src/api/")
 
 from db import get_db

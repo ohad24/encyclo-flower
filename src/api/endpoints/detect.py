@@ -1,14 +1,15 @@
-from fastapi import APIRouter, File, UploadFile, Depends, Request
+from fastapi import APIRouter, File, UploadFile, Depends
 from endpoints.helpers_tools import detect_vision_api, detect_google_search
 from core.config import get_settings
 from pymongo.mongo_client import MongoClient
-import db
+from db import get_db
 from models.helpers import gen_image_file_name
-import datetime
-from core.security import verify_user_in_token
+from datetime import datetime
+from core.security import get_current_user_if_exists
 from endpoints.helpers_tools.generic import get_today_str
 from endpoints.helpers_tools.db import prepare_query_detect_image
 from core.gstorage import bucket
+from models.user import UserMinimalMetadataOut
 
 settings = get_settings()
 
@@ -17,9 +18,9 @@ router = APIRouter()
 
 @router.post("/image/")
 async def images(
-    request: Request,
     file: UploadFile = File(...),
-    db: MongoClient = Depends(db.get_db),
+    user_data: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
+    db: MongoClient = Depends(get_db),
 ):
     # TODO: add response model (list of plants)
     # * init respose model
@@ -55,19 +56,16 @@ async def images(
     blob = bucket.blob("image_api_files/" + new_file_name)
     blob.upload_from_file(file.file, content_type=file.content_type)
 
-    # * check in auth headers
-    user_data = verify_user_in_token(request.headers.get("Authorization"))
-
     # * save apis_result to DB
     additional_data = dict(
-        user_data=user_data,
+        user_data=user_data.dict(include={"username", "user_id"}),
         self_link=blob.self_link,
         media_link=blob.media_link,
         public_url=blob.public_url,
         orig_file_name=file.filename,
         file_name=new_file_name,
         content_type=file.content_type,
-        ts=datetime.datetime.utcnow(),
+        ts=datetime.utcnow(),
     )
     result_data = dict(
         google_search_by_image=apis_result["google_search_by_image"].dict(),
@@ -80,7 +78,7 @@ async def images(
     # * increase user usage counter of images detection if signed in
     if user_data:
         db.users.update_one(
-            {"username": user_data.get("username")},
+            {"username": user_data.username},
             {"$inc": {f"counters.image_detection.{get_today_str()}": 1}},
         )
 

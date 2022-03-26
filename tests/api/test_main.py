@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 import json
 from main import app
 import pytest
-from conftest import google_credential_not_found
+from conftest import google_credential_not_found, get_db
 
 
 client = TestClient(app)
@@ -43,8 +43,9 @@ class TestCreateUser:
                 "f_name": "Bob",
                 "l_name": "Salad",
                 "password": "test12",
+                "confirm_password": "test12",
                 "email": f"{pytest.test_username}@1.com",
-                "sex": "female",
+                "sex": "נקבה",
                 "phone": "+123456789",
                 "settlement": "Haifa",
                 "accept_terms_of_service": "true",
@@ -61,10 +62,23 @@ class TestCreateUser:
             json=false_terms_of_service_data,
         )
         # * Assert
-        assert response.status_code == 422
+        assert response.status_code == 400
         assert (
-            response.json()["detail"][0]["msg"] == "Terms of service must be accepted"
+            response.json()["detail"] == "Terms of service must be accepted"
+        ), response.json()
+
+    def test_password_not_match(self):
+        # * Arrange
+        login_json = json.loads(self._login_json)
+        login_json["confirm_password"] = "test13"
+        # * Act
+        response = client.post(
+            self._users_url,
+            json=login_json,
         )
+        # * Assert
+        assert response.status_code == 400
+        assert response.json()["detail"] == "The passwords do not match"
 
     def test_create_user(self):
         # * Act
@@ -73,7 +87,7 @@ class TestCreateUser:
             data=self._login_json,
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 201
 
     def test_create_user_duplicate(self):
         # * Act
@@ -83,6 +97,28 @@ class TestCreateUser:
         )
         # * Assert
         assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "The user with this username or email already exists in the system."
+        )
+
+    def test_email_verification_fails(self):
+        # * Act
+        response = client.get(self._users_url + "verify-email/aaa")
+        # * Assert
+        assert response.status_code == 404
+
+    def test_email_verification_success(self):
+        # * Arrange
+        db = get_db()
+        data = next(
+            db.email_verification_tokens.find({}).sort("create_dt", -1).limit(1)
+        )
+        print(data)
+        # * Act
+        response = client.get(self._users_url + f"verify-email/{data['token']}")
+        # * Assert
+        assert response.status_code == 204
 
 
 class TestLogin:
@@ -142,6 +178,12 @@ class TestUserAccess:
         assert response.status_code == 200
         assert response.json()["username"] == pytest.test_username
 
+    def test_get_user__user_not_found(self, auth_headers):
+        # * Act
+        response = client.get(self._users_url + "aaa")
+        # * Assert
+        assert response.status_code == 404
+
     @pytest.fixture
     def set_db_inactive_active_user(self, db, request):
         # * Arrange
@@ -194,6 +236,82 @@ class TestUserAccess:
         assert response.json()["detail"] == "The user does not have enough privileges"
 
 
+class TestResetPassword:
+
+    email = f"{pytest.test_username}@1.com"
+
+    def test_reset_password_request(self, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password-request",
+            json={"email": self.email},
+        )
+        # * Assert
+        assert response.status_code == 204, response.json()
+
+    def test_reset_password_request__wrong_email(self, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password-request",
+            json={"email": "1@1.com"},
+        )
+        # * Assert
+        assert response.status_code == 404, response.json()
+
+    @pytest.fixture()
+    def reset_password_token(self, db):
+        user_data = next(db.users.find({"email": self.email}))
+        data = next(
+            db.reset_password_tokens.find({"user_id": user_data.get("user_id")})
+        )
+        return data["token"]
+
+    def test_reset_password(self, reset_password_token, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password",
+            json={
+                "token": reset_password_token,
+                "password": "test12",
+                "confirm_password": "test12",
+            },
+        )
+        # * Assert
+        assert response.status_code == 204, response.json()
+
+    def test_reset_password__invalid_token(self, reset_password_token, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password",
+            json={
+                "token": reset_password_token + "a",
+                "password": "test12",
+                "confirm_password": "test12",
+            },
+        )
+        # * Assert
+        assert response.status_code == 404, response.json()
+
+    def test_login_after_reset_password(self, base_url, auth_headers):
+        # * arrange
+        token_url = base_url + "token"
+        login_headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        # * Act
+        response = client.post(
+            token_url,
+            data={"username": pytest.test_username, "password": "test12"},
+            headers=login_headers,
+        )
+        # * Assert
+        assert response.status_code == 200
+
+        # * update fixture auth_data
+        auth_headers["Authorization"] = f"Bearer {response.json()['access_token']}"
+
+
 class TestBrokenToken:
     @pytest.fixture(autouse=True)
     def prepare_test_data(self, get_users_url):
@@ -226,7 +344,7 @@ class TestBrokenToken:
         # * Post Assert
         request.addfinalizer(set_db_restore_username)
 
-    # * test removed user
+    # * test removed/not found user
     @pytest.mark.usefixtures("set_db_update_username")
     def test_access_removed_user(self, auth_headers):
         # * Arrange
@@ -235,7 +353,8 @@ class TestBrokenToken:
             headers=auth_headers,
         )
         # * Assert
-        assert request.status_code == 401
+        assert request.status_code == 404
+        assert request.json()["detail"] == "User not found"
 
 
 class TestUserUpdateData:
@@ -247,6 +366,7 @@ class TestUserUpdateData:
         self._users_url_me = get_users_url + "me"
         response = client.get(self._users_url_me, headers=auth_headers)
         self.phone = response.json()["phone"]
+        self.settlement = response.json()["settlement"]
 
     def test_update_user(self, auth_headers, get_users_url):
         # * Act
@@ -256,10 +376,17 @@ class TestUserUpdateData:
             json={"f_name": "new_f_name", "l_name": "new_l_name"},
         )
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 204
+
+        # * Act (get user)
+        response = client.get(
+            get_users_url + pytest.test_username, headers=auth_headers
+        )
+        # * Assert f_name is changed
         assert response.json()["f_name"] == "new_f_name"
         # * Assert phone didn't change
         assert response.json()["phone"] == self.phone
+        assert response.json()["settlement"] == self.settlement
 
     def test_update_different_user(self, auth_headers, get_users_url):
         # * Act
@@ -298,6 +425,7 @@ class TestHelpers:
         assert response.json()["detail"] == "location not found"
 
 
+@pytest.mark.skip(reason="Currently not developed fully")
 @google_credential_not_found
 class TestDetectImage:
     def test_detect_image(self, auth_headers, get_detect_image_url):

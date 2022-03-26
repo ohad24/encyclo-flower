@@ -24,7 +24,7 @@ from models.user_questions import (
     AnswerFilterType,
     GetQuestionsFilterPreviewQuery,
 )
-import models.user as user_model
+from models.user import UserInDB
 from models.generic import RotateDirection, Comment, CommentInDB
 from core.security import get_current_active_user, get_current_privilege_user
 from core.gstorage import bucket
@@ -69,7 +69,7 @@ async def get_question(
 def add_comment(
     comment: Comment,
     question_id: str = Depends(get_question_id),
-    user: user_model.User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
 ):
     comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
@@ -82,7 +82,7 @@ def add_comment(
 @router.post("/", response_model=QuestionInResponse)
 async def ask_question(
     question: Question,
-    current_user: user_model.User = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
 ):
     questionInDB = QuestionInDB(**question.dict(), user_id=current_user.user_id)
@@ -181,7 +181,7 @@ async def delete_image_from_question(
 async def answer_question(
     answer: Answer,
     question_id: str = Depends(get_question_id),
-    current_user: user_model.User = Depends(get_current_privilege_user),
+    current_user: UserInDB = Depends(get_current_privilege_user),
     db: MongoClient = Depends(db.get_db),
 ):
     # TODO: replace with dependency

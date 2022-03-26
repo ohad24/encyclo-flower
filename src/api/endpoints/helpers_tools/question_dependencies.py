@@ -1,7 +1,7 @@
 import db
 from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
-import models.user as user_model
+from models.user import UserInDB
 from models.user_questions import (
     QuestionInDB,
     QuestionImageInDB,
@@ -42,7 +42,7 @@ async def get_current_question(
 
 async def validate_user_is_question_owner(
     question: QuestionInDB = Depends(get_current_question),
-    user: user_model.User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
 ) -> QuestionInDB:
     if user.user_id != question.user_id:
         raise HTTPException(
@@ -59,7 +59,7 @@ async def get_current_question_w_valid_owner(
 
 async def get_current_question_w_valid_editor(
     question: QuestionInDB = Depends(get_current_question),
-    user: user_model.User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
 ) -> QuestionInDB:
     """
     valid editor is the question owner or an admin/editor

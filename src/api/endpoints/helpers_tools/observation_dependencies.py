@@ -1,7 +1,7 @@
 import db
 from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
-from models.user import User
+from models.user import UserInDB
 from models.user_observations import (
     ObservationOut,
     ObservationImageInDB_w_oid,
@@ -54,7 +54,7 @@ async def get_current_observation(
 
 
 async def validate_user_is_observation_owner(
-    user: User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
     observation: ObservationOut = Depends(get_current_observation),
 ) -> ObservationOut:
     if user.user_id != observation.user_id:
@@ -71,7 +71,7 @@ async def get_current_observation_w_valid_owner(
 
 
 async def get_current_observation_w_valid_editor(
-    user: User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
     observation: ObservationOut = Depends(get_current_observation),
 ) -> ObservationOut:
     """
