@@ -13,23 +13,23 @@
     - name: Set hostname
       hostname:
         # NOTE: Manually change this to www for production
-        name: dev.encyclo-flower.com
+        name: srv01.encyclo-flower.com
 
     - name: Set timezone
       community.general.timezone:
         name: Asia/Jerusalem
 
-    - name: Create group for the api
+    - name: Create group for the stack
       group:
-        name: api
+        name: ef
         gid: 2000
 
-    - name: Create user for the api
+    - name: Create user for the stack
       user:
-        group: api
-        name: api
+        group: ef
+        name: ef
         uid: 2000
-      register: api_user
+      register: stack_user
 
     - name: Remove default ubuntu user
       user:
@@ -56,7 +56,7 @@
         docker_package_state: latest
         docker_install_compose: false
         docker_users: 
-          - "{{ api_user.name }}"
+          - "{{ stack_user.name }}"
 
     - name: Install latest docker-compose
       get_url:
@@ -64,12 +64,12 @@
         dest: /usr/libexec/docker/cli-plugins/docker-compose
         mode: 0755
 
-    - name: Ensure latest docker compose files for api
+    - name: Ensure latest docker compose files
       get_url: 
         url: "https://raw.githubusercontent.com/ohad24/encyclo-flower/main/server/{{ item }}"
-        dest: "{{ api_user.home }}/{{ item }}"
-        owner: "{{ api_user.name }}"
-        group: "{{ api_user.group }}"
+        dest: "{{ stack_user.home }}/{{ item }}"
+        owner: "{{ stack_user.name }}"
+        group: "{{ stack_user.group }}"
         mode: 0440
       loop:
         - docker-compose.yml
@@ -77,6 +77,6 @@
 
     - name: Run docker services
       community.docker.docker_compose:
-        project_src: "{{ api_user.home }}"
+        project_src: "{{ stack_user.home }}"
         pull: yes
         remove_orphans: yes
