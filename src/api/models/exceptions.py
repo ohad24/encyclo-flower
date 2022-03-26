@@ -35,6 +35,14 @@ class ExceptionPasswordNotMatch(BaseModel):
     detail: str = "The passwords do not match"
 
 
+class ExceptionUserResetPasswordTokenNotFound(BaseModel):
+    detail: str = "Reset password token not found"
+
+
+class ExceptionEmailVerificationTokenNotFound(BaseModel):
+    detail: str = "Email verification token not found"
+
+
 class ExceptionLogin(BaseModel):
     detail: str = "Incorrect username or password"
 

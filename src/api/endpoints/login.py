@@ -4,7 +4,12 @@ from core.security import create_access_token, get_user_for_login, get_password_
 from core.config import get_settings
 from models.token import Token
 from models.user import UserInDB, ResetPasswordIn
-from models.exceptions import ExceptionLogin
+from models.exceptions import (
+    ExceptionLogin,
+    DetailUserNotFound,
+    ExceptionPasswordNotMatch,
+    ExceptionUserResetPasswordTokenNotFound,
+)
 from db import get_db
 from pymongo import MongoClient
 from endpoints.helpers_tools.user_dependencies import (
@@ -44,13 +49,15 @@ def login_for_access_token(
     summary="Reset password request",
     description="""When the user forgot his password for login,
         he can request for reset VIA his email using this endpoint.""",
+    responses={
+        404: {"description": DetailUserNotFound().detail, "model": DetailUserNotFound},
+    },
 )
 def reset_password_request(
     request: Request,
     background_tasks: BackgroundTasks,
     user: UserInDB = Depends(get_user_from_email),
 ):
-    # TODO: add more response codes
     background_tasks.add_task(
         setup_reset_password_email,
         user.user_id,
@@ -66,13 +73,22 @@ def reset_password_request(
     dependencies=[Depends(validate_match_passwords__reset_password)],
     summary="Reset password",
     description="Change user forgotten password with available reset password token.",
+    responses={
+        400: {
+            "description": ExceptionPasswordNotMatch().detail,
+            "model": ExceptionPasswordNotMatch,
+        },
+        404: {
+            "description": ExceptionUserResetPasswordTokenNotFound().detail,
+            "model": ExceptionUserResetPasswordTokenNotFound,
+        },
+    },
 )
 def reset_password(
     passwords_data: ResetPasswordIn,
     user_id: str = Depends(get_user_from_reset_password_token),
     db: MongoClient = Depends(get_db),
 ):
-    # TODO: add more response codes
     hashed_password = get_password_hash(passwords_data.password.get_secret_value())
     db.users.update_one(
         {"user_id": user_id},

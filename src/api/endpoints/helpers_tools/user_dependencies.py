@@ -16,6 +16,8 @@ from models.exceptions import (
     ExceptionUserNotAcceptTermsOfService,
     ExceptionUserOrEmailAlreadyExists,
     ExceptionPasswordNotMatch,
+    ExceptionUserResetPasswordTokenNotFound,
+    ExceptionEmailVerificationTokenNotFound,
 )
 from datetime import timedelta, datetime
 from core.config import get_settings
@@ -99,7 +101,7 @@ async def get_user_from_email_registration_token(
         or verification_data["create_dt"] + expiration_minutes < datetime.utcnow()
     ):
         raise HTTPException(
-            status_code=404, detail="Email verification token not found"
+            status_code=404, detail=ExceptionEmailVerificationTokenNotFound().detail
         )
     return verification_data["user_id"]
 
@@ -133,5 +135,7 @@ async def get_user_from_reset_password_token(
         not verification_data
         or verification_data["create_dt"] + expiration_minutes < datetime.utcnow()
     ):
-        raise HTTPException(status_code=404, detail="Reset password token not found")
+        raise HTTPException(
+            status_code=404, detail=ExceptionUserResetPasswordTokenNotFound().detail
+        )
     return verification_data["user_id"]

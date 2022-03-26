@@ -34,6 +34,7 @@ from models.exceptions import (
     ExceptionUserOrEmailAlreadyExists,
     ExceptionPasswordNotMatch,
     DetailUserNotFound,
+    ExceptionEmailVerificationTokenNotFound,
 )
 from endpoints.helpers_tools.email import setup_email_verification
 
@@ -199,6 +200,12 @@ async def create_user(
     status_code=204,
     summary="Verify email",
     description="Verify email with email verification token",
+    responses={
+        404: {
+            "description": ExceptionEmailVerificationTokenNotFound().detail,
+            "model": ExceptionEmailVerificationTokenNotFound,
+        },
+    },
 )
 async def verify_email(
     user_id: str = Depends(get_user_from_email_registration_token),
