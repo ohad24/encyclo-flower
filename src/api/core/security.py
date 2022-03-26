@@ -58,17 +58,19 @@ def search_user_in_db_from_token(token_data: TokenData, db: MongoClient) -> dict
     return user
 
 
-def extract_data_from_token(token: str) -> TokenData | None:
+def extract_data_from_token(token: str | None) -> TokenData | None:
     """
     Extract data from token.
     If not valid, return None.
     """
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
-        return None
-    token_data = TokenData(**payload)
-    return token_data
+    if token:
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        except JWTError:
+            return None
+        token_data = TokenData(**payload)
+        return token_data
+    return None
 
 
 def validate_token_exists_and_not_expired(token_data: TokenData) -> bool:
@@ -78,7 +80,7 @@ def validate_token_exists_and_not_expired(token_data: TokenData) -> bool:
 
 
 async def get_current_user_if_exists(
-    token: str = Depends(oauth2_scheme), db: MongoClient = Depends(get_db)
+    token: str | None = Depends(oauth2_scheme), db: MongoClient = Depends(get_db)
 ) -> UserMinimalMetadataOut:
     """
     Function to extract user from token.
@@ -95,7 +97,7 @@ async def get_current_user_if_exists(
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: str | None = Depends(oauth2_scheme),
     db: MongoClient = Depends(get_db),
 ) -> UserInDB:
     """

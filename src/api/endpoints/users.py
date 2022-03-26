@@ -4,6 +4,7 @@ from typing import List, Union
 from pymongo.mongo_client import MongoClient
 from db import get_db
 from models.user import (
+    BaseUserOut,
     UserOut,
     CreateUserIn,
     UserInDB,
@@ -37,6 +38,8 @@ from models.exceptions import (
     ExceptionEmailVerificationTokenNotFound,
 )
 from endpoints.helpers_tools.email import setup_email_verification
+from models.user_observations import ObservationPreviewBase
+from models.user_questions import QuestionPreviewBase
 
 router = APIRouter()
 
@@ -78,7 +81,7 @@ async def read_users(
     },
 )
 async def read_current_user(
-    current_user: UserOut = Depends(get_current_active_user),
+    current_user: BaseUserOut = Depends(get_current_active_user),
 ) -> RedirectResponse:
     return current_user.username
 
@@ -87,7 +90,7 @@ async def read_current_user(
     "/{username}",
     response_model=UserOut,
     summary="User page",
-    description="Get user basic data",
+    description="Get user basic data with list of observations and questions",
     responses={
         404: {
             "description": DetailUserNotFound().detail,
@@ -96,20 +99,42 @@ async def read_current_user(
     },
 )
 async def read_user(
-    requested_user: UserOut = Depends(get_existing_user),
+    requested_user: UserInDB = Depends(get_existing_user),
     current_user: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
+    db: MongoClient = Depends(get_db),
 ) -> UserOut:
     """
     exclude email and phone if the requested user is not the current user.
     """
+    # TODO: Refactor this in the future when needed
 
-    # TODO: add list of requested user observability
-    # TODO: add list of requested user questions
-    # TODO: add list of detection user
+    # * set requested user object
+    requested_user = UserOut(**requested_user.dict())
+
+    # * get user observations (all of them)
+    observations = list(
+        db.observations.find(
+            {"user_id": requested_user.user_id, "submitted": True, "deleted": False}
+        ).sort("create_dt", -1)
+    )
+    requested_user.observations = [ObservationPreviewBase(**x) for x in observations]
+
+    # * get user questions (all of them)
+    # TODO: Add "submitted" in the query (when development is done)
+    questions = list(
+        db.questions.find({"user_id": requested_user.user_id, "deleted": False}).sort(
+            "create_dt", -1
+        )
+    )
+    requested_user.questions = [QuestionPreviewBase(**x) for x in questions]
+
+    # TODO: add list of detection user (not developed yet)
     # TODO: liked plants (not developed yet)
 
     if requested_user.username == current_user.username or current_user.is_superuser:
+        # * When requested user is the current user or current user is a superuser
         return requested_user
+    # * When requested user is not the current user or current user is not a superuser
     return requested_user.dict(exclude={"email", "phone"})
 
 

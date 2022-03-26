@@ -1,8 +1,11 @@
-from typing import Optional, Dict, Literal
+from typing import Optional, Dict, Literal, List
 from pydantic import BaseModel, Field, EmailStr, SecretStr
 from models.helpers import user_id_generator, email_verification_token
 from datetime import datetime
 from time import time
+from models.base import BaseUserOut
+from models.user_observations import ObservationPreviewBase
+from models.user_questions import QuestionPreviewBase
 
 SEX = Literal["זכר", "נקבה"]
 
@@ -89,17 +92,6 @@ class Login(BaseModel):
     password: str
 
 
-class BaseUserOut(BaseModel):
-    """
-    For general objects. (observations, questions, comments etc.)
-    """
-
-    user_id: str
-    username: str
-    f_name: str
-    l_name: str
-
-
 class UserOut(BaseUserOut):
     """
     Full user attributes out.
@@ -107,14 +99,16 @@ class UserOut(BaseUserOut):
     For user page
     """
 
-    username: str
-    f_name: str
-    l_name: str
     settlement: Optional[str]
     sex: Optional[SEX]
     create_dt: datetime
     phone: Optional[str]
     email: Optional[EmailStr]
+
+    observations: List[ObservationPreviewBase] = []
+    questions: List[QuestionPreviewBase] = []
+    image_detections: List = []
+    favorite_plants: List = []
 
 
 class UserMinimalMetadataOut(BaseModel):

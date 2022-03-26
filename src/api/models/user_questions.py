@@ -62,12 +62,16 @@ class QuestionInDB(Question):
     user_data: BaseUserOut | None = None
 
 
-class QuestionsPreview(BaseModel):
+class QuestionPreviewBase(BaseModel):
     question_id: str
     question_text: str
     answer: Optional[AnswerInDB]
     image: Optional[ImagePreview]
     created_dt: datetime
+
+
+class QuestionsPreview(QuestionPreviewBase):
+    # TODO: fix class name to QuestionPreview
     user_id: str
     username: str
 
