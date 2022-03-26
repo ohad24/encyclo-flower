@@ -15,9 +15,9 @@ services:
       - TZ=Asia/Jerusalem
       - URL=encyclo-flower.com
       - SUBDOMAINS=dev
-      - ONLY_SUBDOMAINS=true
+      - ONLY_SUBDOMAINS=true  # Will need to change for production
       - EMAIL=encyclo.flower@gmail.com
-      - VALIDATION=http
+      - VALIDATION=http  # Required: certbot validation method
     ports:
       - 80:80
       - 443:443
