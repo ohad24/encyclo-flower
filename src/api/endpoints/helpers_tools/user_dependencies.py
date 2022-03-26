@@ -6,6 +6,7 @@ from models.user import (
     UserBase,
     UserPasswordIn,
     ResetPasswordIn,
+    UserForgetPasswordRequest,
 )
 from fastapi import HTTPException, Depends, status
 from core.security import get_current_active_user
@@ -104,12 +105,12 @@ async def get_user_from_email_registration_token(
 
 
 async def get_user_from_email(
-    email: str, db: MongoClient = Depends(get_db)
+    email: UserForgetPasswordRequest, db: MongoClient = Depends(get_db)
 ) -> UserInDB:
     """
     Validate email and return user.
     """
-    user = db.users.find_one({"email": email})
+    user = db.users.find_one({"email": email.email})
     if not user:
         raise HTTPException(**ExceptionUserNotFound().dict())
     return UserInDB(**user)

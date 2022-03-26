@@ -134,6 +134,7 @@ class UserVerificationTokenDataExt(UserVerificationTokenData):
     Extended user verification token data for password reset.
     Allow only one token use. IF token is used, it will be set to True.
     """
+
     used: bool = False
 
 
@@ -141,6 +142,15 @@ class UserQueryParams(BaseModel):
     """
     User query - For find one user in DB.
     """
+
     username: str
     password_iat: dict
     email_verified: bool = True
+
+
+class UserForgetPasswordRequest(BaseModel):
+    """
+    User input to reset password. When he forgot his password.
+    """
+
+    email: EmailStr

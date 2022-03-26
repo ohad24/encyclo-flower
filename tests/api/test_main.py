@@ -178,6 +178,12 @@ class TestUserAccess:
         assert response.status_code == 200
         assert response.json()["username"] == pytest.test_username
 
+    def test_get_user__user_not_found(self, auth_headers):
+        # * Act
+        response = client.get(self._users_url + "aaa")
+        # * Assert
+        assert response.status_code == 404
+
     @pytest.fixture
     def set_db_inactive_active_user(self, db, request):
         # * Arrange
@@ -228,6 +234,82 @@ class TestUserAccess:
         # * Assert
         assert response.status_code == 403
         assert response.json()["detail"] == "The user does not have enough privileges"
+
+
+class TestResetPassword:
+
+    email = f"{pytest.test_username}@1.com"
+
+    def test_reset_password_request(self, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password-request",
+            json={"email": self.email},
+        )
+        # * Assert
+        assert response.status_code == 204, response.json()
+
+    def test_reset_password_request__wrong_email(self, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password-request",
+            json={"email": "1@1.com"},
+        )
+        # * Assert
+        assert response.status_code == 404, response.json()
+
+    @pytest.fixture()
+    def reset_password_token(self, db):
+        user_data = next(db.users.find({"email": self.email}))
+        data = next(
+            db.reset_password_tokens.find({"user_id": user_data.get("user_id")})
+        )
+        return data["token"]
+
+    def test_reset_password(self, reset_password_token, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password",
+            json={
+                "token": reset_password_token,
+                "password": "test12",
+                "confirm_password": "test12",
+            },
+        )
+        # * Assert
+        assert response.status_code == 204, response.json()
+
+    def test_reset_password__invalid_token(self, reset_password_token, base_url):
+        # * Act
+        response = client.post(
+            base_url + "reset-password",
+            json={
+                "token": reset_password_token + "a",
+                "password": "test12",
+                "confirm_password": "test12",
+            },
+        )
+        # * Assert
+        assert response.status_code == 404, response.json()
+
+    def test_login_after_reset_password(self, base_url, auth_headers):
+        # * arrange
+        token_url = base_url + "token"
+        login_headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        # * Act
+        response = client.post(
+            token_url,
+            data={"username": pytest.test_username, "password": "test12"},
+            headers=login_headers,
+        )
+        # * Assert
+        assert response.status_code == 200
+
+        # * update fixture auth_data
+        auth_headers["Authorization"] = f"Bearer {response.json()['access_token']}"
 
 
 class TestBrokenToken:
