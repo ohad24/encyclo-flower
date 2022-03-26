@@ -46,5 +46,6 @@ jobs:
     - name: Test with pytest
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
+        CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
       run: |
         pytest tests/api/
