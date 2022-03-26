@@ -56,7 +56,7 @@ uvicorn main:app --reload
     cd server
     ansible-galaxy role install -r requirements.yml
     ansible-galaxy collection install -r requirements.yml
-    # CREATE a 'hosts' file before the next step
+    # CREATE a 'hosts' file before the next step (see `hosts.example`)
     ansible-playbook -i hosts playbook.yml
 
 
