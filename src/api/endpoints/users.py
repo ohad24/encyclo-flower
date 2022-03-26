@@ -198,8 +198,6 @@ async def create_user(
     background_tasks: BackgroundTasks,
     db: MongoClient = Depends(get_db),
 ):
-    # TODO: add email verification
-
     # * hash the password
     hash_password = get_password_hash(user_in.password.get_secret_value())
 
