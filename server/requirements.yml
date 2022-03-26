@@ -1,0 +1,9 @@
+---
+collections:
+  - community.general
+  - community.docker
+
+roles:
+  - name: geerlingguy.pip
+  - name: geerlingguy.docker
+  - name: ofersadan85.hardssh

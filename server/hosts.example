@@ -1,0 +1,4 @@
+[test]  # This mush match the hosts in playbook.yml, do not change it for now
+srv01  # This is enough if srv01 is already defined in your ~/.ssh/config
+srv02.encyclo-flower.com ansible_port=12345 ansible_ssh_private_key_file=~/.ssh/your_key ansible_user=test
+localhost ansible_connection=local  # If you want to run against localhost
