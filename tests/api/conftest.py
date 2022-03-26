@@ -6,7 +6,9 @@ import os
 import logging
 
 os.environ["MONGO_DB_NAME"] = "test"
-os.environ["SMTP_TEST"] = "encyclo.flower@gmail.com"  # * Test data https://github.com/ofersadan85/envsmtp
+os.environ[
+    "SMTP_TEST"
+] = "encyclo.flower@gmail.com"  # * Test data https://github.com/ofersadan85/envsmtp
 sys.path.append("./src/api/")
 
 from db import get_db
@@ -82,6 +84,11 @@ def change_user_id(request, db):
             {"username": pytest.test_username}, {"$set": {"user_id": orig_user_id}}
         )
     )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def startup_info():
+    logging.info(f"CLOUD_BUCKET is set to: {os.environ['CLOUD_BUCKET']}")
 
 
 @pytest.fixture(scope="session", autouse=True)
