@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     MONGO_DB_NAME: str = os.getenv("MONGO_DB_NAME", "dev")
 
     # * Google bucket settings
-    CLOUD_BUCKET: str = os.getenv("CLOUD_BUCKET", "test1-ohad")
+    CLOUD_BUCKET: str = os.getenv("CLOUD_BUCKET")
 
     # * Email settings
     # * SMTP_USER and SMTP_PASS should be in environment variables
