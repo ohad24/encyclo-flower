@@ -64,7 +64,7 @@
         dest: /usr/libexec/docker/cli-plugins/docker-compose
         mode: 0755
 
-    - name: Ensure latest docker compose files
+    - name: Ensure latest deployment files
       get_url: 
         url: "https://raw.githubusercontent.com/ohad24/encyclo-flower/main/server/{{ item }}"
         dest: "{{ stack_user.home }}/{{ item }}"
@@ -74,6 +74,28 @@
       loop:
         - docker-compose.yml
         - api.subfolder.conf
+        - deploy.sh
+
+    - name: Ensure env file permissions
+      file:
+        path: "{{ stack_user.home }}/{{ item }}"
+        owner: "{{ stack_user.name }}"
+        group: "{{ stack_user.group }}"
+        mode: 0440
+        state: touch
+      loop:
+        - .env
+        - api.env
+        - api-dev.env
+        - website.env
+        - website-dev.env
+
+    - name: Set up deployment key
+      ansible.posix.authorized_key:
+        user: "{{ stack_user.name }}"
+        exclusive: yes
+        key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMIotMW9zvh2p7JGMbankA6TK/TZUWq21dsTjUTfGDyX deployment@github
+        key_options: 'command="sh ~/deploy.sh"'
 
     - name: Run docker services
       community.docker.docker_compose:
