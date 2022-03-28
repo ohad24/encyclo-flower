@@ -5,7 +5,13 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/src/api" # Location of package manifests
+  - package-ecosystem: "pip"
+    directory: "/src/api"
+    schedule:
+      interval: "daily"
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
       interval: "daily"
