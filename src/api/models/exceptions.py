@@ -57,3 +57,7 @@ class ExceptionObservationImageNotFound(BaseModel):
 
 class ExceptionObservationImageCountLimit(BaseModel):
     detail: str = "Too many images. Only 10 images allowed per observation."
+
+
+class ExceptionPlantNotFound(BaseModel):
+    detail: str = "Plant not found."

@@ -1,39 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, Body, Path
+from fastapi import APIRouter, Depends, HTTPException, Body
 from pymongo.mongo_client import MongoClient
-import pymongo
-import db
-from models import plant as plant_model
-import math
+from db import get_db
+from models.plant import Plant, SearchOutList, SearchIn
+from math import floor
 from endpoints.helpers_tools.db import prepare_search_query
+from endpoints.helpers_tools.plant_dependencies import get_plant_from_science_name
 
 router = APIRouter()
 
 
-@router.get("/{science_name}", response_model=plant_model.Plant)
+@router.get("/{science_name}", response_model=Plant)
 async def get_plant(
-    science_name: str = Path(...), db: MongoClient = Depends(db.get_db)
+    plant: Plant = Depends(get_plant_from_science_name),
 ):
-    plant = db.plants.find_one({"science_name": science_name})
-    if not plant:
-        raise HTTPException(
-            status_code=404,
-            detail="plant not found",
-        )
     return plant
 
 
-@router.post("/search", response_model=plant_model.SearchOutList)
+@router.post("/search", response_model=SearchOutList)
 async def search(
-    db: MongoClient = Depends(db.get_db),
-    search: plant_model.SearchIn = Body(...),
+    db: MongoClient = Depends(get_db),
+    search: SearchIn = Body(...),
 ):
     per_page = 30  # * limit to 30 per page
     query = prepare_search_query(search_input=search)
     count_documents = db.plants.count_documents(query)
     if count_documents == 0:
         return {}
-    out_plants = plant_model.SearchOutList()
-    out_plants.total_pages = math.floor(count_documents / per_page) + 1
+    out_plants = SearchOutList()
+    out_plants.total_pages = floor(count_documents / per_page) + 1
     if search.page > out_plants.total_pages:
         raise HTTPException(
             status_code=400,

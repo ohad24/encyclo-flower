@@ -38,7 +38,7 @@ class TestPlant(object):
         response = client.get(plants_url + "a")
         # * Assert
         assert response.status_code == 404
-        assert response.json()["detail"] == "plant not found"
+        assert response.json()["detail"] == "Plant not found."
 
 
 class TestSearch:
