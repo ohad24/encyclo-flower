@@ -11,4 +11,5 @@ app.include_router(api_router, prefix=settings.API_PREFIX)
 
 @app.get("/")  # ! NEED TO REMOVE
 def read_root():
+    1 + 1
     return {"Hello": "World"}
