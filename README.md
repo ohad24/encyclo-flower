@@ -1,4 +1,5 @@
 ## ENCYCLO-FLOWER SITE (v2)
+[![API build](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml)
 
 ### Development install and run
 Environment variables:  
