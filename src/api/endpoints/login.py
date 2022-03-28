@@ -1,62 +1,98 @@
-from datetime import timedelta
-from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-import db
-from pymongo.mongo_client import MongoClient
-from core.security import verify_password, create_access_token
+from time import time
+from fastapi import APIRouter, Depends, Request, Response, BackgroundTasks
+from core.security import create_access_token, get_user_for_login, get_password_hash
 from core.config import get_settings
-from core.http_exceptions import e401
-from models import token as token_schema
-from models import user as user_model
+from models.token import Token
+from models.user import UserInDB, ResetPasswordIn
+from models.exceptions import (
+    ExceptionLogin,
+    DetailUserNotFound,
+    ExceptionPasswordNotMatch,
+    ExceptionUserResetPasswordTokenNotFound,
+)
+from db import get_db
+from pymongo import MongoClient
+from endpoints.helpers_tools.user_dependencies import (
+    get_user_from_email,
+    get_user_from_reset_password_token,
+    validate_match_passwords__reset_password,
+)
+from endpoints.helpers_tools.email import setup_reset_password_email
 
 settings = get_settings()
 
 router = APIRouter()
 
 
-@router.post("/token", response_model=token_schema.Token)
+@router.post(
+    "/token",
+    response_model=Token,
+    summary="Login",
+    description="Login using username and password",
+    responses={
+        401: {"description": ExceptionLogin().detail, "model": ExceptionLogin},
+    },
+)
 def login_for_access_token(
-    db: MongoClient = Depends(db.get_db),
-    form_data: OAuth2PasswordRequestForm = Depends(),
-):
-    user = db.users.find_one({"username": form_data.username})
-
-    if not user:
-        raise e401
-    user = user_model.Login(**user)
-
-    if not verify_password(form_data.password, user.password):
-        raise e401
-
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    user: UserInDB = Depends(get_user_for_login),
+) -> Token:
     access_token = create_access_token(
-        user.username, expires_delta=access_token_expires
+        user.username,
+        user.password_iat,
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token(access_token=access_token)
 
 
-# @router.post("/reset-password/", response_model=schemas.Msg)
-# def reset_password(
-#     token: str = Body(...),
-#     new_password: str = Body(...),
-#     db: Session = Depends(deps.get_db),
-# ) -> Any:
-#     """
-#     Reset password
-#     """
-#     email = verify_password_reset_token(token)
-#     if not email:
-#         raise HTTPException(status_code=400, detail="Invalid token")
-#     user = crud.user.get_by_email(db, email=email)
-#     if not user:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="The user with this username does not exist in the system.",
-#         )
-#     elif not crud.user.is_active(user):
-#         raise HTTPException(status_code=400, detail="Inactive user")
-#     hashed_password = get_password_hash(new_password)
-#     user.hashed_password = hashed_password
-#     db.add(user)
-#     db.commit()
-#     return {"msg": "Password updated successfully"}
+@router.post(
+    "/reset-password-request",
+    status_code=204,
+    summary="Reset password request",
+    description="""When the user forgot his password for login,
+        he can request for reset VIA his email using this endpoint.""",
+    responses={
+        404: {"description": DetailUserNotFound().detail, "model": DetailUserNotFound},
+    },
+)
+def reset_password_request(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    user: UserInDB = Depends(get_user_from_email),
+):
+    background_tasks.add_task(
+        setup_reset_password_email,
+        user.user_id,
+        user.email,
+        request.base_url,
+    )
+    return Response(status_code=204)
+
+
+@router.post(
+    "/reset-password",
+    status_code=204,
+    dependencies=[Depends(validate_match_passwords__reset_password)],
+    summary="Reset password",
+    description="Change user forgotten password with available reset password token.",
+    responses={
+        400: {
+            "description": ExceptionPasswordNotMatch().detail,
+            "model": ExceptionPasswordNotMatch,
+        },
+        404: {
+            "description": ExceptionUserResetPasswordTokenNotFound().detail,
+            "model": ExceptionUserResetPasswordTokenNotFound,
+        },
+    },
+)
+def reset_password(
+    passwords_data: ResetPasswordIn,
+    user_id: str = Depends(get_user_from_reset_password_token),
+    db: MongoClient = Depends(get_db),
+):
+    hashed_password = get_password_hash(passwords_data.password.get_secret_value())
+    db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"password": hashed_password, "password_iat": time()}},
+    )
+    db.reset_password_tokens.update_one({"user_id": user_id}, {"$set": {"used": True}})
+    return Response(status_code=204)

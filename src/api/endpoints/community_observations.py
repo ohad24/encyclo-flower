@@ -18,7 +18,7 @@ from models.user_observations import (
     ObservationImageMeta,
     ObservationsPreview,
 )
-from models.user import User
+from models.user import UserInDB
 from models.generic import (
     Comment,
     CommentInDB,
@@ -90,7 +90,7 @@ async def get_observation_by_id(
 @router.post("/", response_model=ObservationInResponse)
 async def add_observation(
     observation: Observation,
-    user: User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
 ):
     observationInDB = ObservationInDB(**observation.dict(), user_id=user.user_id)
@@ -255,7 +255,7 @@ async def delete_image_from_observation(
 @router.post("/{observation_id}/comment", status_code=201)
 async def add_comment(
     comment: Comment,
-    user: User = Depends(get_current_active_user),
+    user: UserInDB = Depends(get_current_active_user),
     observation_id: str = Depends(get_observation_id),
     db: MongoClient = Depends(db.get_db),
 ):

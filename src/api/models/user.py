@@ -1,42 +1,62 @@
-from typing import Optional, Dict
-from models.base import DBBaseModel
-from pydantic import BaseModel, Field, EmailStr, SecretStr, validator
-import uuid
+from typing import Optional, Dict, Literal, List
+from pydantic import BaseModel, Field, EmailStr, SecretStr
+from models.helpers import user_id_generator, email_verification_token
 from datetime import datetime
-from enum import Enum
+from time import time
+from models.base import BaseUserOut
+from models.user_observations import ObservationPreviewBase
+from models.user_questions import QuestionPreviewBase
+
+SEX = Literal["זכר", "נקבה"]
 
 
-class Sex(str, Enum):
-    male = "male"
-    female = "female"
+class UserBase(BaseModel):
+    """
+    Basic information.
+    """
 
-
-class User(DBBaseModel):
-    user_id: str
-    username: str
-    f_name: str
-    l_name: str
+    username: str = Field(min_length=5, max_length=20, example="username1")
+    f_name: str = Field(min_length=2, max_length=20, example="Bob")
+    l_name: str = Field(min_length=2, max_length=20, example="Salad")
     email: EmailStr
     phone: Optional[str]
     settlement: Optional[str]
-    sex: Optional[Sex]
-    _password: SecretStr = Field(alias="password")
-    is_active: bool
-    is_editor: bool
-    is_superuser: bool
-    create_dt: datetime
+    sex: Optional[SEX]
 
 
-class BaseUserIn(BaseModel):
-    f_name: str = Field(..., min_length=2, max_length=20, example="Bob")
-    l_name: str = Field(..., min_length=2, max_length=20, example="Salad")
-    phone: Optional[str] = Field(
-        None, min_length=8, max_length=20, example="+123456789"
+class UserPasswordIn(BaseModel):
+    password: SecretStr = Field(min_length=6, max_length=50, example="123456")
+    password2: SecretStr = Field(
+        description="Confirm password", alias="confirm_password", example="123456"
     )
-    settlement: Optional[str] = Field(
-        None, min_length=2, max_length=20, example="Haifa"
-    )
-    sex: Optional[Sex]
+
+
+class CreateUserIn(UserBase, UserPasswordIn):
+    """
+    User input to create new user.
+    """
+
+    accept_terms_of_service: bool = Field(False, example=True)
+
+
+class ResetPasswordIn(UserPasswordIn):
+    """
+    User input to reset password.
+    """
+
+    token: str
+
+
+class UpdateUserIn(BaseModel):
+    """
+    User input to update user.
+    """
+
+    f_name: Optional[str]
+    l_name: Optional[str]
+    phone: Optional[str]
+    settlement: Optional[str]
+    sex: Optional[SEX]
 
 
 class UserCounters(BaseModel):
@@ -44,42 +64,32 @@ class UserCounters(BaseModel):
     # TODO: add login counter (per day)
 
 
-class UserCreateIn(BaseUserIn):
-    username: str = Field(..., min_length=5, max_length=20, example="username1")
-    email: EmailStr = Field(..., example="example@exampe.com")
-    password: SecretStr = Field(..., min_length=6, max_length=50, example="123456")
-    accept_terms_of_service: bool = Field(..., example=True)
+class UserInDB(UserBase):
+    """
+    User object in DB.
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        object.__setattr__(self, "is_active", True)
-        object.__setattr__(self, "is_superuser", False)
-        object.__setattr__(self, "is_editor", False)
-        object.__setattr__(self, "user_id", uuid.uuid4().hex)
-        object.__setattr__(self, "create_dt", datetime.utcnow())
-        object.__setattr__(self, "counters", UserCounters())
+    The defaults usage is to generate new data on init,
+    when the field is not set (in create new user).
+    """
 
-    @validator("accept_terms_of_service")
-    def check_accept_terms_of_service(cls, v):
-        if not v:
-            raise ValueError("Terms of service must be accepted")
-        return v
+    user_id: str = Field(default_factory=user_id_generator)
+    password: str
+    password_iat: float = Field(default_factory=time)
+    is_active: bool = False
+    is_superuser: bool = False
+    is_editor: bool = False
+    email_verified: bool = False
+    create_dt: datetime = Field(default_factory=datetime.utcnow)
+    counters: UserCounters = UserCounters()
 
 
 class Login(BaseModel):
+    """
+    User input to login.
+    """
+
     username: str
     password: str
-
-
-class BaseUserOut(BaseModel):
-    """
-    For general objects. (observations, questions, comments etc.)
-    """
-
-    user_id: str
-    username: str
-    f_name: str
-    l_name: str
 
 
 class UserOut(BaseUserOut):
@@ -89,11 +99,52 @@ class UserOut(BaseUserOut):
     For user page
     """
 
-    username: str
-    f_name: str
-    l_name: str
-    phone: Optional[str]
     settlement: Optional[str]
-    sex: Optional[Sex]
+    sex: Optional[SEX]
     create_dt: datetime
+    phone: Optional[str]
+    email: Optional[EmailStr]
+
+    observations: List[ObservationPreviewBase] = []
+    questions: List[QuestionPreviewBase] = []
+    image_detections: List = []
+    favorite_plants: List = []
+
+
+class UserMinimalMetadataOut(BaseModel):
+    user_id: Optional[str]
+    username: Optional[str]
+    is_superuser: Optional[bool]
+
+
+class UserVerificationTokenData(BaseModel):
+    user_id: str
+    token: str = Field(default_factory=email_verification_token)
+    create_dt: datetime = Field(default_factory=datetime.utcnow)
+
+
+class UserVerificationTokenDataExt(UserVerificationTokenData):
+    """
+    Extended user verification token data for password reset.
+    Allow only one token use. IF token is used, it will be set to True.
+    """
+
+    used: bool = False
+
+
+class UserQueryParams(BaseModel):
+    """
+    User query - For find one user in DB.
+    """
+
+    username: str
+    password_iat: dict
+    email_verified: bool = True
+
+
+class UserForgetPasswordRequest(BaseModel):
+    """
+    User input to reset password. When he forgot his password.
+    """
+
     email: EmailStr

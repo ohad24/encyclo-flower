@@ -76,10 +76,13 @@ class ObservationOut(ObservationInDB):
     user_data: BaseUserOut
 
 
-class ObservationsPreview(BaseModel):
+class ObservationPreviewBase(BaseModel):
     observation_id: str
     observation_text: str
     image: ImagePreview | None
     created_dt: datetime
+
+
+class ObservationsPreview(ObservationPreviewBase):
     user_id: str
     username: str

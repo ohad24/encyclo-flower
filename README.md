@@ -3,8 +3,13 @@
 ### Development install and run
 Environment variables:  
 * GOOGLE_APPLICATION_CREDENTIALS - path to Google Cloud Service Account JSON file.
+* COULD_BUCKET - name of Google Cloud Storage bucket.
 * MONGO_URI - MongoDB connection string. (default: mongodb://localhost:27017/)
 * MONGO_DB_NAME - MongoDB database name. (default: dev)
+* SECRET_KEY - secret key for session. (default is generated randomly in `config.py`)  
+ To create new one run: `openssl rand -hex 32`
+* SMTP_USER - SMTP username (gmail address). Not mandatory.
+* SMTP_PASS - SMTP password. Not mandatory.
 
 #### Development libraries
 For testing + coverage, formatting and linting:
