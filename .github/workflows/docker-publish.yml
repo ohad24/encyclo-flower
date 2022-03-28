@@ -1,6 +1,7 @@
 name: Publish Docker image
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -8,7 +9,7 @@ env:
   DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}
 
 jobs:
-  build_push_docker_hub:
+  build_push_deploy:
     name: Build & Push Docker image to Docker Hub
     runs-on: ubuntu-latest
 
@@ -38,3 +39,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_DEPLOYMENT_HOST }}
+          port: ${{ secrets.SSH_DEPLOYMENT_PORT }}
+          username: ${{ secrets.SSH_DEPLOYMENT_USER }}
+          key: ${{ secrets.SSH_DEPLOYMENT_KEY }}

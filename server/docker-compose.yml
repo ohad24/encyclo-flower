@@ -23,6 +23,17 @@ services:
       - 443:443
     networks:
       - web
+      - development
+      - production
+
+  # website:
+  #   image: ohad24/encyclo-flower-website:latest
+  #   container_name: website
+  #   restart: always
+  #   env_file:
+  #     - website.env
+  #   networks:
+  #     - production
 
   # api:
   #   image: ohad24/encyclo-flower:latest
@@ -31,10 +42,30 @@ services:
   #   env_file:
   #     - api.env
   #   networks:
-  #     - web
+  #     - production
+
+  # website-dev:
+  #   image: ohad24/encyclo-flower-website:develop
+  #   container_name: website-dev
+  #   restart: always
+  #   env_file:
+  #     - website-dev.env
+  #   networks:
+  #     - development
+
+  # api-dev:
+  #   image: ohad24/encyclo-flower:develop
+  #   container_name: api-dev
+  #   restart: always
+  #   env_file:
+  #     - api-dev.env
+  #   networks:
+  #     - development
 
 volumes:
   swag:
 
 networks:
   web:
+  development:
+  production:
