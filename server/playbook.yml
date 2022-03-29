@@ -76,19 +76,19 @@
         - api.subfolder.conf
         - deploy.sh
 
-    - name: Ensure env file permissions
+    - name: Ensure protected files permissions
       file:
         path: "{{ stack_user.home }}/{{ item }}"
         owner: "{{ stack_user.name }}"
         group: "{{ stack_user.group }}"
         mode: 0440
-        state: touch
       loop:
         - .env
         - api.env
         - api-dev.env
         - website.env
         - website-dev.env
+        - google_cred.json
 
     - name: Set up deployment key
       ansible.posix.authorized_key:
