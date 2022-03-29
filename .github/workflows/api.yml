@@ -93,6 +93,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
+    if: ${{ github.event_name != 'pull_request' }} # Deploy shouldn't run on PRs
     needs: [test, build] # This job will run only if other jobs were successful
     runs-on: ubuntu-latest
     steps:
