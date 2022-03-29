@@ -20,7 +20,13 @@ ENV SMTP_TEST=
 WORKDIR ${APPDIR}
 COPY . ${APPDIR}
 
-RUN useradd --no-create-home --home-dir=${APPDIR} ${USERNAME} \
+# These values need to match the user on the host machine
+# Fixes bug #42 but will should be removed to switch to dynamic values
+ARG UID=2000
+ARG GID=2000
+
+RUN groupadd --gid ${GID} ${USERNAME} \
+  && useradd --no-create-home --home-dir=${APPDIR} --uid=${UID} --gid=${GID} ${USERNAME} \
   && chown -R ${USERNAME}:${USERNAME} ${APPDIR}
 
 RUN python -m pip install --upgrade --no-cache-dir pip \
