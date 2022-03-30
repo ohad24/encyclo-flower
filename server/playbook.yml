@@ -65,8 +65,8 @@
         mode: 0755
 
     - name: Ensure latest deployment files
-      get_url: 
-        url: "https://raw.githubusercontent.com/ohad24/encyclo-flower/main/server/{{ item }}"
+      copy:
+        src: "{{ item }}"
         dest: "{{ stack_user.home }}/{{ item }}"
         owner: "{{ stack_user.name }}"
         group: "{{ stack_user.group }}"
@@ -87,8 +87,6 @@
         - .env
         - api.env
         - api-dev.env
-        - website.env
-        - website-dev.env
         - google_cred.json
 
     - name: Set up deployment key
