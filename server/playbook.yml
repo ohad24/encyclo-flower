@@ -73,8 +73,9 @@
         mode: 0440
       loop:
         - docker-compose.yml
-        - api.subfolder.conf
         - deploy.sh
+        - development.conf
+        - production.conf
 
     - name: Ensure protected files permissions
       file:

@@ -8,7 +8,8 @@ services:
       - NET_ADMIN
     volumes:
       - swag:/config
-      - ./api.subfolder.conf:/config/nginx/proxy-confs/api.subfolder.conf
+      - ./production.conf:/config/nginx/proxy-confs/production.conf
+      - ./development.conf:/config/nginx/proxy-confs/development.conf
     environment:
       - PUID=2000
       - PGID=2000
