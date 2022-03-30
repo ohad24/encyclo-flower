@@ -1,4 +1,4 @@
----
+version: "3.9"
 services:
   swag:
     image: linuxserver/swag:latest
@@ -8,14 +8,15 @@ services:
       - NET_ADMIN
     volumes:
       - swag:/config
-      - ./api.subfolder.conf:/config/nginx/proxy-confs/api.subfolder.conf
+      - ./production.conf:/config/nginx/proxy-confs/production.subfolder.conf
+      - ./development.conf:/config/nginx/proxy-confs/development.subdomain.conf
     environment:
       - PUID=2000
       - PGID=2000
       - TZ=Asia/Jerusalem
       - URL=encyclo-flower.com
-      - SUBDOMAINS=dev
-      - ONLY_SUBDOMAINS=true  # Will need to change for production
+      - SUBDOMAINS=www,dev
+      - ONLY_SUBDOMAINS=false
       - EMAIL=encyclo.flower@gmail.com
       - VALIDATION=http  # Required: certbot validation method
     ports:
@@ -26,41 +27,26 @@ services:
       - development
       - production
 
-  # website:
-  #   image: ohad24/encyclo-flower-website:latest
-  #   container_name: website
-  #   restart: always
-  #   env_file:
-  #     - website.env
-  #   networks:
-  #     - production
+  api:
+    image: ohad24/encyclo-flower-api:latest
+    restart: always
+    env_file:
+      # FIXME: api.env should have production variables, currently has test variables
+      - api.env
+    volumes:
+      - ./google_cred.json:/app/google_cred.json
+    networks:
+      - production
 
-  # api:
-  #   image: ohad24/encyclo-flower:latest
-  #   container_name: api
-  #   restart: always
-  #   env_file:
-  #     - api.env
-  #   networks:
-  #     - production
-
-  # website-dev:
-  #   image: ohad24/encyclo-flower-website:develop
-  #   container_name: website-dev
-  #   restart: always
-  #   env_file:
-  #     - website-dev.env
-  #   networks:
-  #     - development
-
-  # api-dev:
-  #   image: ohad24/encyclo-flower:develop
-  #   container_name: api-dev
-  #   restart: always
-  #   env_file:
-  #     - api-dev.env
-  #   networks:
-  #     - development
+  api-dev:
+    image: ohad24/encyclo-flower-api:edge
+    restart: always
+    env_file:
+      - api-dev.env
+    volumes:
+      - ./google_cred.json:/app/google_cred.json
+    networks:
+      - development
 
 volumes:
   swag:
