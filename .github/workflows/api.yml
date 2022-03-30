@@ -15,6 +15,7 @@ on:
       # NOTE: Path filters are ignored for tag pushes
       - "src/api/**"
       - "tests/api/**"
+      - "server/**"  # Need to run deploy script when server settings change
   pull_request:
     branches: [main]
     paths:
