@@ -1,4 +1,4 @@
----
+version: "3.9"
 services:
   swag:
     image: linuxserver/swag:latest
@@ -8,15 +8,15 @@ services:
       - NET_ADMIN
     volumes:
       - swag:/config
-      - ./production.conf:/config/nginx/proxy-confs/production.conf
-      - ./development.conf:/config/nginx/proxy-confs/development.conf
+      - ./production.conf:/config/nginx/proxy-confs/production.subfolder.conf
+      - ./development.conf:/config/nginx/proxy-confs/development.subdomain.conf
     environment:
       - PUID=2000
       - PGID=2000
       - TZ=Asia/Jerusalem
       - URL=encyclo-flower.com
-      - SUBDOMAINS=dev
-      - ONLY_SUBDOMAINS=true  # Will need to change for production
+      - SUBDOMAINS=www,dev
+      - ONLY_SUBDOMAINS=false
       - EMAIL=encyclo.flower@gmail.com
       - VALIDATION=http  # Required: certbot validation method
     ports:
