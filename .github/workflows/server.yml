@@ -1,0 +1,23 @@
+# This workflow will automatically run the ansible playbook on the server when server files change in this repo
+
+name: Ansible deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy via SSH
+        # Docs: https://github.com/appleboy/ssh-action
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_DEPLOYMENT_HOST }}
+          port: ${{ secrets.SSH_DEPLOYMENT_PORT }}
+          username: ubuntu
+          key: ${{ secrets.SSH_DEPLOYMENT_KEY }}
