@@ -1,5 +1,6 @@
 ## ENCYCLO-FLOWER SITE (v2)
 [![API build](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml)
+[![Ansible deployment](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml)
 
 ### Development install and run
 Environment variables:  
