@@ -38,6 +38,35 @@
         state: present
       register: ansible_user
 
+    - name: Ensure git repo is updated on ansible_user
+      git:
+        repo: https://github.com/ohad24/encyclo-flower.git
+        dest: "{{ ansible_user.home }}/encyclo-flower"
+        clone: yes
+        update: yes
+        depth: 1
+        force: yes
+        recursive: no
+        # Optionally verify commit gpg signatures with "verify_commit: yes"
+
+    - name: Ensure git repo owned by ansible_user
+      file:
+        path: "{{ ansible_user.home }}/encyclo-flower"
+        owner: "{{ ansible_user.name }}"
+        group: "{{ ansible_user.group }}"
+        state: directory
+        mode: u=rwX,g=rX,o=rX
+        recurse: yes
+      changed_when: false  # Do not consider this a change
+
+    - name: Copy deploy_ansible.sh as deploy.sh
+      copy:
+        src: deploy_ansible.sh
+        dest: "{{ ansible_user.home }}/deploy.sh"
+        owner: "{{ ansible_user.name }}"
+        group: "{{ ansible_user.group }}"
+        mode: 0440
+
     - name: Harden ssh settings
       include_role: 
         name: ofersadan85.hardssh
@@ -92,10 +121,13 @@
 
     - name: Set up deployment key
       ansible.posix.authorized_key:
-        user: "{{ stack_user.name }}"
+        user: "{{ item }}"
         exclusive: yes
         key: "{{ lookup('file', 'deploy_key.pub') }}"
         key_options: 'command="sh ~/deploy.sh"'
+      loop:
+        - "{{ stack_user.name }}"
+        - "{{ ansible_user.name }}"
 
     - name: Run docker services
       community.docker.docker_compose:
