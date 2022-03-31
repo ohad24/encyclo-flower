@@ -93,7 +93,7 @@
       ansible.posix.authorized_key:
         user: "{{ stack_user.name }}"
         exclusive: yes
-        key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMIotMW9zvh2p7JGMbankA6TK/TZUWq21dsTjUTfGDyX deployment@github
+        key: "{{ lookup('file', 'deploy_key.pub') }}"
         key_options: 'command="sh ~/deploy.sh"'
 
     - name: Run docker services
