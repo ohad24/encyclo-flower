@@ -31,11 +31,12 @@
         uid: 2000
       register: stack_user
 
-    - name: Remove default ubuntu user
+    - name: Ensure default ubuntu user as ansible_user
       user:
         name: ubuntu
-        state: absent
-        remove: yes
+        group: ubuntu
+        state: present
+      register: ansible_user
 
     - name: Harden ssh settings
       include_role: 
