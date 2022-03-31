@@ -20,5 +20,4 @@ coverage.xml
 tests/api/_test*
 src/api/.env
 src/api/google_cred.json
-server/hosts
 .dccache
