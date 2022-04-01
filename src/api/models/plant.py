@@ -1,75 +1,38 @@
 from pydantic import BaseModel, Field, AnyUrl, validator
-from typing import Dict, List, Optional, Literal
-from db import get_db
-from bson.son import SON
+from typing import Dict, List, Optional
 from datetime import datetime
-from enum import Enum
-
-db = get_db()
-
-pipeline_colors_name = [
-    {"$unwind": "$colors"},
-    {"$group": {"_id": "$colors"}},
-    {"$sort": SON([("_id", -1)])},
-]
-
-
-COLORS = Literal[
-    tuple(x["_id"] for x in list(db.plants.aggregate(pipeline_colors_name)))
-]
-
-
-class LocationCommonEnum(str, Enum):
-    a = "נפוץ"
-    b = "מצוי"
-    c = "נדיר"
-    d = "נדיר מאוד"
-    e = "שכיחות לא ידועה"
-
-
-class LocationKMLtranslate(str, Enum):
-    """
-    key is the value in KML file
-    value is the value in db
-    """
-
-    GalileeBeach = "חוף הגליל"
-    CarmelBeach = "חוף הכרמל"
-    Sharon = "שרון"
-    SouthernBeach = "מישור החוף הדרומי"
-    UpperGalilee = "גליל עליון"
-    LowerGalilee = "גליל תחתון"
-    Carmel = "כרמל"
-    MenasheHills = "רמות מנשה"
-    IzraelValley = "עמק יזרעאל"
-    Shomron = "הרי שומרון"
-    JudeaLowLands = "שפלת יהודה"
-    JudeaMountains = "הרי יהודה"
-    NorthernNegev = "צפון הנגב"
-    WesternNegev = "מערב הנגב"
-    CentralNegev = "מרכז והר הנגב"
-    SouthernNegev = "דרום הנגב"
-    Hula = "עמק החולה"
-    KinarotValley = "בקעת כינרות"
-    BetSheanValley = "עמק בית שאן"
-    Gilboa = "גלבוע"
-    ShomronDesert = "מדבר שומרון"
-    JudeaDesert = "מדבר יהודה"
-    JordanValley = "בקעת הירדן"
-    DeadSeaValley = "בקעת ים המלח"
-    Arava = "ערבה"
-    Hermon = "חרמון"
-    Golan = "גולן"
+from models.plant_custom_types import (
+    LocationCommonEnum,
+    COLORS,
+    PETALS,
+    LEAF_SHAPES,
+    LEAF_EDGES,
+    LEAF_ARRANGEMENTS,
+    STEM_SHAPES,
+    LIFE_FORMS,
+    HABITATS,
+    SEX_FLOWER,
+    SPINE,
+)
+from models.plant_taxonomy_custom_types import (
+    CLADE1,
+    CLADE2,
+    CLADE3,
+    FAMILY,
+    SUBFAMILY,
+    GENUS,
+)
+from models.custom_types import LocationHebLiteral
 
 
 class Taxonomy(BaseModel):
-    clade1: str
-    clade2: str
-    clade3: Optional[str]
+    clade1: CLADE1
+    clade2: CLADE2
+    clade3: Optional[CLADE3]
     clade4: Optional[str]
-    family: str
-    subfamily: Optional[str]
-    genus: str
+    family: FAMILY
+    subfamily: Optional[SUBFAMILY]
+    genus: GENUS
 
 
 class PlantImage(BaseModel):
@@ -87,11 +50,15 @@ class PlantImage(BaseModel):
 
     @validator("level")
     def set_level(cls, level):
+        """
+        Because the level in DB is null by default
+        """
         return level or "e"
 
 
 class PlantLocation(BaseModel):
-    location_name: str = Field(description="Hebrew name of the location")
+    # TODO: refactor this class
+    location_name: LocationHebLiteral = Field(description="Hebrew name of the location")
     commoness: LocationCommonEnum | None
 
     @validator("commoness", pre=True, always=True)
@@ -105,12 +72,12 @@ class Plant(BaseModel):
     science_name: str
     heb_name: str
     fam_name_eng: Optional[str]
-    petal_num_name: Optional[str]
-    leaf_shapes: List[str]
-    leaf_edges: List[str]
-    leaf_arrangements: List[str]
-    stem_shapes: Optional[str]
-    life_forms: List[str]
+    petals: Optional[PETALS]
+    leaf_shapes: List[LEAF_SHAPES]
+    leaf_edges: List[LEAF_EDGES]
+    leaf_arrangements: List[LEAF_ARRANGEMENTS]
+    stem_shapes: Optional[STEM_SHAPES]
+    life_forms: List[LIFE_FORMS]
     description: Optional[str]
     protected: bool
     red: bool
@@ -118,16 +85,15 @@ class Plant(BaseModel):
     synonym_names_eng: List[str]
     synonym_names_heb: List[str]
     locations: List[PlantLocation]
-    images_data: Optional[List[Dict]]
-    habitats: List[str]
+    habitats: List[HABITATS]
     flowering_seasons: Optional[List[int]]
     colors: List[COLORS]
-    sex_flower: List[str]
+    sex_flower: List[SEX_FLOWER]
     danger: bool
     rare: bool
     taxon: Taxonomy
-    spine: List[str]
-    images: List[PlantImage]
+    spine: List[SPINE]
+    images: List[Optional[PlantImage]]
 
 
 class SearchIn(BaseModel):
