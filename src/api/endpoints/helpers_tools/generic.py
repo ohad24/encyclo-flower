@@ -5,7 +5,7 @@ from models.generic import AngleEnum, ImageLocation
 from typing import List, Tuple
 from exif import Image as ExifImage
 from endpoints.helpers_tools.GPS_translate import find_point_location
-from models.plant import LocationKMLtranslate
+from models.generic import LocationKMLtranslate
 from models.custom_types import HebMonths, HebMonthLiteral
 from endpoints.helpers_tools.storage import download_from_gstorage, upload_to_gstorage
 from pathlib import Path
