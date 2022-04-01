@@ -61,3 +61,15 @@ class ExceptionObservationImageCountLimit(BaseModel):
 
 class ExceptionPlantNotFound(BaseModel):
     detail: str = "Plant not found."
+
+
+class ExceptionSearchPlantsNotFound(BaseModel):
+    detail: str = "No plants found."
+
+
+class ExceptionSearchPageOutOfRange(BaseModel):
+    detail: str = "Page number out of range."
+
+
+class ExceptionSearchNoInputCreteria(BaseModel):
+    detail: str = "Must supply at least one criteria for search."

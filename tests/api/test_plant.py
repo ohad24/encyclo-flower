@@ -52,7 +52,9 @@ class TestSearch:
         response = client.post(self._plants_search_url, json={})
         # * Assert
         assert response.status_code == 400
-        assert response.json() == {"detail": "must supply at least one parameter"}
+        assert response.json() == {
+            "detail": "Must supply at least one criteria for search."
+        }
 
     def test_no_results(self):
         # * Act
@@ -61,13 +63,8 @@ class TestSearch:
             data=json.dumps({"name_text": "not_a_real_name"}),
         )
         # * Assert
-        assert response.status_code == 200
-        assert response.json() == {
-            "total": 0,
-            "plants": [],
-            "total_pages": 1,
-            "current_page": 1,
-        }
+        assert response.status_code == 404, response.json()
+        assert response.json().get("detail") == "No plants found."
 
     def test_search(self):
         # * Arrange
@@ -102,6 +99,15 @@ class TestSearch:
         ],
         [{"red": True, "danger": True}, 13],
         [{"invasive": True, "rare": True}, 1],
+        [
+            {
+                "leaf_shapes": ["סרגלי"],
+                "leaf_edges": ["תמימה"],
+                "leaf_arrangements": ["שושנת עלים"],
+            },
+            250,
+        ],
+        [{"protected": True}, 276],
     ]
 
     @pytest.mark.parametrize("params, expected_total", multi_params)
@@ -158,4 +164,86 @@ class TestSearch:
         )
         # * Assert
         assert response.status_code == 400
-        assert response.json() == {"detail": "page number out of range"}
+        assert response.json() == {"detail": "Page number out of range."}
+
+    def test_search_sort_by_images(self):
+        # * Arrange
+        search_params = {"colors": ["כחול"], "flowering_seasons": [1]}
+        # * Act
+        response = client.post(self._plants_search_url, json=search_params)
+
+        # * 1 is image, 0 is not
+        result_image_order = [
+            1 if x["image"] else 0 for x in response.json().get("plants")
+        ]
+
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()["total"] == 19
+
+        # * loop through all result_image_order and check that is not image (1) after not image (0)
+        for idx, item in enumerate(result_image_order):
+            if idx > 0:
+                assert (
+                    result_image_order[idx - 1] >= item
+                ), "Images order is not correct, Image return after no image"
+
+    commoness_multi_params = [
+        {
+            "test_name": "with locations",
+            "search_params": {
+                "name_text": "g",
+                "colors": ["אדום"],
+                "location_names": ["מישור החוף הדרומי"],
+            },
+            "expected_results_total": 10,
+        },
+        {
+            "test_name": "without locations",
+            "search_params": {
+                "name_text": "g",
+                "colors": ["אדום"],
+            },
+            "expected_results_total": 27,
+        },
+    ]
+
+    @pytest.mark.parametrize(
+        "test_data",
+        commoness_multi_params,
+        ids=[x["test_name"] for x in commoness_multi_params],
+    )
+    def test_search_sort_by_commoness(self, test_data):
+        # * Arrange
+        commoness_correct_order = [
+            "נפוץ",
+            "מצוי",
+            "נדיר",
+            "נדיר מאוד",
+            "שכיחות לא ידועה",
+        ]
+        # * Act
+        response = client.post(
+            self._plants_search_url, json=test_data.get("search_params")
+        )
+        assert response.status_code == 200
+
+        # * extract commoness only from results with image (because the two level sort)
+        result_commoness_order = [
+            x["commoness"] for x in response.json()["plants"] if x["image"]
+        ]
+
+        # * Assert
+        assert response.json()["total"] == test_data.get("expected_results_total")
+
+        for idx, commeness in enumerate(result_commoness_order):
+            if idx > 0:
+                current_item_commoness_idx = commoness_correct_order.index(commeness)
+                last_item_commoness_idx = commoness_correct_order.index(
+                    result_commoness_order[idx - 1]
+                )
+                assert (
+                    current_item_commoness_idx >= last_item_commoness_idx
+                ), "Commoness order is not correct. {} after {}".format(
+                    commeness, result_commoness_order[idx - 1]
+                )

@@ -1,12 +1,7 @@
-from fastapi import HTTPException
-from models.plant import SearchIn
-
-
-def prepare_query_plant_name_text(name_text):
-    nt = name_text
+def prepare_query_plant_name_text(name: str) -> dict:
     name_text_or = [
-        {"science_name": {"$regex": nt, "$options": "-i"}},
-        {"heb_name": {"$regex": nt, "$options": "-i"}},
+        {"science_name": {"$regex": name, "$options": "-i"}},
+        {"heb_name": {"$regex": name, "$options": "-i"}},
     ]
     for arr in ["synonym_names_eng", "synonym_names_heb"]:
         # * "in" not allow nestest $ in query
@@ -14,32 +9,13 @@ def prepare_query_plant_name_text(name_text):
             {
                 arr: {
                     "$elemMatch": {
-                        "$regex": nt,
+                        "$regex": name,
                         "$options": "-i",
                     }
                 }
             }
         )
     return {"$or": name_text_or}
-
-
-def prepare_search_query(search_input: SearchIn) -> dict:
-    query_and = [prepare_query_plant_name_text(search_input.name_text)] if search_input.name_text else []
-    for field, value in search_input.dict(exclude_none=True, exclude_unset=True).items():
-        if field == 'location_names':
-            query_and += [{"locations.location_name": location_name} for location_name in value]
-        elif isinstance(value, list):
-            query_and += [{field: {'$in': value}}]
-        elif isinstance(value, bool):
-            query_and += [{field: value}]
-
-    if not query_and:
-        raise HTTPException(
-            status_code=400,
-            detail="must supply at least one parameter",
-        )
-    query = {"$and": query_and}
-    return query
 
 
 def prepare_query_detect_image(
