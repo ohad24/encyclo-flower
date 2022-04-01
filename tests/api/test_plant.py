@@ -61,13 +61,8 @@ class TestSearch:
             data=json.dumps({"name_text": "not_a_real_name"}),
         )
         # * Assert
-        assert response.status_code == 200
-        assert response.json() == {
-            "total": 0,
-            "plants": [],
-            "total_pages": 1,
-            "current_page": 1,
-        }
+        assert response.status_code == 404, response.json()
+        assert response.json().get("detail") == "No plants found."
 
     def test_search(self):
         # * Arrange

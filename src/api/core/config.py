@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     EMAIL_VERIFICATION_EXPIRES_MINUTES: int = 60 * 24 * 2  # 2 days
     EMAIL_PASSWORD_RESET_EXPIRES_MINUTES: int = 60 * 24  # 1 days
 
+    # * Search plant
+    ITEMS_PER_PAGE: int = 30
+
 
 @lru_cache()
 def get_settings():

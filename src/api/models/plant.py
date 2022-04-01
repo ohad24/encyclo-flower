@@ -23,6 +23,9 @@ from models.plant_taxonomy_custom_types import (
     GENUS,
 )
 from models.custom_types import LocationHebLiteral
+from core.config import get_settings
+
+settings = get_settings()
 
 
 class Taxonomy(BaseModel):
@@ -164,3 +167,11 @@ class SearchOutList(BaseModel):
         #     del plant.commoness
 
         return plants
+
+
+class PreSearchData(BaseModel):
+    documents_count: int
+    query: dict
+    total_pages: int
+    current_page: int
+    per_page: int = settings.ITEMS_PER_PAGE
