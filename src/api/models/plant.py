@@ -118,29 +118,13 @@ class SearchIn(BaseModel):
 
 
 class SearchOut(BaseModel):
+    # TODO: check if need all OPTIONAL
     heb_name: str
     science_name: str
-    colors: List
-    image: Optional[PlantImage] = None
-    commoness: Optional[str]
-
-    def __init__(__pydantic_self__, **data: Dict) -> None:
-        super().__init__(**data)
-        plant = Plant(**data)
-        if plant.images:
-            # * sort images in plant by level - show pre selected image first
-            # * sort reverse plant images by level (level = a,b,c.d)
-            plant.images.sort(key=lambda x: x.level)
-            # * get the first image
-            __pydantic_self__.image = plant.images[0].file_name
-
-        commoness = set([x.commoness.value for x in plant.locations])
-
-        # * get most commoness by LocationCommonEnum
-        commoness = sorted(commoness, key=lambda x: LocationCommonEnum(x).value)
-        # * set default value (latest one)
-        commoness = commoness[0] if commoness else "שכיחות לא ידועה"
-        __pydantic_self__.commoness = commoness
+    colors: Optional[List[COLORS]]
+    image: Optional[str] = Field(default=None, description="Image file name")
+    commoness: Optional[LocationCommonEnum]
+    locations: List[PlantLocation]  # TODO: remove later
 
 
 class SearchOutList(BaseModel):
@@ -149,24 +133,26 @@ class SearchOutList(BaseModel):
     current_page: int = 1
     plants: List[Optional[SearchOut]] = []
 
-    @validator("plants")
-    def sort_plants_image(cls, v):
+    def sort_plants(self):
         """
-        sort plants by image and commoness
+        Sort plants list on two keys, first by image, second by commoness.
         """
+        # TODO: refactor this method - in one loop
+        plants_with_images = []
+        plants_without_images = []
+        # * Split data into two lists
+        for plant in self.plants:
+            if plant.image:
+                plants_with_images.append(plant)
+            else:
+                plants_without_images.append(plant)
 
-        # * sort plants by image first
-        plants = sorted(v, key=lambda x: x.image if x.image else "", reverse=True)
+        # * Sort lists
+        plants_with_images.sort(key=lambda x: LocationCommonEnum(x.commoness).name)
+        plants_without_images.sort(key=lambda x: LocationCommonEnum(x.commoness).name)
 
-        # * sort plants_with_images and plants_without_images by commoness by LocationCommonEnum
-        plants.sort(key=lambda x: LocationCommonEnum(x.commoness).value)
-
-        # * remove key 'commoness' from each plant (after sorting) - canceled because UI group by commoness
-        # TODO: remove this after UI group by commoness
-        # for plant in plants:
-        #     del plant.commoness
-
-        return plants
+        # * Merge lists
+        self.plants = plants_with_images + plants_without_images
 
 
 class PreSearchData(BaseModel):
@@ -175,3 +161,7 @@ class PreSearchData(BaseModel):
     total_pages: int
     current_page: int
     per_page: int = settings.ITEMS_PER_PAGE
+    location_names: Optional[List[LocationHebLiteral]] = Field(
+        default_factory=list,
+        description="Hebrew names of the locations from user search input",
+    )

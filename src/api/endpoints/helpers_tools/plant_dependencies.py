@@ -83,5 +83,6 @@ async def get_pre_search_data(
         query=query,
         current_page=search_input.page,
         total_pages=total_pages,
+        location_names=search_input.location_names
     )
     return pre_search_data

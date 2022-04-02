@@ -6,6 +6,7 @@ from endpoints.helpers_tools.plant_dependencies import (
     get_plant_from_science_name,
     get_pre_search_data,
 )
+from endpoints.helpers_tools.generic import format_search_out_plant
 
 router = APIRouter()
 
@@ -37,6 +38,14 @@ async def search(
         .skip((pre_search_data.current_page - 1) * pre_search_data.per_page)
         .limit(pre_search_data.per_page)
     )
-    out_plants.plants = [Plant(**plant) for plant in plants]
+
+    # * format plants results
+    out_plants.plants = [
+        format_search_out_plant(Plant(**plant), pre_search_data.location_names)
+        for plant in plants
+    ]
+
+    # * sort plants results
+    out_plants.sort_plants()
 
     return out_plants
