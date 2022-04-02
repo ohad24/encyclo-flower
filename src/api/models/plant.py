@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, AnyUrl, validator
-from typing import Dict, List, Optional
+from typing import List, Optional
 from datetime import datetime
 from models.plant_custom_types import (
     LocationCommonEnum,
@@ -60,7 +60,6 @@ class PlantImage(BaseModel):
 
 
 class PlantLocation(BaseModel):
-    # TODO: refactor this class
     location_name: LocationHebLiteral = Field(description="Hebrew name of the location")
     commoness: LocationCommonEnum | None
 
@@ -102,29 +101,33 @@ class Plant(BaseModel):
 class SearchIn(BaseModel):
     name_text: Optional[str]
     colors: Optional[List[COLORS]]
-    location_names: Optional[List[str]]
+    location_names: Optional[List[LocationHebLiteral]]
     flowering_seasons: Optional[List[int]]
-    petals: Optional[List[str]]
-    # TODO: leaf attributes
-    life_forms: Optional[List[str]]
-    habitats: Optional[List[str]]
-    stem_shapes: Optional[List[str]]
-    spine: Optional[List[str]]
+    petals: Optional[List[PETALS]]
+    leaf_shapes: Optional[List[LEAF_SHAPES]]
+    leaf_edges: Optional[List[LEAF_EDGES]]
+    leaf_arrangements: Optional[List[LEAF_ARRANGEMENTS]]
+    life_forms: Optional[List[LIFE_FORMS]]
+    habitats: Optional[List[HABITATS]]
+    stem_shapes: Optional[List[STEM_SHAPES]]
+    spine: Optional[List[SPINE]]
     red: Optional[bool]
     invasive: Optional[bool]
     danger: Optional[bool]
     rare: Optional[bool]
+    protected: Optional[bool]
     page: int = Field(ge=1, default=1)
 
 
 class SearchOut(BaseModel):
-    # TODO: check if need all OPTIONAL
     heb_name: str
     science_name: str
-    colors: Optional[List[COLORS]]
-    image: Optional[str] = Field(default=None, description="Image file name")
-    commoness: Optional[LocationCommonEnum]
-    locations: List[PlantLocation]  # TODO: remove later
+    colors: List[COLORS]
+    image: str = Field(default=None, description="Image file name")
+    commoness: LocationCommonEnum
+    _locations: List[PlantLocation] = Field(
+        description="Locations of the plant. For debugging only"
+    )
 
 
 class SearchOutList(BaseModel):

@@ -54,7 +54,6 @@ async def search(
     pre_search_data: PreSearchData = Depends(get_pre_search_data),
     db: MongoClient = Depends(get_db),
 ):
-    # TODO: add more response description
     # * init return data
     out_plants = SearchOutList(
         total_pages=pre_search_data.total_pages,

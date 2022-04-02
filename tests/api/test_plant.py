@@ -99,6 +99,15 @@ class TestSearch:
         ],
         [{"red": True, "danger": True}, 13],
         [{"invasive": True, "rare": True}, 1],
+        [
+            {
+                "leaf_shapes": ["סרגלי"],
+                "leaf_edges": ["תמימה"],
+                "leaf_arrangements": ["שושנת עלים"],
+            },
+            250,
+        ],
+        [{"protected": True}, 276],
     ]
 
     @pytest.mark.parametrize("params, expected_total", multi_params)
