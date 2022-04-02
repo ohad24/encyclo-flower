@@ -139,7 +139,7 @@ class SearchOutList(BaseModel):
     def sort_plants(self):
         # Sort plants list on two keys, first by image, second by commoness.
         self.plants.sort(
-            key=lambda x: (1 if x.image else 0, LocationCommonEnum(x.commoness).name)
+            key=lambda x: (0 if x.image else 1, LocationCommonEnum(x.commoness).name)
         )
 
 
