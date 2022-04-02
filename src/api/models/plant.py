@@ -137,25 +137,10 @@ class SearchOutList(BaseModel):
     plants: List[Optional[SearchOut]] = []
 
     def sort_plants(self):
-        """
-        Sort plants list on two keys, first by image, second by commoness.
-        """
-        # TODO: refactor this method - in one loop
-        plants_with_images = []
-        plants_without_images = []
-        # * Split data into two lists
-        for plant in self.plants:
-            if plant.image:
-                plants_with_images.append(plant)
-            else:
-                plants_without_images.append(plant)
-
-        # * Sort lists
-        plants_with_images.sort(key=lambda x: LocationCommonEnum(x.commoness).name)
-        plants_without_images.sort(key=lambda x: LocationCommonEnum(x.commoness).name)
-
-        # * Merge lists
-        self.plants = plants_with_images + plants_without_images
+        """Sort plants list on two keys, first by image, second by commoness."""
+        self.plants.sort(
+            key=lambda x: (0 if x.image else 1, LocationCommonEnum(x.commoness).name)
+        )
 
 
 class PreSearchData(BaseModel):
