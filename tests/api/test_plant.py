@@ -52,7 +52,9 @@ class TestSearch:
         response = client.post(self._plants_search_url, json={})
         # * Assert
         assert response.status_code == 400
-        assert response.json() == {"detail": "must supply at least one parameter"}
+        assert response.json() == {
+            "detail": "Must supply at least one criteria for search."
+        }
 
     def test_no_results(self):
         # * Act
@@ -153,7 +155,7 @@ class TestSearch:
         )
         # * Assert
         assert response.status_code == 400
-        assert response.json() == {"detail": "page number out of range"}
+        assert response.json() == {"detail": "Page number out of range."}
 
     def test_search_sort_by_images(self):
         # * Arrange

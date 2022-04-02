@@ -2,7 +2,12 @@ from fastapi import HTTPException, status, Depends
 from db import get_db
 from pymongo.mongo_client import MongoClient
 from models.plant import Plant, SearchIn, PreSearchData
-from models.exceptions import ExceptionPlantNotFound
+from models.exceptions import (
+    ExceptionPlantNotFound,
+    ExceptionSearchPlantsNotFound,
+    ExceptionSearchPageOutOfRange,
+    ExceptionSearchNoInputCreteria,
+)
 from endpoints.helpers_tools.db import prepare_query_plant_name_text
 from math import floor
 from core.config import get_settings
@@ -49,7 +54,7 @@ async def prepare_search_query(search_input: SearchIn) -> dict:
     if not query_and:
         raise HTTPException(
             status_code=400,
-            detail="must supply at least one parameter",
+            detail=ExceptionSearchNoInputCreteria().detail,
         )
     query = {"$and": query_and}
     return query
@@ -66,7 +71,7 @@ async def get_pre_search_data(
     if documents_count == 0:
         raise HTTPException(
             status_code=404,
-            detail="No plants found.",
+            detail=ExceptionSearchPlantsNotFound().detail,
         )
 
     # * check if page number is valid and not out of range
@@ -74,7 +79,7 @@ async def get_pre_search_data(
     if search_input.page > total_pages:
         raise HTTPException(
             status_code=400,
-            detail="page number out of range",
+            detail=ExceptionSearchPageOutOfRange().detail,
         )
 
     # * format return pre_search_data
@@ -83,6 +88,6 @@ async def get_pre_search_data(
         query=query,
         current_page=search_input.page,
         total_pages=total_pages,
-        location_names=search_input.location_names
+        location_names=search_input.location_names,
     )
     return pre_search_data
