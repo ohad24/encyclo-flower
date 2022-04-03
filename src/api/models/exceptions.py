@@ -73,3 +73,11 @@ class ExceptionSearchPageOutOfRange(BaseModel):
 
 class ExceptionSearchNoInputCreteria(BaseModel):
     detail: str = "Must supply at least one criteria for search."
+
+
+class ExceptionPlantFavoriteAlreadyExists(BaseModel):
+    detail: str = "Plant is already in favorites."
+
+
+class ExceptionPlantFavoriteNotFound(BaseModel):
+    detail: str = "Plant is not in favorites."

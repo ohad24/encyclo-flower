@@ -11,6 +11,7 @@ from models.exceptions import (
 from endpoints.helpers_tools.db import prepare_query_plant_name_text
 from math import floor
 from core.config import get_settings
+from models.user import FavoritePlant
 
 settings = get_settings()
 
@@ -91,3 +92,9 @@ async def get_pre_search_data(
         location_names=search_input.location_names,
     )
     return pre_search_data
+
+
+async def get_favorite_plant_data(
+    plant: Plant = Depends(get_plant_from_science_name),
+) -> FavoritePlant:
+    return FavoritePlant(**plant.dict())

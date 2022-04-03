@@ -247,3 +247,89 @@ class TestSearch:
                 ), "Commoness order is not correct. {} after {}".format(
                     commeness, result_commoness_order[idx - 1]
                 )
+
+
+class TestFavorite:
+    science_name = "Aegilops sharonensis"
+
+    @pytest.fixture(autouse=True)
+    def favorite_add_url(self, plants_url):
+        self._favorite_add_url = plants_url + f"{self.science_name}/add-favorite"
+
+    @pytest.fixture(autouse=True)
+    def favorite_remove_url(self, plants_url):
+        self._favorite_remove_url = plants_url + f"{self.science_name}/remove-favorite"
+
+    @pytest.fixture()
+    def current_user_favorite_plant(self):
+        return f"api/v1/users/me/favorite-plant/{self.science_name}"
+
+    def test_add_favorite__success(self, auth_headers):
+        # * Act
+        response = client.put(self._favorite_add_url, headers=auth_headers)
+        # * Assert
+        assert response.status_code == 204
+
+    def test_add_favorite__no_login(self):
+        # * Act
+        response = client.put(
+            self._favorite_add_url,
+        )
+        # * Assert
+        assert response.status_code == 401
+
+    def test_add_favorite__add_twice_same_plant(self, auth_headers):
+        # * Act
+        response = client.put(self._favorite_add_url, headers=auth_headers)
+        # * Assert
+        assert response.status_code == 400
+
+    def test_plant_is_in_favorites_of_current_user(
+        self, auth_headers, current_user_favorite_plant
+    ):
+        # * Act
+        response = client.get(
+            current_user_favorite_plant,
+            headers=auth_headers,
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()["is_favorite"] is True
+
+    def test_delete_favorite__success(self, auth_headers):
+        # * Act
+        response = client.delete(
+            self._favorite_remove_url,
+            headers=auth_headers,
+        )
+        # * Assert
+        assert response.status_code == 204
+
+    def test_delete_favorite__no_login(self):
+        # * Act
+        response = client.delete(
+            self._favorite_remove_url,
+        )
+        # * Assert
+        assert response.status_code == 401
+
+    def test_delete_favorite__remove_twice_same_plant(self, auth_headers):
+        # * Act
+        response = client.delete(
+            self._favorite_remove_url,
+            headers=auth_headers,
+        )
+        # * Assert
+        assert response.status_code == 400
+
+    def test_plant_is_not_in_favorites_of_current_user(
+        self, auth_headers, current_user_favorite_plant
+    ):
+        # * Act
+        response = client.get(
+            current_user_favorite_plant,
+            headers=auth_headers,
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert response.json()["is_favorite"] is False

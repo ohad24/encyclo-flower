@@ -64,6 +64,12 @@ class UserCounters(BaseModel):
     # TODO: add login counter (per day)
 
 
+class FavoritePlant(BaseModel):
+    plant_id: str
+    heb_name: str
+    science_name: str
+
+
 class UserInDB(UserBase):
     """
     User object in DB.
@@ -81,6 +87,7 @@ class UserInDB(UserBase):
     email_verified: bool = False
     create_dt: datetime = Field(default_factory=datetime.utcnow)
     counters: UserCounters = UserCounters()
+    favorite_plants: List[FavoritePlant] = []
 
 
 class Login(BaseModel):
@@ -148,3 +155,10 @@ class UserForgetPasswordRequest(BaseModel):
     """
 
     email: EmailStr
+
+
+class CheckFavoritePlant(BaseModel):
+    """
+    Output for check if plant is in user's favorite plants.
+    """
+    is_favorite: bool

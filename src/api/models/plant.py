@@ -71,6 +71,7 @@ class PlantLocation(BaseModel):
 
 
 class Plant(BaseModel):
+    plant_id: str
     science_name: str
     heb_name: str
     fam_name_eng: Optional[str]

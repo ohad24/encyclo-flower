@@ -10,6 +10,7 @@ from models.user import (
     UserInDB,
     UpdateUserIn,
     UserMinimalMetadataOut,
+    CheckFavoritePlant,
 )
 from core.security import (
     get_password_hash,
@@ -129,7 +130,6 @@ async def read_user(
     requested_user.questions = [QuestionPreviewBase(**x) for x in questions]
 
     # TODO: add list of detection user (not developed yet)
-    # TODO: liked plants (not developed yet)
 
     if requested_user.username == current_user.username or current_user.is_superuser:
         # * When requested user is the current user or current user is a superuser
@@ -239,3 +239,20 @@ async def verify_email(
         {"$set": {"email_verified": True, "is_active": True}},
     )
     return Response(status_code=204)
+
+
+@router.get(
+    "/me/favorite-plant/{science_name}",
+    response_model=CheckFavoritePlant,
+    summary="Check favorite plant",
+    description="Check if current user the requested plant is in favorite list",
+)
+async def check_favorite_plant(
+    science_name: str,
+    current_user: UserInDB = Depends(get_current_active_user),
+) -> CheckFavoritePlant:
+    is_favorite = any(
+        favorite_plant.science_name == science_name
+        for favorite_plant in current_user.favorite_plants
+    )
+    return CheckFavoritePlant(is_favorite=is_favorite)

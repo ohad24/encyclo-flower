@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pymongo.mongo_client import MongoClient
 from db import get_db
 from models.plant import Plant, SearchOutList, PreSearchData
 from endpoints.helpers_tools.plant_dependencies import (
     get_plant_from_science_name,
     get_pre_search_data,
+    get_favorite_plant_data,
 )
 from endpoints.helpers_tools.generic import format_search_out_plant
 from models.exceptions import (
@@ -12,8 +13,12 @@ from models.exceptions import (
     ExceptionSearchPlantsNotFound,
     ExceptionSearchPageOutOfRange,
     ExceptionSearchNoInputCreteria,
+    ExceptionPlantFavoriteAlreadyExists,
+    ExceptionPlantFavoriteNotFound,
 )
 from typing import Union
+from core.security import get_current_active_user
+from models.user import UserInDB, FavoritePlant
 
 router = APIRouter()
 
@@ -78,3 +83,65 @@ async def search(
     out_plants.sort_plants()
 
     return out_plants
+
+
+@router.put(
+    "/{science_name}/add-favorite",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        "400": {
+            "description": ExceptionPlantFavoriteAlreadyExists().detail,
+            "model": ExceptionPlantFavoriteAlreadyExists,
+        },
+        404: {
+            "description": ExceptionPlantNotFound().detail,
+            "model": ExceptionPlantNotFound,
+        },
+    },
+)
+async def add_favorite(
+    current_user: UserInDB = Depends(get_current_active_user),
+    favorite_plant: FavoritePlant = Depends(get_favorite_plant_data),
+    db: MongoClient = Depends(get_db),
+):
+    result = db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$addToSet": {"favorite_plants": favorite_plant.dict()}},
+    )
+    if not result.modified_count:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ExceptionPlantFavoriteAlreadyExists().detail,
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete(
+    "/{science_name}/remove-favorite",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        "400": {
+            "description": ExceptionPlantFavoriteNotFound().detail,
+            "model": ExceptionPlantFavoriteNotFound,
+        },
+        404: {
+            "description": ExceptionPlantNotFound().detail,
+            "model": ExceptionPlantNotFound,
+        },
+    },
+)
+async def remove_favorite(
+    current_user: UserInDB = Depends(get_current_active_user),
+    favorite_plant: FavoritePlant = Depends(get_favorite_plant_data),
+    db: MongoClient = Depends(get_db),
+):
+    result = db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$pull": {"favorite_plants": favorite_plant.dict()}},
+    )
+    if not result.modified_count:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ExceptionPlantFavoriteNotFound().detail,
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
