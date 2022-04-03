@@ -8,6 +8,7 @@ services:
       - NET_ADMIN
     volumes:
       - swag:/config
+      - ./static.conf:/config/nginx/proxy-confs/static.subfolder.conf
       - ./production.conf:/config/nginx/proxy-confs/production.subfolder.conf
       - ./development.conf:/config/nginx/proxy-confs/development.subdomain.conf
     environment:
