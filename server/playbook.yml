@@ -112,12 +112,14 @@
         path: "{{ stack_user.home }}/{{ item }}"
         owner: "{{ stack_user.name }}"
         group: "{{ stack_user.group }}"
-        mode: 0440
+        mode: 0640  # Read/write for owner, read only for group
+        state: touch
       loop:
         - .env
-        - api.env
-        - api-dev.env
+        - PRODUCTION.env
+        - DEVELOPMENT.env
         - google_cred.json
+      changed_when: false  # Do not consider this a change
 
     - name: Set up deployment key
       ansible.posix.authorized_key:
