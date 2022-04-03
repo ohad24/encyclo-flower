@@ -112,12 +112,14 @@
         path: "{{ stack_user.home }}/{{ item }}"
         owner: "{{ stack_user.name }}"
         group: "{{ stack_user.group }}"
-        mode: 0440
+        mode: 0640  # Read/write for owner, read only for group
+        state: touch
       loop:
         - .env
-        - api.env
-        - api-dev.env
+        - PRODUCTION.env
+        - DEVELOPMENT.env
         - google_cred.json
+      changed_when: false  # Do not consider this a change
 
     - name: Set up deployment key
       ansible.posix.authorized_key:
@@ -129,8 +131,18 @@
         - "{{ stack_user.name }}"
         - "{{ ansible_user.name }}"
 
-    - name: Run docker services
-      community.docker.docker_compose:
-        project_src: "{{ stack_user.home }}"
-        pull: yes
-        remove_orphans: yes
+    - name: Run deployment script
+      # This replaces the previous method of running docker compose directly
+      shell:
+        chdir: "{{ stack_user.home }}"
+        cmd: "sudo -u {{ stack_user.name }} sh {{ stack_user.home }}/deploy.sh"
+        warn: no  # Disable sudo warning
+      changed_when: false  # Do not consider this a change
+
+    - name: Cronjob for deployment
+      cron:
+        name: "{{ stack_user.name }}-deploy"
+        user: "{{ stack_user.name }}"
+        minute: "*/15" # Every 15 minutes
+        job: "sh {{ stack_user.home }}/deploy.sh"
+        state: present

@@ -31,8 +31,7 @@ services:
     image: ohad24/encyclo-flower-api:latest
     restart: always
     env_file:
-      # FIXME: api.env should have production variables, currently has test variables
-      - api.env
+      - PRODUCTION.env
     volumes:
       - ./google_cred.json:/app/google_cred.json
     networks:
@@ -42,7 +41,7 @@ services:
     image: ohad24/encyclo-flower-api:edge
     restart: always
     env_file:
-      - api-dev.env
+      - DEVELOPMENT.env
     volumes:
       - ./google_cred.json:/app/google_cred.json
     networks:
