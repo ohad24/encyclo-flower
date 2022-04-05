@@ -168,16 +168,12 @@ def format_search_out_plant(
 
     Get most common text by location commeness classifications.
     """
-    # * sort and get first image file name if exists
-    if plant.images:
-        # TODO: add tests for image level selection
-        # * sort images in plant by level - show pre selected image first
-        # * sort reverse plant images by level (level = a,b,c.d)
-        plant.images.sort(key=lambda x: x.level)
-        # * get the first image
-        image = plant.images[0].file_name
-    else:
-        image = None
+
+    # * get first image, sort by image.level, the most lowest. default None
+    image = min(plant.images, key=lambda x: x.level, default=None)
+    # * if image exists, get image file name
+    if image:
+        image = image.file_name
 
     # * filter locations if locations name is not empty (from user input)
     if location_names:
@@ -189,18 +185,15 @@ def format_search_out_plant(
     else:
         filtered_locations = plant.locations
 
-    # * get most common location commeness
+    # * create set of filtered locations commnesses
     commoness_set = set([x.commoness.value for x in filtered_locations])
-    if commoness_set:
-        # * sort commonesses by LocationCommonEnum key (name attribute)
-        sorted_commoness = sorted(
-            commoness_set, key=lambda x: LocationCommonEnum(x).name
-        )
-        # * set commoness value to fist most commoness
-        commoness = sorted_commoness[0]
-    else:
-        # * set default value (latest one)
-        commoness = LocationCommonEnum.e.value
+
+    # * get most commoness, default is last
+    commoness = min(
+        commoness_set,
+        key=lambda x: LocationCommonEnum(x).name,
+        default=LocationCommonEnum.e.value,
+    )
 
     return SearchOut(
         heb_name=plant.heb_name,
