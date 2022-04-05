@@ -1,0 +1,71 @@
+# This workflow will build and push our custom SWAG image
+# Production workflow (tagging the image as "latest") should run only on tagged version push
+
+name: SWAG build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+    paths:
+      # NOTE: Path filters are ignored for tag pushes
+      - "swag/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "swag/**"
+
+env:
+  DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-swag
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Metadata for Docker
+        # Docs: https://github.com/docker/metadata-action
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.DOCKER_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}}
+            type=edge
+            type=sha
+
+      - name: Login to DockerHub
+        # Docs: https://github.com/docker/login-action
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        # Docs: https://github.com/docker/build-push-action
+        uses: docker/build-push-action@v2
+        with:
+          context: src/api
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    if: ${{ github.event_name != 'pull_request' }} # Deploy shouldn't run on PRs
+    needs: [build] # This job will run only if other jobs were successful
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy via SSH
+        # Docs: https://github.com/appleboy/ssh-action
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_DEPLOYMENT_HOST }}
+          port: ${{ secrets.SSH_DEPLOYMENT_PORT }}
+          username: ${{ secrets.SSH_DEPLOYMENT_USER }}
+          key: ${{ secrets.SSH_DEPLOYMENT_KEY }}
