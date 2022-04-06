@@ -1,16 +1,13 @@
 version: "3.9"
 services:
   swag:
-    image: linuxserver/swag:latest
+    image: ohad24/encyclo-flower-swag:edge  # TODO: Switch to "latest"
     container_name: swag
     restart: always
     cap_add:
       - NET_ADMIN
     volumes:
       - swag:/config
-      - ./static.conf:/config/nginx/proxy-confs/static.subfolder.conf
-      - ./production.conf:/config/nginx/proxy-confs/production.subfolder.conf
-      - ./development.conf:/config/nginx/proxy-confs/development.subdomain.conf
     environment:
       - PUID=2000
       - PGID=2000

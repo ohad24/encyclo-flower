@@ -104,8 +104,6 @@
       loop:
         - docker-compose.yml
         - deploy.sh
-        - development.conf
-        - production.conf
 
     - name: Ensure protected files permissions
       file:
