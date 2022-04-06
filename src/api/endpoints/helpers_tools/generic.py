@@ -186,7 +186,7 @@ def format_search_out_plant(
         filtered_locations = plant.locations
 
     # * create set of filtered locations commnesses
-    commoness_set = set([x.commoness.value for x in filtered_locations])
+    commoness_set = {x.commoness.value for x in filtered_locations}
 
     # * get most commoness, default is last
     commoness = min(
