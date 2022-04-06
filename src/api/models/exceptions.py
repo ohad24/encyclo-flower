@@ -57,3 +57,27 @@ class ExceptionObservationImageNotFound(BaseModel):
 
 class ExceptionObservationImageCountLimit(BaseModel):
     detail: str = "Too many images. Only 10 images allowed per observation."
+
+
+class ExceptionPlantNotFound(BaseModel):
+    detail: str = "Plant not found."
+
+
+class ExceptionSearchPlantsNotFound(BaseModel):
+    detail: str = "No plants found."
+
+
+class ExceptionSearchPageOutOfRange(BaseModel):
+    detail: str = "Page number out of range."
+
+
+class ExceptionSearchNoInputCreteria(BaseModel):
+    detail: str = "Must supply at least one criteria for search."
+
+
+class ExceptionPlantFavoriteAlreadyExists(BaseModel):
+    detail: str = "Plant is already in favorites."
+
+
+class ExceptionPlantFavoriteNotFound(BaseModel):
+    detail: str = "Plant is not in favorites."

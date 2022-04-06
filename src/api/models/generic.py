@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from enum import IntEnum
+from enum import IntEnum, Enum
 from PIL import Image
 from fastapi import HTTPException
 from models.helpers import gen_uuid
@@ -70,3 +70,38 @@ class ImagePreview(BaseModel):
     # TODO: link to thumbnail
     file_name: str
     content_category: ImageContentCategoryLiteral | None = None
+
+
+class LocationKMLtranslate(Enum):
+    """
+    key is the value in KML file
+    value is the value in db
+    """
+
+    GalileeBeach = "חוף הגליל"
+    CarmelBeach = "חוף הכרמל"
+    Sharon = "שרון"
+    SouthernBeach = "מישור החוף הדרומי"
+    UpperGalilee = "גליל עליון"
+    LowerGalilee = "גליל תחתון"
+    Carmel = "כרמל"
+    MenasheHills = "רמות מנשה"
+    IzraelValley = "עמק יזרעאל"
+    Shomron = "הרי שומרון"
+    JudeaLowLands = "שפלת יהודה"
+    JudeaMountains = "הרי יהודה"
+    NorthernNegev = "צפון הנגב"
+    WesternNegev = "מערב הנגב"
+    CentralNegev = "מרכז והר הנגב"
+    SouthernNegev = "דרום הנגב"
+    Hula = "עמק החולה"
+    KinarotValley = "בקעת כינרות"
+    BetSheanValley = "עמק בית שאן"
+    Gilboa = "גלבוע"
+    ShomronDesert = "מדבר שומרון"
+    JudeaDesert = "מדבר יהודה"
+    JordanValley = "בקעת הירדן"
+    DeadSeaValley = "בקעת ים המלח"
+    Arava = "ערבה"
+    Hermon = "חרמון"
+    Golan = "גולן"

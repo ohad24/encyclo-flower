@@ -1,49 +1,147 @@
-from fastapi import APIRouter, Depends, HTTPException, Body, Path
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pymongo.mongo_client import MongoClient
-import pymongo
-import db
-from models import plant as plant_model
-import math
-from endpoints.helpers_tools.db import prepare_search_query
+from db import get_db
+from models.plant import Plant, SearchOutList, PreSearchData
+from endpoints.helpers_tools.plant_dependencies import (
+    get_plant_from_science_name,
+    get_pre_search_data,
+    get_favorite_plant_data,
+)
+from endpoints.helpers_tools.generic import format_search_out_plant
+from models.exceptions import (
+    ExceptionPlantNotFound,
+    ExceptionSearchPlantsNotFound,
+    ExceptionSearchPageOutOfRange,
+    ExceptionSearchNoInputCreteria,
+    ExceptionPlantFavoriteAlreadyExists,
+    ExceptionPlantFavoriteNotFound,
+)
+from typing import Union
+from core.security import get_current_active_user
+from models.user import UserInDB, FavoritePlant
 
 router = APIRouter()
 
 
-@router.get("/{science_name}", response_model=plant_model.Plant)
+@router.get(
+    "/{science_name}",
+    response_model=Plant,
+    responses={
+        404: {
+            "description": ExceptionPlantNotFound().detail,
+            "model": ExceptionPlantNotFound,
+        }
+    },
+)
 async def get_plant(
-    science_name: str = Path(...), db: MongoClient = Depends(db.get_db)
+    plant: Plant = Depends(get_plant_from_science_name),
 ):
-    plant = db.plants.find_one({"science_name": science_name})
-    if not plant:
-        raise HTTPException(
-            status_code=404,
-            detail="plant not found",
-        )
     return plant
 
 
-@router.post("/search", response_model=plant_model.SearchOutList)
+@router.post(
+    "/search",
+    response_model=SearchOutList,
+    responses={
+        404: {
+            "description": ExceptionSearchPlantsNotFound().detail,
+            "model": ExceptionSearchPlantsNotFound,
+        },
+        400: {
+            "description": "User input is not valid",
+            "model": Union[
+                ExceptionSearchNoInputCreteria, ExceptionSearchPageOutOfRange
+            ],
+        },
+    },
+)
 async def search(
-    db: MongoClient = Depends(db.get_db),
-    search: plant_model.SearchIn = Body(...),
+    pre_search_data: PreSearchData = Depends(get_pre_search_data),
+    db: MongoClient = Depends(get_db),
 ):
-    per_page = 30  # * limit to 30 per page
-    query = prepare_search_query(search_input=search)
-    count_documents = db.plants.count_documents(query)
-    if count_documents == 0:
-        return {}
-    out_plants = plant_model.SearchOutList()
-    out_plants.total_pages = math.floor(count_documents / per_page) + 1
-    if search.page > out_plants.total_pages:
-        raise HTTPException(
-            status_code=400,
-            detail="page number out of range",
-        )
-    out_plants.total = count_documents
-    out_plants.current_page = search.page
-    out_plants.plants = list(
-        db.plants.find(query)
-        # .sort([("images", pymongo.ASCENDING)])  # * FIX THIS
-        .skip((search.page - 1) * per_page).limit(per_page)
+    # * init return data
+    out_plants = SearchOutList(
+        total_pages=pre_search_data.total_pages,
+        total=pre_search_data.documents_count,
+        current_page=pre_search_data.current_page,
     )
+
+    # * get plants from db
+    plants = (
+        db.plants.find(pre_search_data.query)
+        .skip((pre_search_data.current_page - 1) * pre_search_data.per_page)
+        .limit(pre_search_data.per_page)
+    )
+
+    # * format plants results
+    out_plants.plants = [
+        format_search_out_plant(Plant(**plant), pre_search_data.location_names)
+        for plant in plants
+    ]
+
+    # * sort plants results
+    out_plants.sort_plants()
+
     return out_plants
+
+
+@router.put(
+    "/{science_name}/add-favorite",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        "400": {
+            "description": ExceptionPlantFavoriteAlreadyExists().detail,
+            "model": ExceptionPlantFavoriteAlreadyExists,
+        },
+        404: {
+            "description": ExceptionPlantNotFound().detail,
+            "model": ExceptionPlantNotFound,
+        },
+    },
+)
+async def add_favorite(
+    current_user: UserInDB = Depends(get_current_active_user),
+    favorite_plant: FavoritePlant = Depends(get_favorite_plant_data),
+    db: MongoClient = Depends(get_db),
+):
+    result = db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$addToSet": {"favorite_plants": favorite_plant.dict()}},
+    )
+    if not result.modified_count:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ExceptionPlantFavoriteAlreadyExists().detail,
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete(
+    "/{science_name}/remove-favorite",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        "400": {
+            "description": ExceptionPlantFavoriteNotFound().detail,
+            "model": ExceptionPlantFavoriteNotFound,
+        },
+        404: {
+            "description": ExceptionPlantNotFound().detail,
+            "model": ExceptionPlantNotFound,
+        },
+    },
+)
+async def remove_favorite(
+    current_user: UserInDB = Depends(get_current_active_user),
+    favorite_plant: FavoritePlant = Depends(get_favorite_plant_data),
+    db: MongoClient = Depends(get_db),
+):
+    result = db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$pull": {"favorite_plants": favorite_plant.dict()}},
+    )
+    if not result.modified_count:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ExceptionPlantFavoriteNotFound().detail,
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

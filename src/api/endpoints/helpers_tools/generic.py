@@ -5,10 +5,12 @@ from models.generic import AngleEnum, ImageLocation
 from typing import List, Tuple
 from exif import Image as ExifImage
 from endpoints.helpers_tools.GPS_translate import find_point_location
-from models.plant import LocationKMLtranslate
+from models.generic import LocationKMLtranslate
 from models.custom_types import HebMonths, HebMonthLiteral
 from endpoints.helpers_tools.storage import download_from_gstorage, upload_to_gstorage
 from pathlib import Path
+from models.plant import Plant, SearchOut
+from models.plant_custom_types import LocationCommonEnum
 
 
 def get_today_str() -> str:
@@ -154,3 +156,50 @@ def rotate_storage_image(file_name: str, file_path: Path, angle: AngleEnum):
     rotated_image_bytes = rotate_image(image_bytes, angle)
     # * upload image
     upload_to_gstorage(file_name, file_path, rotated_image_bytes, content_type)
+
+
+def format_search_out_plant(
+    plant: Plant, location_names: List[LocationCommonEnum]
+) -> SearchOut:
+    """
+    Format plant object to SearchOut object.
+
+    Get top first image file name by level classifications.
+
+    Get most common text by location commeness classifications.
+    """
+
+    # * get first image, sort by image.level, the most lowest. default None
+    image = min(plant.images, key=lambda x: x.level, default=None)
+    # * if image exists, get image file name
+    if image:
+        image = image.file_name
+
+    # * filter locations if locations name is not empty (from user input)
+    if location_names:
+        filtered_locations = [
+            location
+            for location in plant.locations
+            if location.location_name in location_names
+        ]
+    else:
+        filtered_locations = plant.locations
+
+    # * create set of filtered locations commnesses
+    commoness_set = {x.commoness.value for x in filtered_locations}
+
+    # * get most commoness, default is last
+    commoness = min(
+        commoness_set,
+        key=lambda x: LocationCommonEnum(x).name,
+        default=LocationCommonEnum.e.value,
+    )
+
+    return SearchOut(
+        heb_name=plant.heb_name,
+        science_name=plant.science_name,
+        colors=plant.colors,
+        image=image,
+        commoness=commoness,
+        locations=filtered_locations,
+    )

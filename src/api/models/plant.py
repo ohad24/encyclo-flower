@@ -1,75 +1,41 @@
 from pydantic import BaseModel, Field, AnyUrl, validator
-from typing import Dict, List, Optional, Literal
-from db import get_db
-from bson.son import SON
+from typing import List, Optional
 from datetime import datetime
-from enum import Enum
+from models.plant_custom_types import (
+    LocationCommonEnum,
+    COLORS,
+    PETALS,
+    LEAF_SHAPES,
+    LEAF_EDGES,
+    LEAF_ARRANGEMENTS,
+    STEM_SHAPES,
+    LIFE_FORMS,
+    HABITATS,
+    SEX_FLOWER,
+    SPINE,
+)
+from models.plant_taxonomy_custom_types import (
+    CLADE1,
+    CLADE2,
+    CLADE3,
+    FAMILY,
+    SUBFAMILY,
+    GENUS,
+)
+from models.custom_types import LocationHebLiteral
+from core.config import get_settings
 
-db = get_db()
-
-pipeline_colors_name = [
-    {"$unwind": "$colors"},
-    {"$group": {"_id": "$colors"}},
-    {"$sort": SON([("_id", -1)])},
-]
-
-
-COLORS = Literal[
-    tuple(x["_id"] for x in list(db.plants.aggregate(pipeline_colors_name)))
-]
-
-
-class LocationCommonEnum(str, Enum):
-    a = "נפוץ"
-    b = "מצוי"
-    c = "נדיר"
-    d = "נדיר מאוד"
-    e = "שכיחות לא ידועה"
-
-
-class LocationKMLtranslate(str, Enum):
-    """
-    key is the value in KML file
-    value is the value in db
-    """
-
-    GalileeBeach = "חוף הגליל"
-    CarmelBeach = "חוף הכרמל"
-    Sharon = "שרון"
-    SouthernBeach = "מישור החוף הדרומי"
-    UpperGalilee = "גליל עליון"
-    LowerGalilee = "גליל תחתון"
-    Carmel = "כרמל"
-    MenasheHills = "רמות מנשה"
-    IzraelValley = "עמק יזרעאל"
-    Shomron = "הרי שומרון"
-    JudeaLowLands = "שפלת יהודה"
-    JudeaMountains = "הרי יהודה"
-    NorthernNegev = "צפון הנגב"
-    WesternNegev = "מערב הנגב"
-    CentralNegev = "מרכז והר הנגב"
-    SouthernNegev = "דרום הנגב"
-    Hula = "עמק החולה"
-    KinarotValley = "בקעת כינרות"
-    BetSheanValley = "עמק בית שאן"
-    Gilboa = "גלבוע"
-    ShomronDesert = "מדבר שומרון"
-    JudeaDesert = "מדבר יהודה"
-    JordanValley = "בקעת הירדן"
-    DeadSeaValley = "בקעת ים המלח"
-    Arava = "ערבה"
-    Hermon = "חרמון"
-    Golan = "גולן"
+settings = get_settings()
 
 
 class Taxonomy(BaseModel):
-    clade1: str
-    clade2: str
-    clade3: Optional[str]
+    clade1: CLADE1
+    clade2: CLADE2
+    clade3: Optional[CLADE3]
     clade4: Optional[str]
-    family: str
-    subfamily: Optional[str]
-    genus: str
+    family: FAMILY
+    subfamily: Optional[SUBFAMILY]
+    genus: GENUS
 
 
 class PlantImage(BaseModel):
@@ -87,11 +53,14 @@ class PlantImage(BaseModel):
 
     @validator("level")
     def set_level(cls, level):
+        """
+        Because the level in DB is null by default
+        """
         return level or "e"
 
 
 class PlantLocation(BaseModel):
-    location_name: str = Field(description="Hebrew name of the location")
+    location_name: LocationHebLiteral = Field(description="Hebrew name of the location")
     commoness: LocationCommonEnum | None
 
     @validator("commoness", pre=True, always=True)
@@ -102,15 +71,16 @@ class PlantLocation(BaseModel):
 
 
 class Plant(BaseModel):
+    plant_id: str
     science_name: str
     heb_name: str
     fam_name_eng: Optional[str]
-    petal_num_name: Optional[str]
-    leaf_shapes: List[str]
-    leaf_edges: List[str]
-    leaf_arrangements: List[str]
-    stem_shapes: Optional[str]
-    life_forms: List[str]
+    petals: Optional[PETALS]
+    leaf_shapes: List[LEAF_SHAPES]
+    leaf_edges: List[LEAF_EDGES]
+    leaf_arrangements: List[LEAF_ARRANGEMENTS]
+    stem_shapes: Optional[STEM_SHAPES]
+    life_forms: List[LIFE_FORMS]
     description: Optional[str]
     protected: bool
     red: bool
@@ -118,60 +88,47 @@ class Plant(BaseModel):
     synonym_names_eng: List[str]
     synonym_names_heb: List[str]
     locations: List[PlantLocation]
-    images_data: Optional[List[Dict]]
-    habitats: List[str]
+    habitats: List[HABITATS]
     flowering_seasons: Optional[List[int]]
     colors: List[COLORS]
-    sex_flower: List[str]
+    sex_flower: List[SEX_FLOWER]
     danger: bool
     rare: bool
     taxon: Taxonomy
-    spine: List[str]
-    images: List[PlantImage]
+    spine: List[SPINE]
+    images: List[Optional[PlantImage]]
 
 
 class SearchIn(BaseModel):
     name_text: Optional[str]
     colors: Optional[List[COLORS]]
-    location_names: Optional[List[str]]
+    location_names: Optional[List[LocationHebLiteral]]
     flowering_seasons: Optional[List[int]]
-    petals: Optional[List[str]]
-    # TODO: leaf attributes
-    life_forms: Optional[List[str]]
-    habitats: Optional[List[str]]
-    stem_shapes: Optional[List[str]]
-    spine: Optional[List[str]]
+    petals: Optional[List[PETALS]]
+    leaf_shapes: Optional[List[LEAF_SHAPES]]
+    leaf_edges: Optional[List[LEAF_EDGES]]
+    leaf_arrangements: Optional[List[LEAF_ARRANGEMENTS]]
+    life_forms: Optional[List[LIFE_FORMS]]
+    habitats: Optional[List[HABITATS]]
+    stem_shapes: Optional[List[STEM_SHAPES]]
+    spine: Optional[List[SPINE]]
     red: Optional[bool]
     invasive: Optional[bool]
     danger: Optional[bool]
     rare: Optional[bool]
+    protected: Optional[bool]
     page: int = Field(ge=1, default=1)
 
 
 class SearchOut(BaseModel):
     heb_name: str
     science_name: str
-    colors: List
-    image: Optional[PlantImage] = None
-    commoness: Optional[str]
-
-    def __init__(__pydantic_self__, **data: Dict) -> None:
-        super().__init__(**data)
-        plant = Plant(**data)
-        if plant.images:
-            # * sort images in plant by level - show pre selected image first
-            # * sort reverse plant images by level (level = a,b,c.d)
-            plant.images.sort(key=lambda x: x.level)
-            # * get the first image
-            __pydantic_self__.image = plant.images[0].file_name
-
-        commoness = set([x.commoness.value for x in plant.locations])
-
-        # * get most commoness by LocationCommonEnum
-        commoness = sorted(commoness, key=lambda x: LocationCommonEnum(x).value)
-        # * set default value (latest one)
-        commoness = commoness[0] if commoness else "שכיחות לא ידועה"
-        __pydantic_self__.commoness = commoness
+    colors: List[COLORS]
+    image: str = Field(default=None, description="Image file name")
+    commoness: LocationCommonEnum
+    _locations: List[PlantLocation] = Field(
+        description="Locations of the plant. For debugging only"
+    )
 
 
 class SearchOutList(BaseModel):
@@ -180,21 +137,20 @@ class SearchOutList(BaseModel):
     current_page: int = 1
     plants: List[Optional[SearchOut]] = []
 
-    @validator("plants")
-    def sort_plants_image(cls, v):
-        """
-        sort plants by image and commoness
-        """
+    def sort_plants(self):
+        """Sort plants list on two keys, first by image, second by commoness."""
+        self.plants.sort(
+            key=lambda x: (0 if x.image else 1, LocationCommonEnum(x.commoness).name)
+        )
 
-        # * sort plants by image first
-        plants = sorted(v, key=lambda x: x.image if x.image else "", reverse=True)
 
-        # * sort plants_with_images and plants_without_images by commoness by LocationCommonEnum
-        plants.sort(key=lambda x: LocationCommonEnum(x.commoness).value)
-
-        # * remove key 'commoness' from each plant (after sorting) - canceled because UI group by commoness
-        # TODO: remove this after UI group by commoness
-        # for plant in plants:
-        #     del plant.commoness
-
-        return plants
+class PreSearchData(BaseModel):
+    documents_count: int
+    query: dict
+    total_pages: int
+    current_page: int
+    per_page: int = settings.ITEMS_PER_PAGE
+    location_names: Optional[List[LocationHebLiteral]] = Field(
+        default_factory=list,
+        description="Hebrew names of the locations from user search input",
+    )
