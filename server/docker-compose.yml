@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   swag:
-    image: ohad24/encyclo-flower-swag:edge  # TODO: Switch to "latest"
+    image: ohad24/encyclo-flower-swag:latest
     container_name: swag
     restart: always
     cap_add:
