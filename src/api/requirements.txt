@@ -5,7 +5,7 @@ fastapi==0.75.0
 google-cloud-storage==2.2.1
 google-cloud-vision==2.7.2
 passlib==1.7.4
-Pillow==9.0.1
+Pillow==9.1.0
 pydantic[email]==1.9.0
 pymongo[srv]==4.0.2
 python-dotenv==0.20.0
