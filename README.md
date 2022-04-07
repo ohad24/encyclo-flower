@@ -1,5 +1,6 @@
 ## ENCYCLO-FLOWER SITE (v2)
 [![API build](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml)
+[![SWAG build](https://github.com/ohad24/encyclo-flower/actions/workflows/swag.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/swag.yml)
 [![Ansible deployment](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml)
 
 ### Development install and run
