@@ -11,7 +11,7 @@ db_client = MongoClient(
     password="example",
 )
 
-data_path = Path("scripts/plant_data_17_02_2022.json")
+data_path = Path("scripts/plant_data_08_04_2022.json")
 
 
 dbs = ["dev", "test"]
