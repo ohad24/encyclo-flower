@@ -963,7 +963,6 @@ GENUS = Literal[
     "שביט",
     "ששן",
     "אלוי",
-    "שיטה Faidherbia",  # TODO: talk to Shahar
 ]
 
 CLADE1 = Literal["צמחי הזרעים", "שרכים", "צמחי עובר"]
@@ -1126,13 +1125,9 @@ FAMILY = Literal[
     "טחבי כבד",
     "צבריים",
     "דטיסקיים",
-    "שיטיים",  # TODO: talk to Shahar
-    "פרפרניים",  # TODO: talk to Shahar
-    "כליליים",  # TODO: talk to Shahar
 ]
 
-# TODO: talk to Shahar
+# * For future use
 # clade4 = []
 
-# TODO: talk to Shahar
-SUBFAMILY = Literal["פרפרניים", "מימוסיים \\ שיטיים", "קסאלפיניים"]
+SUBFAMILY = Literal["פרפרניים", "מימוסיים \ שיטיים", "קסאלפיניים"]

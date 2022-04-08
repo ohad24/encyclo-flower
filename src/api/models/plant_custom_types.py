@@ -26,9 +26,7 @@ COLORS = Literal[
     "כחול",
     "מנומר",
     "ללא פרח",
-    "ללא עטיף",  # TODO: talk to Shahar
-    "לילך",  # TODO: talk to Shahar
-    "קרומי",  # TODO: talk to Shahar
+    "ללא עטיף - ללא עלי כותרת",
 ]
 
 PETALS = Literal[
@@ -57,10 +55,6 @@ LEAF_SHAPES = Literal[
     "מנוצה",
     "מנוצה פעמיים או יותר",
     "אין עלים",
-    "גזור פעם אחת",  # TODO: talk to Shahar
-    "מנוצה פעם אחת",  # TODO: talk to Shahar
-    "מנוצה פעם אחת או פעמיים",  # TODO: talk to Shahar
-    " תלתני",  # TODO: talk to Shahar
 ]
 
 
