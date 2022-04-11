@@ -7,7 +7,7 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - swag:/config
+      - swag-ssl:/config/etc/letsencrypt
     environment:
       - PUID=2000
       - PGID=2000
@@ -46,7 +46,7 @@ services:
       - development
 
 volumes:
-  swag:
+  swag-ssl:
 
 networks:
   web:
