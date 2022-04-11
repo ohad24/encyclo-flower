@@ -3,3 +3,4 @@ FROM linuxserver/swag:1.26.0
 
 COPY default /config/nginx/site-confs/default
 COPY *.conf /config/nginx/
+COPY static/*.* /config/www/
