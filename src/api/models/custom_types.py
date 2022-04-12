@@ -60,3 +60,9 @@ ImageContentCategoryLiteral = Literal[
     "זרעים",
     "פרח בבית הגידול",
 ]
+
+AnswerFilterLiteral = Literal[
+    "all",
+    "answered",
+    "not_answered",
+]

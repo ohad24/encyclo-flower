@@ -21,8 +21,8 @@ from models.user_questions import (
     Answer,
     AnswerInDB,
     QuestionsPreview,
-    AnswerFilterType,
     GetQuestionsFilterPreviewQuery,
+    AnswerFilterLiteral,
 )
 from models.user import UserInDB
 from models.generic import RotateDirection, Comment, CommentInDB
@@ -37,23 +37,30 @@ from endpoints.helpers_tools.question_dependencies import (
 )
 from endpoints.helpers_tools.generic import rotate_image, format_obj_image_preview
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
+from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
+from pathlib import Path
 
 router = APIRouter(prefix="/questions", tags=["questions"])
+
+QUESTIONS_IMAGES_PATH = Path("observations")
+QUESTION_THUMBNAILS_PATH = QUESTIONS_IMAGES_PATH / "thumbnails"
 
 
 @router.get("/", response_model=List[Optional[QuestionsPreview]])
 async def get_all_questions(
-    answer_filter: AnswerFilterType = Query(
-        AnswerFilterType("all"),
+    answer_filter: AnswerFilterLiteral = Query(
+        "all",
         description="Filter questions by answer status",
     ),
-    skip: int = Query(0, ge=0, le=9),
-    limit: int = Query(9, ge=0, le=9),
+    search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
     db: MongoClient = Depends(db.get_db),
 ):
-    qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter.value)
+    qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter)
+    # TODO: add submitted as boolean field to QuestionInDB
     query_filter = dict(deleted=False, **qp.answer_query)
-    pipeline = prepare_aggregate_pipeline_w_users(query_filter, skip, limit)
+    pipeline = prepare_aggregate_pipeline_w_users(
+        query_filter, search_params.skip, search_params.limit
+    )
     questions = db.questions.aggregate(pipeline)
     return list(map(format_obj_image_preview, questions))
 
