@@ -81,3 +81,7 @@ class ExceptionPlantFavoriteAlreadyExists(BaseModel):
 
 class ExceptionPlantFavoriteNotFound(BaseModel):
     detail: str = "Plant is not in favorites."
+
+
+class ExceptionQuestionImageCountLimit(BaseModel):
+    detail: str = "Too many images. Only 10 images allowed per question."

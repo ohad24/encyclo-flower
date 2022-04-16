@@ -2,33 +2,42 @@ from pydantic import BaseModel, Field, HttpUrl, validator
 from typing import List, Optional, Dict
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import ImageLocation, CommentInDB, ImagePreview
+from models.generic import CommentInDB, ImagePreview, Coordinates
 from models.user import BaseUserOut
-from models.custom_types import ImageContentCategoryLiteral, AnswerFilterLiteral
+from models.custom_types import (
+    ImageContentCategoryLiteral,
+    AnswerFilterLiteral,
+    HebMonthLiteral,
+    LocationHebLiteral,
+)
 
 
-class QuestionImage(BaseModel):
-    orig_file_name: str = Field(default="image1.jpg")
+class QuestionImageMetadata(BaseModel):
     description: str | None = None
-    notes: str | None = None
-    content_category: ImageContentCategoryLiteral
-    location: Optional[ImageLocation]
-    photo_taken_dt: Optional[datetime]
+    content_category: ImageContentCategoryLiteral | None = None
+    location_name: LocationHebLiteral | None = None
+    month_taken: Optional[HebMonthLiteral | None] = Field(
+        None, description="Hebrew month"
+    )
 
 
-class QuestionImageInDB(QuestionImage):
+class QuestionImageInDB(QuestionImageMetadata):
     image_id: str = Field(default_factory=gen_uuid)
+    coordinates: Coordinates = Coordinates(lat=0, lon=0, alt=0)
+    orig_file_name: str = Field(default="image1.jpg")
     file_name: str | None = None
-    uploaded: bool = False
-    self_link: HttpUrl | None = None
-    media_link: HttpUrl | None = None
-    public_url: HttpUrl | None = None
+    created_dt: datetime = Field(default_factory=datetime.utcnow)
 
     @validator("file_name", pre=True, always=True)
     def set_file_name(cls, v, values):
         if not v:
             return gen_image_file_name(values["orig_file_name"])
         return v
+
+
+class ObservationImageOut(QuestionImageMetadata):
+    image_id: str
+    file_name: str
 
 
 class QuestionImageInDB_w_qid(BaseModel):
@@ -38,7 +47,7 @@ class QuestionImageInDB_w_qid(BaseModel):
 
 class Question(BaseModel):
     question_text: str = Field(min_length=5, max_length=1000)
-    images: List[QuestionImage] = Field(description="Images metadata")
+    # images: List[QuestionImage] = Field(description="Images metadata")
 
 
 class Answer(BaseModel):
@@ -56,9 +65,10 @@ class QuestionInDB(Question):
     answer: Optional[AnswerInDB] = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
     comments: List[Optional[CommentInDB]] = []
-    images: List[QuestionImageInDB]
+    images: List[QuestionImageInDB] = []
+    submitted: bool = False
     deleted: bool = False
-    user_data: BaseUserOut | None = None
+    # user_data: BaseUserOut | None = None
 
 
 class QuestionPreviewBase(BaseModel):
@@ -83,7 +93,7 @@ class ImagesInResponse(BaseModel):
     images_ids: List[str]
 
 
-class QuestionInResponse(ImagesInResponse):
+class QuestionInResponse(BaseModel):
     """
     This is the response of the question creation
     """

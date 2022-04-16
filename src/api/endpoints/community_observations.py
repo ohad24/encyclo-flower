@@ -139,12 +139,13 @@ async def submit_observation(
     },
 )
 async def add_image_to_observation(
-    observationInDB: str = Depends(get_current_observation_w_valid_owner),
+    observationInDB: ObservationOut = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     db: MongoClient = Depends(db.get_db),
 ):
     if len(observationInDB.images) >= 10:
+        # TODO: change to http exception
         return JSONResponse(
             status_code=400,
             content={"detail": ExceptionObservationImageCountLimit().detail},

@@ -6,12 +6,13 @@ from fastapi import (
     HTTPException,
     Response,
     Query,
+    BackgroundTasks,
 )
 from typing import List, Optional
 import db
 from pymongo.mongo_client import MongoClient
 from models.user_questions import (
-    QuestionImage,
+    QuestionImageMetadata,
     Question,
     QuestionImageInDB_w_qid,
     QuestionInDB,
@@ -23,6 +24,7 @@ from models.user_questions import (
     QuestionsPreview,
     GetQuestionsFilterPreviewQuery,
     AnswerFilterLiteral,
+    ObservationImageOut,
 )
 from models.user import UserInDB
 from models.generic import RotateDirection, Comment, CommentInDB
@@ -35,14 +37,25 @@ from endpoints.helpers_tools.question_dependencies import (
     get_image_data_w_valid_editor,
     get_image_data_qid_w_valid_editor,
 )
-from endpoints.helpers_tools.generic import rotate_image, format_obj_image_preview
+from endpoints.helpers_tools.generic import (
+    format_obj_image_preview,
+    get_image_metadata,
+    rotate_image,
+    rotate_storage_image,
+    create_thumbnail,
+)
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
 from pathlib import Path
+from endpoints.helpers_tools.storage import (
+    upload_to_gstorage,
+    delete_from_gstorage,
+)
+from models.exceptions import ExceptionQuestionImageCountLimit
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
-QUESTIONS_IMAGES_PATH = Path("observations")
+QUESTIONS_IMAGES_PATH = Path("questions")
 QUESTION_THUMBNAILS_PATH = QUESTIONS_IMAGES_PATH / "thumbnails"
 
 
@@ -79,6 +92,7 @@ def add_comment(
     user: UserInDB = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
 ):
+    # TODO: need to refactor this with new collection
     comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
     db.questions.update_one(
         {"question_id": question_id}, {"$push": {"comments": comment_data.dict()}}
@@ -94,85 +108,109 @@ async def ask_question(
 ):
     questionInDB = QuestionInDB(**question.dict(), user_id=current_user.user_id)
     db.questions.insert_one(questionInDB.dict())
-    return QuestionInResponse(
-        question_id=questionInDB.question_id,
-        images_ids=list(map(lambda x: x.image_id, questionInDB.images)),
-    )
+    return QuestionInResponse(question_id=questionInDB.question_id)
 
 
-@router.post("/{question_id}/images_metadata", response_model=ImagesInResponse)
-async def add_image_metadata_to_question(
-    images_metadata: List[QuestionImage],
+@router.post("/{question_id}/image", response_model=ObservationImageOut)
+async def add_image_to_question(
     question: QuestionInDB = Depends(get_current_question_w_valid_owner),
+    image: UploadFile = File(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: MongoClient = Depends(db.get_db),
 ):
-    images_metadata_for_db = [
-        QuestionImageInDB(**x.dict()).dict() for x in images_metadata
-    ]
+    if len(question.images) >= 10:
+        raise HTTPException(
+            status_code=400,
+            detail=ExceptionQuestionImageCountLimit().detail,
+        )
 
+    # * setup image variables
+    image_bytes = image.file.read()
+    content_type = image.content_type
+
+    # * get image metadata from exif
+    image_location, image_heb_month_taken = get_image_metadata(image_bytes)
+
+    # * set model
+    imageInDB = QuestionImageInDB(
+        orig_file_name=image.filename,
+        month_taken=image_heb_month_taken,
+        **image_location.dict(),
+    )
+
+    # * create thumbnail and upload to gstorage
+    thumbnail_bytes = create_thumbnail(image_bytes)
+    upload_to_gstorage(
+        imageInDB.file_name, QUESTION_THUMBNAILS_PATH, thumbnail_bytes, content_type
+    )
+
+    # * upload image to gstorage as background task
+    background_tasks.add_task(
+        upload_to_gstorage,
+        imageInDB.file_name,
+        QUESTIONS_IMAGES_PATH,
+        image_bytes,
+        content_type,
+    )
+
+    # * add image to question
     db.questions.update_one(
         {"question_id": question.question_id},
-        {"$push": {"images": {"$each": images_metadata_for_db}}},
+        {"$push": {"images": imageInDB.dict()}},
     )
-    return ImagesInResponse(images_ids=[x["image_id"] for x in images_metadata_for_db])
+    return imageInDB
 
 
-@router.post("/{question_id}/images")
-async def add_image_to_question(
-    images_ids: List[str],
-    question: QuestionInDB = Depends(get_current_question_w_valid_owner),
-    images: List[UploadFile] = File(...),
+@router.put(
+    "/{question_id}/image/{image_id}",
+    status_code=204,
+    # responses={
+    #     404: {
+    #         "description": "Not Found",
+    #         "model": Union[
+    #             ExceptionObservationImageNotFound, ExceptionObservationNotFound
+    #         ],
+    #     }
+    # },
+)
+async def update_image_metadata(
+    user_image_metadata: QuestionImageMetadata,
+    image_data: QuestionImageInDB_w_qid = Depends(get_image_data_qid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
-    if len(images) != len(images_ids):
-        raise HTTPException(status_code=400, detail="Images and ids mismatch")
-
-    for image, image_id in zip(images, images_ids):
-        # * get image metadata
-        image_data = list(
-            filter(
-                lambda image: image.image_id == image_id and not image.uploaded,
-                question.images,
-            )
-        )
-
-        # * check if image metadata exists and not been uploaded
-        if not image_data:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Image metadata not found or already been uploaded - {image_id}",
-            )
-
-        # * upload image to gstorage
-        file_name = image_data[0].file_name
-        blob = bucket.blob("questions/" + file_name)
-        blob.upload_from_file(image.file, content_type=image.content_type)
-
-        # * update image metadata
-        db.questions.update_one(
-            {"question_id": question.question_id, "images.image_id": image_id},
-            {
-                "$set": {
-                    "images.$.uploaded": True,
-                    "images.$.self_link": blob.self_link,
-                    "images.$.media_link": blob.media_link,
-                    "images.$.public_url": blob.public_url,
-                }
-            },
-        )
-    return Response(status_code=200)
+    db.questions.update_one(
+        {
+            "question_id": image_data.question_id,
+            "images.image_id": image_data.image.image_id,
+        },
+        {
+            "$set": {
+                "images.$.description": user_image_metadata.description
+                or image_data.image.description,
+                "images.$.location_name": user_image_metadata.location_name
+                or image_data.image.location_name,
+                "images.$.content_category": user_image_metadata.content_category
+                or image_data.image.content_category,
+                "images.$.month_taken": user_image_metadata.month_taken
+                or image_data.image.month_taken,
+                "images.$.uploaded": True,
+            }
+        },
+    )
+    return Response(status_code=204)
 
 
-@router.delete("/{question_id}/images/{image_id}")
+@router.delete("/{question_id}/images/{image_id}", status_code=204)
 async def delete_image_from_question(
     image_data: QuestionImageInDB_w_qid = Depends(get_image_data_qid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
-    # * delete image from storage
-    blob = bucket.blob("questions/" + image_data.image.file_name)
-    blob.delete()
+    # * delete image and thumbnail from storage
+    delete_from_gstorage(image_data.image.file_name, QUESTIONS_IMAGES_PATH)
+    delete_from_gstorage(image_data.image.file_name, QUESTION_THUMBNAILS_PATH)
 
     # * delete image metadata from question
+    # TODO: remove the uploaded flag
     db.questions.update_one(
         {"question_id": image_data.question_id},
         {
@@ -181,10 +219,10 @@ async def delete_image_from_question(
             }
         },
     )
-    return Response(status_code=200)
+    return Response(status_code=204)
 
 
-@router.post("/{question_id}/answer")
+@router.post("/{question_id}/answer", status_code=204)
 async def answer_question(
     answer: Answer,
     question_id: str = Depends(get_question_id),
@@ -199,26 +237,31 @@ async def answer_question(
     db.questions.update_one(
         {"question_id": question_id}, {"$set": {"answer": answerInDB.dict()}}
     )
-    return Response(status_code=200)
+    return Response(status_code=204)
 
 
 @router.post("/{question_id}/images/{image_id}/rotate")
 async def rotate_image_in_question(
     direction: RotateDirection,
     image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
-    # * download image
-    blob = bucket.blob("questions/" + image_data.file_name)
-    image = blob.download_as_bytes()
-    # * rotate image
-    rotated_image = rotate_image(image, direction.angle)
-    # * upload image to gstorage
-    blob.upload_from_string(rotated_image, content_type=blob.content_type)
+    # * thumbnail
+    rotate_storage_image(
+        image_data.file_name, QUESTION_THUMBNAILS_PATH, direction.angle
+    )
 
-    return Response(status_code=200)
+    # * image as background task
+    background_tasks.add_task(
+        rotate_storage_image,
+        image_data.file_name,
+        QUESTIONS_IMAGES_PATH,
+        direction.angle,
+    )
+    return Response(status_code=204)
 
 
-@router.delete("/{question_id}")
+@router.delete("/{question_id}", status_code=204)
 async def delete_question(
     question: QuestionInDB = Depends(get_current_question_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
@@ -229,4 +272,4 @@ async def delete_question(
     db.questions.update_one(
         {"question_id": question.question_id}, {"$set": {"deleted": True}}
     )
-    return Response(status_code=200)
+    return Response(status_code=204)
