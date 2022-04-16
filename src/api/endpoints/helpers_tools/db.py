@@ -74,6 +74,7 @@ def prepare_aggregate_pipeline_w_users(
 
     The pipeline joins the user collection with main collection
     """
+    # TODO: fix unwind user_data in questions and observations
     aggregate_pipeline = [
         {"$match": query_filter},
         {
@@ -84,6 +85,7 @@ def prepare_aggregate_pipeline_w_users(
                 "as": "user_data",
             }
         },
+        # {"$unwind": "$user_data"},
         {
             "$project": {
                 "_id": 0,

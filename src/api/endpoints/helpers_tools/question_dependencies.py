@@ -6,6 +6,7 @@ from models.user_questions import (
     QuestionInDB,
     QuestionImageInDB,
     QuestionImageInDB_w_qid,
+    QuestionOut,
 )
 from core.security import get_current_active_user, check_privilege_user
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
@@ -13,37 +14,32 @@ from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 async def validate_question_by_id(
     question_id: str, db: MongoClient = Depends(db.get_db)
-) -> QuestionInDB:
+) -> QuestionOut:
     query_filter = dict(question_id=question_id, deleted=False)
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
     question = next(db.questions.aggregate(pipeline), None)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
-
-    if question["user_data"]:
-        # TODO: this if because TestQuestion::test_delete_image_as_editor isn't configured correctly, remove after fixing
-        question["user_data"] = question["user_data"][0]
-    else:
-        question["user_data"] = None
-    return QuestionInDB(**question)
+    question["user_data"] = question["user_data"][0]
+    return QuestionOut(**question)
 
 
 async def get_question_id(
-    question: QuestionInDB = Depends(validate_question_by_id),
+    question: QuestionOut = Depends(validate_question_by_id),
 ) -> str:
     return question.question_id
 
 
 async def get_current_question(
-    question: QuestionInDB = Depends(validate_question_by_id),
-) -> QuestionInDB:
+    question: QuestionOut = Depends(validate_question_by_id),
+) -> QuestionOut:
     return question
 
 
 async def validate_user_is_question_owner(
-    question: QuestionInDB = Depends(get_current_question),
+    question: QuestionOut = Depends(get_current_question),
     user: UserInDB = Depends(get_current_active_user),
-) -> QuestionInDB:
+) -> QuestionOut:
     if user.user_id != question.user_id:
         raise HTTPException(
             status_code=403, detail="User is not owner of this question"
@@ -52,15 +48,15 @@ async def validate_user_is_question_owner(
 
 
 async def get_current_question_w_valid_owner(
-    question: QuestionInDB = Depends(validate_user_is_question_owner),
-) -> QuestionInDB:
+    question: QuestionOut = Depends(validate_user_is_question_owner),
+) -> QuestionOut:
     return question
 
 
 async def get_current_question_w_valid_editor(
-    question: QuestionInDB = Depends(get_current_question),
+    question: QuestionOut = Depends(get_current_question),
     user: UserInDB = Depends(get_current_active_user),
-) -> QuestionInDB:
+) -> QuestionOut:
     """
     valid editor is the question owner or an admin/editor
     """
@@ -73,7 +69,7 @@ async def get_current_question_w_valid_editor(
 
 async def validate_image_by_id(
     image_id: str,
-    question: QuestionInDB = Depends(get_current_question_w_valid_editor),
+    question: QuestionOut = Depends(get_current_question_w_valid_editor),
 ) -> QuestionImageInDB_w_qid:
     image_data = list(filter(lambda image: image.image_id == image_id, question.images))
     if not image_data:

@@ -113,11 +113,11 @@ async def edit_observation(
 
 @router.put("/{observation_id}/submit", status_code=204)
 async def submit_observation(
-    observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_owner),
+    observation: ObservationOut = Depends(get_current_observation_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
 ):
     db.observations.update_one(
-        {"observation_id": observationInDB.observation_id},
+        {"observation_id": observation.observation_id},
         {"$set": {"submitted": True}},
     )
     return Response(status_code=204)

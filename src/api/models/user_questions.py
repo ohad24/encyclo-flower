@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict
 from datetime import datetime
 from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import CommentInDB, ImagePreview, Coordinates
+from models.generic import ImagePreview, Coordinates
 from models.user import BaseUserOut
 from models.custom_types import (
     ImageContentCategoryLiteral,
@@ -67,7 +67,10 @@ class QuestionInDB(Question):
     images: List[QuestionImageInDB] = []
     submitted: bool = False
     deleted: bool = False
-    # user_data: BaseUserOut | None = None
+
+
+class QuestionOut(QuestionInDB):
+    user_data: BaseUserOut
 
 
 class QuestionPreviewBase(BaseModel):
@@ -78,18 +81,9 @@ class QuestionPreviewBase(BaseModel):
     created_dt: datetime
 
 
-class QuestionsPreview(QuestionPreviewBase):
-    # TODO: fix class name to QuestionPreview
+class QuestionPreview(QuestionPreviewBase):
     user_id: str
     username: str
-
-
-class ImagesInResponse(BaseModel):
-    """
-    response for added new images to question.
-    """
-
-    images_ids: List[str]
 
 
 class QuestionInResponse(BaseModel):

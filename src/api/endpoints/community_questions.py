@@ -18,10 +18,10 @@ from models.user_questions import (
     QuestionInDB,
     QuestionImageInDB,
     QuestionInResponse,
-    ImagesInResponse,
+    QuestionOut,
     Answer,
     AnswerInDB,
-    QuestionsPreview,
+    QuestionPreview,
     GetQuestionsFilterPreviewQuery,
     AnswerFilterLiteral,
     ObservationImageOut,
@@ -29,7 +29,6 @@ from models.user_questions import (
 from models.user import UserInDB
 from models.generic import RotateDirection, Comment, CommentInDB, CommentOut
 from core.security import get_current_active_user, get_current_privilege_user
-from core.gstorage import bucket
 from endpoints.helpers_tools.question_dependencies import (
     get_question_id,
     get_current_question,
@@ -40,7 +39,6 @@ from endpoints.helpers_tools.question_dependencies import (
 from endpoints.helpers_tools.generic import (
     format_obj_image_preview,
     get_image_metadata,
-    rotate_image,
     rotate_storage_image,
     create_thumbnail,
 )
@@ -62,7 +60,7 @@ QUESTIONS_IMAGES_PATH = Path("questions")
 QUESTION_THUMBNAILS_PATH = QUESTIONS_IMAGES_PATH / "thumbnails"
 
 
-@router.get("/", response_model=List[Optional[QuestionsPreview]])
+@router.get("/", response_model=List[Optional[QuestionPreview]])
 async def get_all_questions(
     answer_filter: AnswerFilterLiteral = Query(
         "all",
@@ -73,7 +71,7 @@ async def get_all_questions(
 ):
     qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter)
     # TODO: add submitted as boolean field to QuestionInDB
-    query_filter = dict(deleted=False, **qp.answer_query)
+    query_filter = dict(deleted=False, submitted=True, **qp.answer_query)
     pipeline = prepare_aggregate_pipeline_w_users(
         query_filter, search_params.skip, search_params.limit
     )
@@ -81,9 +79,9 @@ async def get_all_questions(
     return list(map(format_obj_image_preview, questions))
 
 
-@router.get("/{question_id}", response_model=QuestionInDB)
+@router.get("/{question_id}", response_model=QuestionOut)
 async def get_question(
-    question: QuestionInDB = Depends(get_current_question),
+    question: QuestionOut = Depends(get_current_question),
 ):
     return question
 
@@ -133,9 +131,21 @@ async def ask_question(
     return QuestionInResponse(question_id=questionInDB.question_id)
 
 
+@router.put("/{observation_id}/submit", status_code=204)
+async def submit_observation(
+    question: QuestionOut = Depends(get_current_question_w_valid_owner),
+    db: MongoClient = Depends(db.get_db),
+):
+    db.questions.update_one(
+        {"question_id": question.question_id},
+        {"$set": {"submitted": True}},
+    )
+    return Response(status_code=204)
+
+
 @router.post("/{question_id}/image", response_model=ObservationImageOut)
 async def add_image_to_question(
-    question: QuestionInDB = Depends(get_current_question_w_valid_owner),
+    question: QuestionOut = Depends(get_current_question_w_valid_owner),
     image: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     db: MongoClient = Depends(db.get_db),
@@ -285,7 +295,7 @@ async def rotate_image_in_question(
 
 @router.delete("/{question_id}", status_code=204)
 async def delete_question(
-    question: QuestionInDB = Depends(get_current_question_w_valid_owner),
+    question: QuestionOut = Depends(get_current_question_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
 ):
     """
