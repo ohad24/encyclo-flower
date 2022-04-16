@@ -88,6 +88,22 @@ class QuestionTester:
         )
         return response
 
+    def add_comment(self, comment_text):
+        response = client.post(
+            self.question_url + self.question_id + "/comments",
+            json={"comment_text": comment_text},
+            headers=self.auth_headers,
+        )
+        return response
+
+    def get_comments(self, question_id, limit=9, skip=0):
+        response = client.get(
+            self.question_url + question_id + "/comments",
+            params={"limit": limit, "skip": skip},
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_question(auth_headers, auth_headers_with_no_content_type, question_url):
@@ -123,20 +139,21 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200, response.text
 
-    @pytest.mark.skip(reason="currently broken")
-    def test_add_comment(self, auth_headers, question_url):
+    def test_add_comment(self, user_question):
         # * Arrange
-        comment_data = {
-            "comment_text": "This is a comment",
-        }
+        comment_text = "Here is some new comment"
         # * Act
-        response = client.post(
-            question_url + f"{pytest.question_id}/comments",
-            headers=auth_headers,
-            json=comment_data,
-        )
+        response = user_question.add_comment(comment_text)
         # * Assert
-        assert response.status_code == 200
+        assert response.status_code == 201, response.text
+
+    def test_get_comments(self, user_question):
+        # * Act
+        response = user_question.get_comments(user_question.question_id)
+        # * Assert
+        assert response.status_code == 200, response.text
+        assert response.json()[0]["comment_text"] == "Here is some new comment"
+        # TODO: add more comments (over 50) and check order
 
     def test_get_question(self, user_question):
         # * Act

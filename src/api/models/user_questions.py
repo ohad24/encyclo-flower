@@ -64,7 +64,6 @@ class QuestionInDB(Question):
     user_id: str
     answer: Optional[AnswerInDB] = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
-    comments: List[Optional[CommentInDB]] = []
     images: List[QuestionImageInDB] = []
     submitted: bool = False
     deleted: bool = False

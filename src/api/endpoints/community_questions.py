@@ -27,7 +27,7 @@ from models.user_questions import (
     ObservationImageOut,
 )
 from models.user import UserInDB
-from models.generic import RotateDirection, Comment, CommentInDB
+from models.generic import RotateDirection, Comment, CommentInDB, CommentOut
 from core.security import get_current_active_user, get_current_privilege_user
 from core.gstorage import bucket
 from endpoints.helpers_tools.question_dependencies import (
@@ -44,7 +44,10 @@ from endpoints.helpers_tools.generic import (
     rotate_storage_image,
     create_thumbnail,
 )
-from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
+from endpoints.helpers_tools.db import (
+    prepare_aggregate_pipeline_w_users,
+    prepare_aggregate_pipeline_comments_w_users,
+)
 from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
 from pathlib import Path
 from endpoints.helpers_tools.storage import (
@@ -85,19 +88,38 @@ async def get_question(
     return question
 
 
-@router.post("/{question_id}/comments", response_model=Comment)
+@router.post("/{question_id}/comments", status_code=201)
 def add_comment(
     comment: Comment,
     question_id: str = Depends(get_question_id),
     user: UserInDB = Depends(get_current_active_user),
     db: MongoClient = Depends(db.get_db),
 ):
-    # TODO: need to refactor this with new collection
-    comment_data = CommentInDB(user_id=user.user_id, **comment.dict())
-    db.questions.update_one(
-        {"question_id": question_id}, {"$push": {"comments": comment_data.dict()}}
+    comment_data = CommentInDB(
+        user_id=user.user_id,
+        type="question",
+        object_id=question_id,
+        **comment.dict(),
     )
-    return Response(status_code=200)
+    db.comments.insert_one(comment_data.dict())
+    return Response(status_code=201)
+
+
+@router.get("/{question_id}/comments", response_model=List[CommentOut])
+async def get_comments(
+    search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
+    question_id: str = Depends(get_question_id),
+    db: MongoClient = Depends(db.get_db),
+):
+    query_filter = dict(
+        type="question",
+        object_id=question_id,
+    )
+    pipeline = prepare_aggregate_pipeline_comments_w_users(
+        query_filter, search_params.skip, search_params.limit
+    )
+    comments = list(db.comments.aggregate(pipeline))
+    return comments
 
 
 @router.post("/", response_model=QuestionInResponse)
