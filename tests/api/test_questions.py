@@ -32,7 +32,7 @@ class QuestionTester:
         question_data = {"question_text": "What is the meaning of life?"}
         responses = []
         for i in range(number_of_questions):
-            logging.info(self.question_url)
+            # logging.info(self.question_url)
             response = client.post(
                 self.question_url, json=question_data, headers=self.auth_headers
             )
@@ -104,6 +104,13 @@ class QuestionTester:
         )
         return response
 
+    def submit_question(self, question_id):
+        response = client.put(
+            self.question_url + question_id + "/submit",
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_question(auth_headers, auth_headers_with_no_content_type, question_url):
@@ -118,7 +125,6 @@ class TestQuestion:
         assert response.status_code == 200, response.text
         assert response.json()["question_id"][:2] == "q-"
         user_question.question_id = response.json()["question_id"]
-        # pytest.question_images_ids = response.json()["images_ids"]
 
     @google_credential_not_found
     @pytest.mark.parametrize(
@@ -161,19 +167,67 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason="currently broken because of questions isn't submitted")
-    def test_get_all_questions(self, auth_headers, question_url, user_question):
-        # * Arrange
-        user_question.create(number_of_questions=10)
+    def test_submit_question(self, user_question):
         # * Act
-        # TODO: set QuestionTester method to get all questions
-        # TODO: test get all, answered, unanswered
+        response = user_question.submit_question(user_question.question_id)
+        # * Assert
+        assert response.status_code == 204, response.text
+
+    @pytest.mark.usefixtures("editor_user")
+    def test_set_answer(self, user_question):
+        # * Arrange
+        answer_data = {"plant_id": "sfdm76"}
+        # * Act
+        response = user_question.set_answer(user_question.question_id, answer_data)
+        # * Assert
+        assert response.status_code == 204, response.text
+
+    def test_get_all_questions(self, auth_headers, question_url, user_question):
+        # TODO: move to separate test class or refactor
+        # * Arrange
+        # * Create 8 questions (additional to first one)
+        responses = user_question.create(number_of_questions=8)
+        # * Submit questions (all 8)
+        [user_question.submit_question(x.json().get("question_id")) for x in responses]
+        # * Act
         response = client.get(
             question_url, headers=auth_headers, params={"limit": 9, "skip": 0}
         )
         # * Assert
         assert response.status_code == 200
         assert 9 == len(response.json())
+
+        # # * Arrange
+        # answer_data = {"plant_id": "sfdm76"}
+        # # * set answer to first five questions
+        # response = user_question.set_answer(
+        #     responses[0].json().get("question_id"), answer_data
+        # )
+        # assert response.status_code == 200
+        # * Act
+        response = client.get(
+            question_url,
+            headers=auth_headers,
+            params={"limit": 9, "skip": 0, "answer_filter": "answered"},
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert 1 == len(response.json())
+
+        # * Arrange
+        # # * create two more questions
+        # responses = user_question.create(number_of_questions=2)
+        # # * Submit questions (all 10)
+        # [user_question.submit_question(x.json().get("question_id")) for x in responses]
+        # * Act
+        response = client.get(
+            question_url,
+            headers=auth_headers,
+            params={"limit": 9, "skip": 0, "answer_filter": "not_answered"},
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert 8 == len(response.json())
 
     @google_credential_not_found
     def test_rotate_image(self, user_question):
@@ -207,15 +261,6 @@ class TestQuestion:
         )
         # * Assert
         assert response.status_code == 200, response.text
-
-    @pytest.mark.usefixtures("editor_user")
-    def test_set_answer(self, user_question):
-        # * Arrange
-        answer_data = {"plant_id": "sfdm76"}
-        # * Act
-        response = user_question.set_answer(user_question.question_id, answer_data)
-        # * Assert
-        assert response.status_code == 204, response.text
 
     @google_credential_not_found
     @pytest.mark.usefixtures("editor_user")

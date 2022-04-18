@@ -131,8 +131,8 @@ async def ask_question(
     return QuestionInResponse(question_id=questionInDB.question_id)
 
 
-@router.put("/{observation_id}/submit", status_code=204)
-async def submit_observation(
+@router.put("/{question_id}/submit", status_code=204)
+async def submit_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
 ):
