@@ -229,7 +229,6 @@ async def update_image_metadata(
                 "images.$.month_taken": user_image_metadata.month_taken
                 or image_data.image.month_taken,
                 "images.$.plant_id": plant_id,
-                "images.$.uploaded": True,
             }
         },
     )

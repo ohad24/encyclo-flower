@@ -225,7 +225,6 @@ async def update_image_metadata(
                 or image_data.image.content_category,
                 "images.$.month_taken": user_image_metadata.month_taken
                 or image_data.image.month_taken,
-                "images.$.uploaded": True,
             }
         },
     )
@@ -242,14 +241,9 @@ async def delete_image_from_question(
     delete_from_gstorage(image_data.image.file_name, QUESTION_THUMBNAILS_PATH)
 
     # * delete image metadata from question
-    # TODO: remove the uploaded flag
     db.questions.update_one(
         {"question_id": image_data.question_id},
-        {
-            "$pull": {
-                "images": {"image_id": image_data.image.image_id, "uploaded": True}
-            }
-        },
+        {"$pull": {"images": {"image_id": image_data.image.image_id}}},
     )
     return Response(status_code=204)
 
