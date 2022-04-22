@@ -60,6 +60,7 @@ from models.exceptions import (
     ExceptionQuestionImageNotFound,
     ExceptionQuestionUserIsNotValidEditor,
     ExceptionUserNotPrivilege,
+    ExceptionPlantNotFound,
 )
 
 router = APIRouter(prefix="/questions", tags=["questions"])
@@ -332,8 +333,8 @@ async def delete_image_from_question(
             "description": ExceptionUserNotPrivilege().detail,
         },
         404: {
-            "model": ExceptionQuestionNotFound,
-            "description": ExceptionQuestionNotFound().detail,
+            "description": "Not Found",
+            "model": Union[ExceptionQuestionNotFound, ExceptionPlantNotFound],
         },
     },
 )
@@ -350,7 +351,27 @@ async def answer_question(
     return Response(status_code=204)
 
 
-# TODO: remove answer
+@router.delete(
+    "/{question_id}/answer",
+    status_code=204,
+    responses={
+        403: {
+            "model": ExceptionUserNotPrivilege,
+            "description": ExceptionUserNotPrivilege().detail,
+        },
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        },
+    },
+    dependencies=[Depends(get_current_privilege_user)],
+)
+async def remove_answer(
+    question_id: str = Depends(get_question_id),
+    db: MongoClient = Depends(db.get_db),
+):
+    db.questions.update_one({"question_id": question_id}, {"$set": {"answer": None}})
+    return Response(status_code=204)
 
 
 @router.post(

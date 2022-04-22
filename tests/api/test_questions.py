@@ -81,6 +81,13 @@ class QuestionTester:
         )
         return response
 
+    def remove_answer(self, question_id):
+        response = client.delete(
+            self.question_url + question_id + "/answer",
+            headers=self.auth_headers,
+        )
+        return response
+
     def delete_question(self, question_id):
         response = client.delete(
             self.question_url + question_id,
@@ -190,6 +197,14 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 204, response.text
 
+    def test_set_answer__regular_user(self, user_question):
+        # * Arrange
+        answer_data = {"science_name": "Aegilops sharonensis"}
+        # * Act
+        response = user_question.set_answer(user_question.question_id, answer_data)
+        # * Assert
+        assert response.status_code == 403, response.text
+
     @pytest.mark.usefixtures("editor_user")
     def test_set_answer__wrong_plant(self, user_question):
         # * Arrange
@@ -265,6 +280,19 @@ class TestQuestion:
         response = user_question.delete_image(question.json()["images"][0]["image_id"])
         # * Assert
         assert response.status_code == 204, response.text
+
+    @pytest.mark.usefixtures("editor_user")
+    def test_remove_answer(self, user_question):
+        # * Act
+        response = user_question.remove_answer(user_question.question_id)
+        # * Assert
+        assert response.status_code == 204, response.text
+
+    def test_remove_answer__regular_user(self, user_question):
+        # * Act
+        response = user_question.remove_answer(user_question.question_id)
+        # * Assert
+        assert response.status_code == 403, response.text
 
     @google_credential_not_found
     # @pytest.mark.usefixtures("change_user_id")  # TODO: fix later
