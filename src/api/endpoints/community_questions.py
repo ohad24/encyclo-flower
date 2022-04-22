@@ -8,7 +8,7 @@ from fastapi import (
     Query,
     BackgroundTasks,
 )
-from typing import List, Optional
+from typing import List, Union
 import db
 from pymongo.mongo_client import MongoClient
 from models.user_questions import (
@@ -53,7 +53,14 @@ from endpoints.helpers_tools.storage import (
     upload_to_gstorage,
     delete_from_gstorage,
 )
-from models.exceptions import ExceptionQuestionImageCountLimit
+from models.exceptions import (
+    ExceptionQuestionImageCountLimit,
+    ExceptionQuestionNotFound,
+    ExceptionQuestionUserIsNotOwner,
+    ExceptionQuestionImageNotFound,
+    ExceptionQuestionUserIsNotValidEditor,
+    ExceptionUserNotPrivilege,
+)
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
@@ -61,7 +68,7 @@ QUESTIONS_IMAGES_PATH = Path("questions")
 QUESTION_THUMBNAILS_PATH = QUESTIONS_IMAGES_PATH / "thumbnails"
 
 
-@router.get("/", response_model=List[Optional[QuestionPreview]])
+@router.get("/", response_model=List[QuestionPreview])
 async def get_all_questions(
     answer_filter: AnswerFilterLiteral = Query(
         "all",
@@ -71,7 +78,6 @@ async def get_all_questions(
     db: MongoClient = Depends(db.get_db),
 ):
     qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter)
-    # TODO: add submitted as boolean field to QuestionInDB
     query_filter = dict(deleted=False, submitted=True, **qp.answer_query)
     pipeline = prepare_aggregate_pipeline_w_users(
         query_filter, search_params.skip, search_params.limit
@@ -80,14 +86,32 @@ async def get_all_questions(
     return list(map(format_obj_image_preview, questions))
 
 
-@router.get("/{question_id}", response_model=QuestionOut)
+@router.get(
+    "/{question_id}",
+    response_model=QuestionOut,
+    responses={
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        }
+    },
+)
 async def get_question(
     question: QuestionOut = Depends(get_current_question),
 ):
     return question
 
 
-@router.post("/{question_id}/comments", status_code=201)
+@router.post(
+    "/{question_id}/comments",
+    status_code=201,
+    responses={
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        }
+    },
+)
 def add_comment(
     comment: Comment,
     question_id: str = Depends(get_question_id),
@@ -104,7 +128,16 @@ def add_comment(
     return Response(status_code=201)
 
 
-@router.get("/{question_id}/comments", response_model=List[CommentOut])
+@router.get(
+    "/{question_id}/comments",
+    response_model=List[CommentOut],
+    responses={
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        }
+    },
+)
 async def get_comments(
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
     question_id: str = Depends(get_question_id),
@@ -132,7 +165,20 @@ async def ask_question(
     return QuestionInResponse(question_id=questionInDB.question_id)
 
 
-@router.put("/{question_id}/submit", status_code=204)
+@router.put(
+    "/{question_id}/submit",
+    status_code=204,
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotOwner,
+            "description": ExceptionQuestionUserIsNotOwner().detail,
+        },
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        },
+    },
+)
 async def submit_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
@@ -144,7 +190,20 @@ async def submit_question(
     return Response(status_code=204)
 
 
-@router.post("/{question_id}/image", response_model=ObservationImageOut)
+@router.post(
+    "/{question_id}/image",
+    response_model=ObservationImageOut,
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotOwner,
+            "description": ExceptionQuestionUserIsNotOwner().detail,
+        },
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        },
+    },
+)
 async def add_image_to_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
     image: UploadFile = File(...),
@@ -197,14 +256,16 @@ async def add_image_to_question(
 @router.put(
     "/{question_id}/image/{image_id}",
     status_code=204,
-    # responses={
-    #     404: {
-    #         "description": "Not Found",
-    #         "model": Union[
-    #             ExceptionObservationImageNotFound, ExceptionObservationNotFound
-    #         ],
-    #     }
-    # },
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotValidEditor,
+            "description": ExceptionQuestionUserIsNotValidEditor().detail,
+        },
+        404: {
+            "description": "Not Found",
+            "model": Union[ExceptionQuestionNotFound, ExceptionQuestionImageNotFound],
+        },
+    },
 )
 async def update_image_metadata(
     user_image_metadata: QuestionImageMetadata,
@@ -232,7 +293,20 @@ async def update_image_metadata(
     return Response(status_code=204)
 
 
-@router.delete("/{question_id}/images/{image_id}", status_code=204)
+@router.delete(
+    "/{question_id}/images/{image_id}",
+    status_code=204,
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotValidEditor,
+            "description": ExceptionQuestionUserIsNotValidEditor().detail,
+        },
+        404: {
+            "description": "Not Found",
+            "model": Union[ExceptionQuestionNotFound, ExceptionQuestionImageNotFound],
+        },
+    },
+)
 async def delete_image_from_question(
     image_data: QuestionImageInDB_w_qid = Depends(get_image_data_qid_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
@@ -249,7 +323,20 @@ async def delete_image_from_question(
     return Response(status_code=204)
 
 
-@router.put("/{question_id}/answer", status_code=204)
+@router.put(
+    "/{question_id}/answer",
+    status_code=204,
+    responses={
+        403: {
+            "model": ExceptionUserNotPrivilege,
+            "description": ExceptionUserNotPrivilege().detail,
+        },
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        },
+    },
+)
 async def answer_question(
     current_user: UserInDB = Depends(get_current_privilege_user),
     question_id: str = Depends(get_question_id),
@@ -266,7 +353,19 @@ async def answer_question(
 # TODO: remove answer
 
 
-@router.post("/{question_id}/images/{image_id}/rotate")
+@router.post(
+    "/{question_id}/images/{image_id}/rotate",
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotValidEditor,
+            "description": ExceptionQuestionUserIsNotValidEditor().detail,
+        },
+        404: {
+            "description": "Not Found",
+            "model": Union[ExceptionQuestionNotFound, ExceptionQuestionImageNotFound],
+        },
+    },
+)
 async def rotate_image_in_question(
     direction: RotateDirection,
     image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
@@ -287,7 +386,20 @@ async def rotate_image_in_question(
     return Response(status_code=204)
 
 
-@router.delete("/{question_id}", status_code=204)
+@router.delete(
+    "/{question_id}",
+    status_code=204,
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotOwner,
+            "description": ExceptionQuestionUserIsNotOwner().detail,
+        },
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        },
+    },
+)
 async def delete_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
     db: MongoClient = Depends(db.get_db),

@@ -167,6 +167,14 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 200
 
+    @pytest.mark.skip(reason="change_user_id fixture is broken")
+    @pytest.mark.usefixtures("change_user_id")
+    def test_submit_question__not_owner(self, user_question):
+        # * Act
+        response = user_question.submit_question(user_question.question_id)
+        # * Assert
+        assert response.status_code == 403, response.text
+
     def test_submit_question(self, user_question):
         # * Act
         response = user_question.submit_question(user_question.question_id)

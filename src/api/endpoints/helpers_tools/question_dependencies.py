@@ -12,6 +12,12 @@ from models.plant import Plant
 from core.security import get_current_active_user, check_privilege_user
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 from endpoints.helpers_tools.plant_dependencies import get_plant_from_science_name
+from models.exceptions import (
+    ExceptionQuestionNotFound,
+    ExceptionQuestionUserIsNotOwner,
+    ExceptionQuestionUserIsNotValidEditor,
+    ExceptionQuestionImageNotFound,
+)
 
 
 async def validate_question_by_id(
@@ -21,7 +27,7 @@ async def validate_question_by_id(
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
     question = next(db.questions.aggregate(pipeline), None)
     if not question:
-        raise HTTPException(status_code=404, detail="Question not found")
+        raise HTTPException(status_code=404, detail=ExceptionQuestionNotFound().detail)
     return QuestionOut(**question)
 
 
@@ -43,7 +49,7 @@ async def validate_user_is_question_owner(
 ) -> QuestionOut:
     if user.user_id != question.user_id:
         raise HTTPException(
-            status_code=403, detail="User is not owner of this question"
+            status_code=403, detail=ExceptionQuestionUserIsNotOwner().detail
         )
     return question
 
@@ -63,7 +69,7 @@ async def get_current_question_w_valid_editor(
     """
     if not user.user_id == question.user_id and not check_privilege_user(user):
         raise HTTPException(
-            status_code=403, detail="User is not owner or editor of this question"
+            status_code=403, detail=ExceptionQuestionUserIsNotValidEditor().detail
         )
     return question
 
@@ -72,11 +78,15 @@ async def validate_image_by_id(
     image_id: str,
     question: QuestionOut = Depends(get_current_question_w_valid_editor),
 ) -> QuestionImageInDB_w_qid:
-    image_data = list(filter(lambda image: image.image_id == image_id, question.images))
+    image_data = next(
+        (image for image in question.images if image.image_id == image_id), None
+    )
     if not image_data:
-        raise HTTPException(status_code=404, detail="Image not found")
+        raise HTTPException(
+            status_code=404, detail=ExceptionQuestionImageNotFound().detail
+        )
     return QuestionImageInDB_w_qid(
-        question_id=question.question_id, image=image_data[0]
+        question_id=question.question_id, image=image_data
     )
 
 

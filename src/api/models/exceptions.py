@@ -85,3 +85,19 @@ class ExceptionPlantFavoriteNotFound(BaseModel):
 
 class ExceptionQuestionImageCountLimit(BaseModel):
     detail: str = "Too many images. Only 10 images allowed per question."
+
+
+class ExceptionQuestionNotFound(BaseModel):
+    detail: str = "Question not found"
+
+
+class ExceptionQuestionUserIsNotOwner(BaseModel):
+    detail: str = "User is not owner of this question."
+
+
+class ExceptionQuestionUserIsNotValidEditor(BaseModel):
+    detail: str = "User is not owner or editor of this question."
+
+
+class ExceptionQuestionImageNotFound(BaseModel):
+    detail: str = "Image not found"

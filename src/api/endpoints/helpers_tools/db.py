@@ -74,7 +74,7 @@ def prepare_aggregate_pipeline_w_users(
 
     The pipeline joins the user collection with main collection
     """
-    # TODO: fix unwind user_data in questions and observations
+    # TODO: fix "project", it might not needed because of model output
     aggregate_pipeline = [
         {"$match": query_filter},
         {
