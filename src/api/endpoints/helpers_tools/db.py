@@ -85,7 +85,7 @@ def prepare_aggregate_pipeline_w_users(
                 "as": "user_data",
             }
         },
-        # {"$unwind": "$user_data"},
+        {"$unwind": "$user_data"},
         {
             "$project": {
                 "_id": 0,

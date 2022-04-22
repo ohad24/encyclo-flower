@@ -81,7 +81,7 @@ def format_obj_image_preview(user_obj: dict) -> dict:
     user_obj.pop("images", None)
 
     # * set username in top level keys
-    user_obj["username"] = user_obj["user_data"][0]["username"]
+    user_obj["username"] = user_obj["user_data"]["username"]
     return user_obj
 
 

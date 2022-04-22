@@ -74,10 +74,10 @@ class QuestionTester:
         return response
 
     def set_answer(self, question_id, answer_data):
-        response = client.post(
+        response = client.put(
             self.question_url + question_id + "/answer",
             headers=self.auth_headers,
-            json=answer_data,
+            params=answer_data,
         )
         return response
 
@@ -176,11 +176,21 @@ class TestQuestion:
     @pytest.mark.usefixtures("editor_user")
     def test_set_answer(self, user_question):
         # * Arrange
-        answer_data = {"plant_id": "sfdm76"}
+        answer_data = {"science_name": "Aegilops sharonensis"}
         # * Act
         response = user_question.set_answer(user_question.question_id, answer_data)
         # * Assert
         assert response.status_code == 204, response.text
+
+    @pytest.mark.usefixtures("editor_user")
+    def test_set_answer__wrong_plant(self, user_question):
+        # * Arrange
+        answer_data = {"science_name": "aaa"}
+        # * Act
+        response = user_question.set_answer(user_question.question_id, answer_data)
+        # * Assert
+        assert response.status_code == 404, response.text
+        assert response.json()["detail"] == "Plant not found."
 
     def test_get_all_questions(self, auth_headers, question_url, user_question):
         # TODO: move to separate test class or refactor

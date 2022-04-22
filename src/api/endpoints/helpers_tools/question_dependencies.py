@@ -3,13 +3,15 @@ from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
 from models.user import UserInDB
 from models.user_questions import (
-    QuestionInDB,
     QuestionImageInDB,
     QuestionImageInDB_w_qid,
     QuestionOut,
+    AnswerPlantData,
 )
+from models.plant import Plant
 from core.security import get_current_active_user, check_privilege_user
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
+from endpoints.helpers_tools.plant_dependencies import get_plant_from_science_name
 
 
 async def validate_question_by_id(
@@ -20,7 +22,6 @@ async def validate_question_by_id(
     question = next(db.questions.aggregate(pipeline), None)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
-    question["user_data"] = question["user_data"][0]
     return QuestionOut(**question)
 
 
@@ -89,3 +90,9 @@ async def get_image_data_w_valid_editor(
     image_data: QuestionImageInDB = Depends(validate_image_by_id),
 ) -> QuestionImageInDB:
     return image_data.image
+
+
+async def get_answer_data(
+    plant: Plant = Depends(get_plant_from_science_name),
+) -> AnswerPlantData:
+    return AnswerPlantData(**plant.dict())

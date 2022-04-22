@@ -51,10 +51,19 @@ class Question(BaseModel):
 
 
 class Answer(BaseModel):
+    """User Input"""
+
+    science_name: str
+
+
+class AnswerPlantData(Answer):
+    """Addition data for answer (plant)"""
+
+    heb_name: str
     plant_id: str
 
 
-class AnswerInDB(Answer):
+class AnswerInDB(AnswerPlantData):
     answer_dt: datetime = Field(default_factory=datetime.utcnow)
     user_id: str
 

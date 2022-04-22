@@ -19,12 +19,12 @@ from models.user_questions import (
     QuestionImageInDB,
     QuestionInResponse,
     QuestionOut,
-    Answer,
     AnswerInDB,
     QuestionPreview,
     GetQuestionsFilterPreviewQuery,
     AnswerFilterLiteral,
     ObservationImageOut,
+    AnswerPlantData,
 )
 from models.user import UserInDB
 from models.generic import RotateDirection, Comment, CommentInDB, CommentOut
@@ -35,6 +35,7 @@ from endpoints.helpers_tools.question_dependencies import (
     get_current_question_w_valid_owner,
     get_image_data_w_valid_editor,
     get_image_data_qid_w_valid_editor,
+    get_answer_data,
 )
 from endpoints.helpers_tools.generic import (
     format_obj_image_preview,
@@ -248,22 +249,21 @@ async def delete_image_from_question(
     return Response(status_code=204)
 
 
-@router.post("/{question_id}/answer", status_code=204)
+@router.put("/{question_id}/answer", status_code=204)
 async def answer_question(
-    answer: Answer,
-    question_id: str = Depends(get_question_id),
     current_user: UserInDB = Depends(get_current_privilege_user),
+    question_id: str = Depends(get_question_id),
+    answer: AnswerPlantData = Depends(get_answer_data),
     db: MongoClient = Depends(db.get_db),
 ):
-    # TODO: replace with dependency
-    if not db.plants.find_one({"plant_id": answer.plant_id}):
-        raise HTTPException(status_code=404, detail="Plant not found")
-
     answerInDB = AnswerInDB(**answer.dict(), user_id=current_user.user_id)
     db.questions.update_one(
         {"question_id": question_id}, {"$set": {"answer": answerInDB.dict()}}
     )
     return Response(status_code=204)
+
+
+# TODO: remove answer
 
 
 @router.post("/{question_id}/images/{image_id}/rotate")
@@ -299,3 +299,6 @@ async def delete_question(
         {"question_id": question.question_id}, {"$set": {"deleted": True}}
     )
     return Response(status_code=204)
+
+
+# TODO: edit question (PUT)

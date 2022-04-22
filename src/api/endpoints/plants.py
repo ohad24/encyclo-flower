@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Query
 from pymongo.mongo_client import MongoClient
 from db import get_db
-from models.plant import Plant, SearchOutList, PreSearchData
+from models.plant import Plant, SearchOutList, PreSearchData, PlantAutoCompleteOut
 from endpoints.helpers_tools.plant_dependencies import (
     get_plant_from_science_name,
     get_pre_search_data,
@@ -16,11 +16,29 @@ from models.exceptions import (
     ExceptionPlantFavoriteAlreadyExists,
     ExceptionPlantFavoriteNotFound,
 )
-from typing import Union
+from typing import Union, List
 from core.security import get_current_active_user
 from models.user import UserInDB, FavoritePlant
+from endpoints.helpers_tools.db import prepare_query_plant_name_text
 
 router = APIRouter()
+
+
+@router.get(
+    "/autocomplete",
+    response_model=List[PlantAutoCompleteOut],
+    summary="Autocomplete plants name",
+    description="Autocomplete plants name, mainly for UI fields. Limit to 20 results",
+)
+async def autocomplete(
+    search_input: str = Query("", min_length=2),
+    db: MongoClient = Depends(get_db),
+):
+    query = prepare_query_plant_name_text(search_input)
+    plants = [
+        PlantAutoCompleteOut(**plant) for plant in db.plants.find(query).limit(20)
+    ]
+    return plants
 
 
 @router.get(

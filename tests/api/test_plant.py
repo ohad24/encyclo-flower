@@ -248,6 +248,15 @@ class TestSearch:
                     commeness, result_commoness_order[idx - 1]
                 )
 
+    def test_autocomplete_search(self, plants_url):
+        # * Arrange
+        search_params = {"search_input": "aa"}
+        # * Act
+        response = client.get(plants_url + "autocomplete", params=search_params)
+        # * Assert
+        assert response.status_code == 200
+        assert len(response.json()) == 5
+
 
 class TestFavorite:
     science_name = "Aegilops sharonensis"

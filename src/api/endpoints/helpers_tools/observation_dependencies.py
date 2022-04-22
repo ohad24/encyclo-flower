@@ -37,7 +37,6 @@ async def validate_observation_by_id(
     if not observation:
         # raise HTTPException(status_code=404, detail=responses[404]["description"])
         raise HTTPException(status_code=404, detail=ExceptionObservationNotFound().detail)
-    observation["user_data"] = observation["user_data"][0]
     return ObservationOut(**observation)
 
 

@@ -154,3 +154,9 @@ class PreSearchData(BaseModel):
         default_factory=list,
         description="Hebrew names of the locations from user search input",
     )
+
+
+class PlantAutoCompleteOut(BaseModel):
+    plant_id: str
+    heb_name: str
+    science_name: str
