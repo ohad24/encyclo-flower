@@ -1,10 +1,9 @@
-import db
+from db import get_db
 from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
 from models.user import UserInDB
 from models.user_questions import (
     QuestionImageInDB,
-    QuestionImageInDB_w_qid,
     QuestionOut,
     AnswerPlantData,
 )
@@ -21,7 +20,7 @@ from models.exceptions import (
 
 
 async def validate_question_by_id(
-    question_id: str, db: MongoClient = Depends(db.get_db)
+    question_id: str, db: MongoClient = Depends(get_db)
 ) -> QuestionOut:
     query_filter = dict(question_id=question_id, deleted=False)
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
@@ -77,7 +76,7 @@ async def get_current_question_w_valid_editor(
 async def validate_image_by_id(
     image_id: str,
     question: QuestionOut = Depends(get_current_question_w_valid_editor),
-) -> QuestionImageInDB_w_qid:
+) -> QuestionImageInDB:
     image_data = next(
         (image for image in question.images if image.image_id == image_id), None
     )
@@ -85,21 +84,13 @@ async def validate_image_by_id(
         raise HTTPException(
             status_code=404, detail=ExceptionQuestionImageNotFound().detail
         )
-    return QuestionImageInDB_w_qid(
-        question_id=question.question_id, image=image_data
-    )
-
-
-async def get_image_data_qid_w_valid_editor(
-    image_data: QuestionImageInDB_w_qid = Depends(validate_image_by_id),
-) -> QuestionImageInDB_w_qid:
     return image_data
 
 
 async def get_image_data_w_valid_editor(
     image_data: QuestionImageInDB = Depends(validate_image_by_id),
 ) -> QuestionImageInDB:
-    return image_data.image
+    return image_data
 
 
 async def get_answer_data(

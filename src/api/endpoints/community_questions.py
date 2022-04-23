@@ -14,7 +14,6 @@ from pymongo.mongo_client import MongoClient
 from models.user_questions import (
     QuestionImageMetadata,
     Question,
-    QuestionImageInDB_w_qid,
     QuestionInDB,
     QuestionImageInDB,
     QuestionInResponse,
@@ -34,7 +33,6 @@ from endpoints.helpers_tools.question_dependencies import (
     get_current_question,
     get_current_question_w_valid_owner,
     get_image_data_w_valid_editor,
-    get_image_data_qid_w_valid_editor,
     get_answer_data,
     get_current_question_w_valid_editor,
 )
@@ -297,25 +295,26 @@ async def add_image_to_question(
     },
 )
 async def update_image_metadata(
+    question_id: str,
     user_image_metadata: QuestionImageMetadata,
-    image_data: QuestionImageInDB_w_qid = Depends(get_image_data_qid_w_valid_editor),
+    image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
     db.questions.update_one(
         {
-            "question_id": image_data.question_id,
-            "images.image_id": image_data.image.image_id,
+            "question_id": question_id,
+            "images.image_id": image_data.image_id,
         },
         {
             "$set": {
                 "images.$.description": user_image_metadata.description
-                or image_data.image.description,
+                or image_data.description,
                 "images.$.location_name": user_image_metadata.location_name
-                or image_data.image.location_name,
+                or image_data.location_name,
                 "images.$.content_category": user_image_metadata.content_category
-                or image_data.image.content_category,
+                or image_data.content_category,
                 "images.$.month_taken": user_image_metadata.month_taken
-                or image_data.image.month_taken,
+                or image_data.month_taken,
             }
         },
     )
@@ -337,17 +336,18 @@ async def update_image_metadata(
     },
 )
 async def delete_image_from_question(
-    image_data: QuestionImageInDB_w_qid = Depends(get_image_data_qid_w_valid_editor),
+    question_id: str,
+    image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
     db: MongoClient = Depends(db.get_db),
 ):
     # * delete image and thumbnail from storage
-    delete_from_gstorage(image_data.image.file_name, QUESTIONS_IMAGES_PATH)
-    delete_from_gstorage(image_data.image.file_name, QUESTION_THUMBNAILS_PATH)
+    delete_from_gstorage(image_data.file_name, QUESTIONS_IMAGES_PATH)
+    delete_from_gstorage(image_data.file_name, QUESTION_THUMBNAILS_PATH)
 
     # * delete image metadata from question
     db.questions.update_one(
-        {"question_id": image_data.question_id},
-        {"$pull": {"images": {"image_id": image_data.image.image_id}}},
+        {"question_id": question_id},
+        {"$pull": {"images": {"image_id": image_data.image_id}}},
     )
     return Response(status_code=204)
 

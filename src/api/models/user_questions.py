@@ -20,11 +20,6 @@ class ObservationImageOut(QuestionImageMetadata):
     file_name: str
 
 
-class QuestionImageInDB_w_qid(BaseModel):
-    question_id: str
-    image: QuestionImageInDB
-
-
 class Question(BaseModel):
     question_text: str = Field(min_length=5, max_length=1000)
 
