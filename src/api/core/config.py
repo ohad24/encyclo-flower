@@ -11,7 +11,8 @@ class Settings(BaseSettings):
 
     # * Application settings
     APP_NAME: str = "encyclo-flower API"
-    API_PREFIX: str = "/api/v1"
+    API_PREFIX: str = "/api"
+    API_VERSION: str = "0.0.0"  # TODO: set as variable
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))

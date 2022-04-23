@@ -3,13 +3,14 @@ import json
 from main import app
 import pytest
 from conftest import google_credential_not_found, get_db
+from requests.auth import HTTPBasicAuth
 
 
 client = TestClient(app)
 
 
 def test_read_main():
-    response = client.get("/")
+    response = client.get("/api")
     assert response.status_code == 200
     assert response.json() == {"Hello": "World"}
 
@@ -234,6 +235,43 @@ class TestUserAccess:
         # * Assert
         assert response.status_code == 403
         assert response.json()["detail"] == "The user does not have enough privileges"
+
+    @pytest.mark.usefixtures("set_db_user_superuser")
+    def test_docs__valid_access(self):
+        # * Act
+        response = client.get(
+            "api/docs", auth=HTTPBasicAuth(pytest.test_username, "test12")
+        )
+        # * Assert
+        assert response.status_code == 200
+
+    @pytest.mark.usefixtures("set_db_user_superuser")
+    def test_docs__wrong_password(self):
+        # * Act
+        response = client.get(
+            "api/docs", auth=HTTPBasicAuth(pytest.test_username, "test123")
+        )
+        # * Assert
+        assert response.status_code == 401
+
+    def test_docs__regular_user(self):
+        """not superuser"""
+        # * Act
+        response = client.get(
+            "api/docs", auth=HTTPBasicAuth(pytest.test_username, "test12")
+        )
+        # * Assert
+        assert response.status_code == 401
+
+    def test_redoc__no_access(self):
+        # * Act
+        response = client.get("/redoc")
+        # * Assert
+        assert response.status_code == 404
+        # * Act
+        response = client.get("/api/redoc")
+        # * Assert
+        assert response.status_code == 404
 
 
 class TestResetPassword:

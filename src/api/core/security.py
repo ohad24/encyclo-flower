@@ -2,8 +2,12 @@ from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from core.config import get_settings
-from fastapi.security import OAuth2PasswordBearer
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    HTTPBasic,
+    HTTPBasicCredentials,
+)
 from fastapi import Depends, HTTPException, status
 from models.user import UserInDB, UserMinimalMetadataOut, UserQueryParams
 from models.exceptions import (
@@ -28,6 +32,11 @@ ALGORITHM = "HS256"
 e403 = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail=ExceptionUserNotPrivilege().detail,
+)
+
+e401 = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
 )
 
 
@@ -105,10 +114,7 @@ async def get_current_user(
     """
     token_data = extract_data_from_token(token)
     if validate_token_exists_and_not_expired(token_data):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
+        raise e401
     user = search_user_in_db_from_token(token_data, db)
     if not user:
         raise HTTPException(**ExceptionUserNotFound().dict())
@@ -169,6 +175,22 @@ async def get_user_for_login(
     )
     if not user or not verify_password(form_data.password, user.get("password")):
         raise HTTPException(
-            **ExceptionLogin().dict(), status_code=status.HTTP_401_UNAUTHORIZED
+            detail=ExceptionLogin().detail, status_code=status.HTTP_401_UNAUTHORIZED
         )
     return UserInDB(**user)
+
+
+def validate_http_basic_cred(
+    credentials: HTTPBasicCredentials = Depends(HTTPBasic()),
+    db: MongoClient = Depends(get_db),
+):
+    """
+    For docs page, only for active superusers.
+    """
+    user = db.users.find_one(
+        {"username": credentials.username, "is_active": True, "is_superuser": True}
+    )
+    if not user or not verify_password(credentials.password, user.get("password")):
+        raise HTTPException(
+            detail=ExceptionLogin().detail, status_code=status.HTTP_401_UNAUTHORIZED
+        )
