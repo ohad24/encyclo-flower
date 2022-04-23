@@ -113,11 +113,11 @@ async def edit_observation(
 
 @router.put("/{observation_id}/submit", status_code=204)
 async def submit_observation(
-    observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_owner),
+    observation: ObservationOut = Depends(get_current_observation_w_valid_owner),
     db: MongoClient = Depends(db.get_db),
 ):
     db.observations.update_one(
-        {"observation_id": observationInDB.observation_id},
+        {"observation_id": observation.observation_id},
         {"$set": {"submitted": True}},
     )
     return Response(status_code=204)
@@ -139,12 +139,13 @@ async def submit_observation(
     },
 )
 async def add_image_to_observation(
-    observationInDB: str = Depends(get_current_observation_w_valid_owner),
+    observationInDB: ObservationOut = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     db: MongoClient = Depends(db.get_db),
 ):
     if len(observationInDB.images) >= 10:
+        # TODO: change to http exception
         return JSONResponse(
             status_code=400,
             content={"detail": ExceptionObservationImageCountLimit().detail},
@@ -228,7 +229,6 @@ async def update_image_metadata(
                 "images.$.month_taken": user_image_metadata.month_taken
                 or image_data.image.month_taken,
                 "images.$.plant_id": plant_id,
-                "images.$.uploaded": True,
             }
         },
     )

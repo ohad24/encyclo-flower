@@ -152,6 +152,7 @@ class TestObservation:
         assert user_observation.observation_id is not None
         assert user_observation.observation_id[:2] == "o-"  # TODO: remove later
 
+    # TODO: use the common asset (images_data.py)
     upload_file_multi_params = [
         {
             "metadata": {},

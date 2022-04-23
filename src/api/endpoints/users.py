@@ -41,6 +41,7 @@ from models.exceptions import (
 from endpoints.helpers_tools.email import setup_email_verification
 from models.user_observations import ObservationPreviewBase
 from models.user_questions import QuestionPreviewBase
+from endpoints.helpers_tools.generic import format_obj_image_preview
 
 router = APIRouter()
 
@@ -118,15 +119,16 @@ async def read_user(
             {"user_id": requested_user.user_id, "submitted": True, "deleted": False}
         ).sort("create_dt", -1)
     )
+    observations = list(map(format_obj_image_preview, observations))
     requested_user.observations = [ObservationPreviewBase(**x) for x in observations]
 
     # * get user questions (all of them)
-    # TODO: Add "submitted" in the query (when development is done)
     questions = list(
-        db.questions.find({"user_id": requested_user.user_id, "deleted": False}).sort(
-            "create_dt", -1
-        )
+        db.questions.find(
+            {"user_id": requested_user.user_id, "submitted": True, "deleted": False}
+        ).sort("create_dt", -1)
     )
+    questions = list(map(format_obj_image_preview, questions))
     requested_user.questions = [QuestionPreviewBase(**x) for x in questions]
 
     # TODO: add list of detection user (not developed yet)

@@ -1,52 +1,43 @@
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict
-from enum import Enum
 from datetime import datetime
-from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import ImageLocation, CommentInDB, ImagePreview
+from models.helpers import question_id_generator
+from models.generic import ImagePreview, CommunityImageInDB, CommunityImageMetadata
 from models.user import BaseUserOut
-from models.custom_types import ImageContentCategoryLiteral
+from models.custom_types import AnswerFilterLiteral
 
 
-class QuestionImage(BaseModel):
-    orig_file_name: str = Field(default="image1.jpg")
-    description: str | None = None
-    notes: str | None = None
-    content_category: ImageContentCategoryLiteral
-    location: Optional[ImageLocation]
-    photo_taken_dt: Optional[datetime]
+class QuestionImageMetadata(CommunityImageMetadata):
+    pass
 
 
-class QuestionImageInDB(QuestionImage):
-    image_id: str = Field(default_factory=gen_uuid)
-    file_name: str | None = None
-    uploaded: bool = False
-    self_link: HttpUrl | None = None
-    media_link: HttpUrl | None = None
-    public_url: HttpUrl | None = None
-
-    @validator("file_name", pre=True, always=True)
-    def set_file_name(cls, v, values):
-        if not v:
-            return gen_image_file_name(values["orig_file_name"])
-        return v
+class QuestionImageInDB(CommunityImageInDB, QuestionImageMetadata):
+    pass
 
 
-class QuestionImageInDB_w_qid(BaseModel):
-    question_id: str
-    image: QuestionImageInDB
+class ObservationImageOut(QuestionImageMetadata):
+    image_id: str
+    file_name: str
 
 
 class Question(BaseModel):
     question_text: str = Field(min_length=5, max_length=1000)
-    images: List[QuestionImage] = Field(description="Images metadata")
 
 
 class Answer(BaseModel):
+    """User Input"""
+
+    science_name: str
+
+
+class AnswerPlantData(Answer):
+    """Addition data for answer (plant)"""
+
+    heb_name: str
     plant_id: str
 
 
-class AnswerInDB(Answer):
+class AnswerInDB(AnswerPlantData):
     answer_dt: datetime = Field(default_factory=datetime.utcnow)
     user_id: str
 
@@ -56,10 +47,13 @@ class QuestionInDB(Question):
     user_id: str
     answer: Optional[AnswerInDB] = None
     created_dt: datetime = Field(default_factory=datetime.utcnow)
-    comments: List[Optional[CommentInDB]] = []
-    images: List[QuestionImageInDB]
+    images: List[QuestionImageInDB] = []
+    submitted: bool = False
     deleted: bool = False
-    user_data: BaseUserOut | None = None
+
+
+class QuestionOut(QuestionInDB):
+    user_data: BaseUserOut
 
 
 class QuestionPreviewBase(BaseModel):
@@ -70,21 +64,12 @@ class QuestionPreviewBase(BaseModel):
     created_dt: datetime
 
 
-class QuestionsPreview(QuestionPreviewBase):
-    # TODO: fix class name to QuestionPreview
+class QuestionPreview(QuestionPreviewBase):
     user_id: str
     username: str
 
 
-class ImagesInResponse(BaseModel):
-    """
-    response for added new images to question.
-    """
-
-    images_ids: List[str]
-
-
-class QuestionInResponse(ImagesInResponse):
+class QuestionInResponse(BaseModel):
     """
     This is the response of the question creation
     """
@@ -92,16 +77,8 @@ class QuestionInResponse(ImagesInResponse):
     question_id: str
 
 
-class AnswerFilterType(str, Enum):
-    """get questions route - answer filter type"""
-
-    ALL = "all"
-    ANSWERED = "answered"
-    NOT_ANSWERED = "not_answered"
-
-
 class GetQuestionsFilterPreviewQuery(BaseModel):
-    answer_filter_value: AnswerFilterType
+    answer_filter_value: AnswerFilterLiteral
     answer_query: Dict = {"$or": []}
 
     @validator("answer_query", pre=True, always=True)
