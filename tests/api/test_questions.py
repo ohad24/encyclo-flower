@@ -118,6 +118,14 @@ class QuestionTester:
         )
         return response
 
+    def edit_question(self, question_id, question_data):
+        response = client.put(
+            self.question_url + question_id,
+            json=question_data,
+            headers=self.auth_headers,
+        )
+        return response
+
 
 @pytest.fixture(scope="class")
 def user_question(auth_headers, auth_headers_with_no_content_type, question_url):
@@ -280,6 +288,20 @@ class TestQuestion:
         response = user_question.delete_image(question.json()["images"][0]["image_id"])
         # * Assert
         assert response.status_code == 204, response.text
+
+    def test_edit_question(self, user_question):
+        # * Arrange
+        question_data = {"question_text": "Here is some new question"}
+        # * Act
+        response = user_question.edit_question(user_question.question_id, question_data)
+        # * Assert
+        assert response.status_code == 204, response.text
+
+        # * Act
+        # * get question
+        question = user_question.get_question(user_question.question_id)
+        # * Assert
+        assert question.json()["question_text"] == question_data["question_text"]
 
     @pytest.mark.usefixtures("editor_user")
     def test_remove_answer(self, user_question):

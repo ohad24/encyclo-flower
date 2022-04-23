@@ -36,6 +36,7 @@ from endpoints.helpers_tools.question_dependencies import (
     get_image_data_w_valid_editor,
     get_image_data_qid_w_valid_editor,
     get_answer_data,
+    get_current_question_w_valid_editor,
 )
 from endpoints.helpers_tools.generic import (
     format_obj_image_preview,
@@ -164,6 +165,33 @@ async def ask_question(
     questionInDB = QuestionInDB(**question.dict(), user_id=current_user.user_id)
     db.questions.insert_one(questionInDB.dict())
     return QuestionInResponse(question_id=questionInDB.question_id)
+
+
+@router.put(
+    "/{question_id}",
+    description="Edit question header",
+    status_code=204,
+    responses={
+        403: {
+            "model": ExceptionQuestionUserIsNotValidEditor,
+            "description": ExceptionQuestionUserIsNotValidEditor().detail,
+        },
+        404: {
+            "model": ExceptionQuestionNotFound,
+            "description": ExceptionQuestionNotFound().detail,
+        },
+    },
+)
+async def edit_question(
+    question_data: Question,
+    questionInDB: QuestionInDB = Depends(get_current_question_w_valid_editor),
+    db: MongoClient = Depends(db.get_db),
+):
+    db.questions.update_one(
+        {"question_id": questionInDB.question_id},
+        {"$set": question_data.dict()},
+    )
+    return Response(status_code=204)
 
 
 @router.put(
@@ -432,6 +460,3 @@ async def delete_question(
         {"question_id": question.question_id}, {"$set": {"deleted": True}}
     )
     return Response(status_code=204)
-
-
-# TODO: edit question (PUT)
