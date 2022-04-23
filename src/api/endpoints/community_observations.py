@@ -60,7 +60,7 @@ from typing import Union
 from pathlib import Path
 from endpoints.helpers_tools.common_dependencies import QuerySearchPageParams
 
-router = APIRouter(prefix="/observations", tags=["observations"])
+router = APIRouter()
 
 
 OBSERVATIONS_IMAGES_PATH = Path("observations")

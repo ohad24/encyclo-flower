@@ -17,9 +17,13 @@ api_router.include_router(plants.router, prefix="/plants", tags=["plants"])
 api_router.include_router(helpers.router, prefix="/helpers", tags=["helpers"])
 api_router.include_router(detect.router, prefix="/detect", tags=["detect"])
 api_router.include_router(
-    community_questions.router, prefix="/community", tags=["community"]
+    community_questions.router,
+    prefix="/community/questions",
+    tags=["community questions"],
 )
 
 api_router.include_router(
-    community_observations.router, prefix="/community", tags=["community"]
+    community_observations.router,
+    prefix="/community/observations",
+    tags=["community observations"],
 )

@@ -62,7 +62,7 @@ from models.exceptions import (
     ExceptionPlantNotFound,
 )
 
-router = APIRouter(prefix="/questions", tags=["questions"])
+router = APIRouter()
 
 QUESTIONS_IMAGES_PATH = Path("questions")
 QUESTION_THUMBNAILS_PATH = QUESTIONS_IMAGES_PATH / "thumbnails"
