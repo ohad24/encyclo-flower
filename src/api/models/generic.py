@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from enum import IntEnum, Enum
+from enum import Enum
 from PIL import Image
 from fastapi import HTTPException
 from models.helpers import gen_uuid, gen_image_file_name
@@ -26,9 +26,9 @@ class GPSTranslateOut(BaseModel):
         return v
 
 
-class AngleEnum(IntEnum):
-    L = Image.ROTATE_90
-    R = Image.ROTATE_270
+class AngleEnum(Enum):
+    L = Image.Transpose.ROTATE_90
+    R = Image.Transpose.ROTATE_270
 
 
 class RotateDirection(BaseModel):
