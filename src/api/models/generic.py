@@ -2,8 +2,12 @@ from pydantic import BaseModel, Field, validator
 from enum import IntEnum, Enum
 from PIL import Image
 from fastapi import HTTPException
-from models.helpers import gen_uuid
-from models.custom_types import LocationHebLiteral, ImageContentCategoryLiteral
+from models.helpers import gen_uuid, gen_image_file_name
+from models.custom_types import (
+    LocationHebLiteral,
+    ImageContentCategoryLiteral,
+    HebMonthLiteral,
+)
 from models.user import BaseUserOut
 from datetime import datetime
 from typing import Literal
@@ -39,11 +43,7 @@ class Coordinates(BaseModel):
     alt: float | None = Field(default=None, description="altitude")
 
 
-class ImageLocationText(BaseModel):
-    location_name: LocationHebLiteral | None = None
-
-
-class ImageLocation(ImageLocationText):
+class ImageLocation(BaseModel):
     coordinates: Coordinates | None = None
     location_name: LocationHebLiteral | None = None
 
@@ -105,3 +105,30 @@ class LocationKMLtranslate(Enum):
     Arava = "ערבה"
     Hermon = "חרמון"
     Golan = "גולן"
+
+
+class CommunityImageMetadata(BaseModel):
+    """Images uploaded by community members in observations and questions"""
+
+    description: str | None = None
+    content_category: ImageContentCategoryLiteral | None = None
+    location_name: LocationHebLiteral | None = None
+    month_taken: HebMonthLiteral | None = Field(
+        None, description="Hebrew month"
+    )
+
+
+class CommunityImageInDB(BaseModel):
+    """Images uploaded by community members in observations and questions"""
+
+    image_id: str = Field(default_factory=gen_uuid)
+    coordinates: Coordinates = Coordinates(lat=0, lon=0, alt=0)
+    orig_file_name: str = Field(default="image1.jpg")
+    file_name: str | None = None
+    created_dt: datetime = Field(default_factory=datetime.utcnow)
+
+    @validator("file_name", pre=True, always=True)
+    def set_file_name(cls, v, values):
+        if not v:
+            return gen_image_file_name(values["orig_file_name"])
+        return v

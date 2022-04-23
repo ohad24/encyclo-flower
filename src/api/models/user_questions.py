@@ -1,38 +1,18 @@
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict
 from datetime import datetime
-from models.helpers import question_id_generator, gen_uuid, gen_image_file_name
-from models.generic import ImagePreview, Coordinates
+from models.helpers import question_id_generator
+from models.generic import ImagePreview, CommunityImageInDB, CommunityImageMetadata
 from models.user import BaseUserOut
-from models.custom_types import (
-    ImageContentCategoryLiteral,
-    AnswerFilterLiteral,
-    HebMonthLiteral,
-    LocationHebLiteral,
-)
+from models.custom_types import AnswerFilterLiteral
 
 
-class QuestionImageMetadata(BaseModel):
-    description: str | None = None
-    content_category: ImageContentCategoryLiteral | None = None
-    location_name: LocationHebLiteral | None = None
-    month_taken: Optional[HebMonthLiteral | None] = Field(
-        None, description="Hebrew month"
-    )
+class QuestionImageMetadata(CommunityImageMetadata):
+    pass
 
 
-class QuestionImageInDB(QuestionImageMetadata):
-    image_id: str = Field(default_factory=gen_uuid)
-    coordinates: Coordinates = Coordinates(lat=0, lon=0, alt=0)
-    orig_file_name: str = Field(default="image1.jpg")
-    file_name: str | None = None
-    created_dt: datetime = Field(default_factory=datetime.utcnow)
-
-    @validator("file_name", pre=True, always=True)
-    def set_file_name(cls, v, values):
-        if not v:
-            return gen_image_file_name(values["orig_file_name"])
-        return v
+class QuestionImageInDB(CommunityImageInDB, QuestionImageMetadata):
+    pass
 
 
 class ObservationImageOut(QuestionImageMetadata):
@@ -47,7 +27,6 @@ class QuestionImageInDB_w_qid(BaseModel):
 
 class Question(BaseModel):
     question_text: str = Field(min_length=5, max_length=1000)
-    # images: List[QuestionImage] = Field(description="Images metadata")
 
 
 class Answer(BaseModel):
