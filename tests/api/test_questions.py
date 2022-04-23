@@ -289,6 +289,13 @@ class TestQuestion:
         # * Assert
         assert response.status_code == 204, response.text
 
+    def test_delete_image__wrong_image_id(self, user_question):
+        # * Act
+        response = user_question.delete_image("wrong_image_id")
+        # * Assert
+        assert response.status_code == 404, response.text
+        assert response.json()["detail"] == "Image not found"
+
     def test_edit_question(self, user_question):
         # * Arrange
         question_data = {"question_text": "Here is some new question"}

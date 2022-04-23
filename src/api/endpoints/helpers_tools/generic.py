@@ -63,14 +63,6 @@ def rotate_image(image: bytes, angle: AngleEnum) -> bytes:
     return bytes.getvalue()
 
 
-def get_first_uploaded_image(images: List[dict]) -> dict | None:
-    # * get only uploaded images
-    for img in images:
-        if img.get("uploaded", None):
-            return img
-    return None
-
-
 def format_obj_image_preview(user_obj: dict) -> dict:
     """user_obj is question or observation in dict type"""
     # * get first image to new image key

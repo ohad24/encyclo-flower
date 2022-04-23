@@ -9,7 +9,7 @@ from fastapi import (
     BackgroundTasks,
 )
 from typing import List, Union
-import db
+from db import get_db
 from pymongo.mongo_client import MongoClient
 from models.user_questions import (
     QuestionImageMetadata,
@@ -75,7 +75,7 @@ async def get_all_questions(
         description="Filter questions by answer status",
     ),
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     qp = GetQuestionsFilterPreviewQuery(answer_filter_value=answer_filter)
     query_filter = dict(deleted=False, submitted=True, **qp.answer_query)
@@ -116,7 +116,7 @@ def add_comment(
     comment: Comment,
     question_id: str = Depends(get_question_id),
     user: UserInDB = Depends(get_current_active_user),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     comment_data = CommentInDB(
         user_id=user.user_id,
@@ -141,7 +141,7 @@ def add_comment(
 async def get_comments(
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
     question_id: str = Depends(get_question_id),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     query_filter = dict(
         type="question",
@@ -158,7 +158,7 @@ async def get_comments(
 async def ask_question(
     question: Question,
     current_user: UserInDB = Depends(get_current_active_user),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     questionInDB = QuestionInDB(**question.dict(), user_id=current_user.user_id)
     db.questions.insert_one(questionInDB.dict())
@@ -183,7 +183,7 @@ async def ask_question(
 async def edit_question(
     question_data: Question,
     questionInDB: QuestionInDB = Depends(get_current_question_w_valid_editor),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     db.questions.update_one(
         {"question_id": questionInDB.question_id},
@@ -208,7 +208,7 @@ async def edit_question(
 )
 async def submit_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     db.questions.update_one(
         {"question_id": question.question_id},
@@ -235,7 +235,7 @@ async def add_image_to_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
     image: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     if len(question.images) >= 10:
         raise HTTPException(
@@ -298,7 +298,7 @@ async def update_image_metadata(
     question_id: str,
     user_image_metadata: QuestionImageMetadata,
     image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     db.questions.update_one(
         {
@@ -338,7 +338,7 @@ async def update_image_metadata(
 async def delete_image_from_question(
     question_id: str,
     image_data: QuestionImageInDB = Depends(get_image_data_w_valid_editor),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     # * delete image and thumbnail from storage
     delete_from_gstorage(image_data.file_name, QUESTIONS_IMAGES_PATH)
@@ -370,7 +370,7 @@ async def answer_question(
     current_user: UserInDB = Depends(get_current_privilege_user),
     question_id: str = Depends(get_question_id),
     answer: AnswerPlantData = Depends(get_answer_data),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     answerInDB = AnswerInDB(**answer.dict(), user_id=current_user.user_id)
     db.questions.update_one(
@@ -396,7 +396,7 @@ async def answer_question(
 )
 async def remove_answer(
     question_id: str = Depends(get_question_id),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     db.questions.update_one({"question_id": question_id}, {"$set": {"answer": None}})
     return Response(status_code=204)
@@ -451,7 +451,7 @@ async def rotate_image_in_question(
 )
 async def delete_question(
     question: QuestionOut = Depends(get_current_question_w_valid_owner),
-    db: MongoClient = Depends(db.get_db),
+    db: MongoClient = Depends(get_db),
 ):
     """
     Only set deleted flag to true in DB
