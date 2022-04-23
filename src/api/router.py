@@ -7,6 +7,7 @@ from endpoints import (
     detect,
     community_questions,
     community_observations,
+    base,
 )
 
 
@@ -21,9 +22,11 @@ api_router.include_router(
     prefix="/community/questions",
     tags=["community questions"],
 )
-
 api_router.include_router(
     community_observations.router,
     prefix="/community/observations",
     tags=["community observations"],
 )
+
+base_router = APIRouter()
+base_router.include_router(base.router, tags=["base"])
