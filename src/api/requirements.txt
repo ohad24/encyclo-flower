@@ -7,7 +7,7 @@ google-cloud-vision==2.7.2
 passlib==1.7.4
 Pillow==9.1.0
 pydantic[email]==1.9.0
-pymongo[srv]==4.1.0
+pymongo[srv]==4.1.1
 python-dotenv==0.20.0
 python-jose==3.3.0
 python-multipart==0.0.5
