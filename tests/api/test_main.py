@@ -15,6 +15,11 @@ def test_read_main():
     assert response.json() == {"Hello": "World"}
 
 
+def test_health_check():
+    response = client.get("/api/health")
+    assert response.status_code == 200
+
+
 @pytest.fixture
 def get_users_url(base_url):
     # * Arrange
