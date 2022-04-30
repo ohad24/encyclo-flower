@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
 
     # * Database settings
-    MONGO_URI: str = os.getenv("MONGO_URI", "mongodb://root:example@localhost:27017")
+    MONGO_URI: str = os.getenv("MONGO_URI")
     MONGO_DB_NAME: str = os.getenv("MONGO_DB_NAME", "dev")
 
     # * Google bucket settings
