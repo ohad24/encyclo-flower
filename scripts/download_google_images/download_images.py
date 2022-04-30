@@ -3,6 +3,7 @@ import os
 
 # scientific_names is a list of scientific names from the database
 current_script_location = os.path.dirname(__file__)
+# deepcode ignore MissingClose: General script
 scientific_names = open(
     os.path.join(current_script_location, "scientific_names.txt"), "r"
 ).readlines()

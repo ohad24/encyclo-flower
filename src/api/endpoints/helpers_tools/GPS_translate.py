@@ -36,6 +36,7 @@ def create_polygons_dict(kml_name):
     parse the kml file and create a dictionary of polygons
     """
     kml_file_path = os.path.join(os.path.dirname(__file__), kml_name) + ".kml"
+    # deepcode ignore InsecureXmlParser: Not from user input
     tree = ET.parse(kml_file_path)
     root = etree_to_dict(tree.getroot())
     base_keys = "{http://www.opengis.net/kml/2.2}"

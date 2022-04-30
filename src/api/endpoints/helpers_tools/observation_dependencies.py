@@ -1,4 +1,4 @@
-import db
+from db import get_db
 from pymongo.mongo_client import MongoClient
 from fastapi import HTTPException, Depends
 from models.user import UserInDB
@@ -15,28 +15,16 @@ from core.security import get_current_active_user, check_privilege_user
 from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 
-# TODO: show responses options in the documentation (POC in add image to observation)
-# https://fastapi.tiangolo.com/advanced/additional-responses/?h=responses#combine-predefined-responses-and-custom-ones
-# * cant use multi status code in fastapi (?)
-# https://github.com/tiangolo/fastapi/issues/518
-# responses = {
-#     404: {
-#         "description": ExceptionObservationNotFound().detail,
-#         "model": ExceptionResponse,
-#     },
-    #   {"description": "Image not found", "model": ExceptionResponse}],
-# }
-
-
 async def validate_observation_by_id(
-    observation_id: str, db: MongoClient = Depends(db.get_db)
+    observation_id: str, db: MongoClient = Depends(get_db)
 ) -> ObservationOut:
     query_filter = dict(observation_id=observation_id, deleted=False)
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)
     observation = next(db.observations.aggregate(pipeline), None)
     if not observation:
-        # raise HTTPException(status_code=404, detail=responses[404]["description"])
-        raise HTTPException(status_code=404, detail=ExceptionObservationNotFound().detail)
+        raise HTTPException(
+            status_code=404, detail=ExceptionObservationNotFound().detail
+        )
     return ObservationOut(**observation)
 
 
@@ -87,13 +75,18 @@ async def validate_image_by_id(
     image_id: str,
     observation: ObservationOut = Depends(get_current_observation_w_valid_editor),
 ) -> ObservationImageInDB_w_oid:
-    image_data = list(
-        filter(lambda image: image.image_id == image_id, observation.images)
+    # TODO: merge with questions
+    # TODO: remove ObservationImageInDB_w_oid (like in questions)
+    # TODO: merge all community image dependencies
+    image_data = next(
+        (image for image in observation.images if image.image_id == image_id), None
     )
     if not image_data:
-        raise HTTPException(status_code=404, detail="Image not found")
+        raise HTTPException(
+            status_code=404, detail=ExceptionObservationImageNotFound().detail
+        )
     return ObservationImageInDB_w_oid(
-        observation_id=observation.observation_id, image=image_data[0]
+        observation_id=observation.observation_id, image=image_data
     )
 
 
