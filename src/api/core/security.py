@@ -23,7 +23,7 @@ settings = get_settings()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_PREFIX}/token", auto_error=False
+    tokenUrl=f"{settings.API_PREFIX}/v1/token", auto_error=False
 )
 
 ALGORITHM = "HS256"
