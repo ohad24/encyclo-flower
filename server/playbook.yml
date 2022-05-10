@@ -38,6 +38,13 @@
         state: present
       register: ansible_user
 
+    - name: Set git repo as safe/shared  # Bugfix
+      shell:
+        chdir: "{{ ansible_user.home }}"
+        cmd: "git config --global --add safe.directory {{ ansible_user.home }}/encyclo-flower"
+        warn: no  # Disable sudo warning
+      changed_when: false  # Do not consider this a change
+
     - name: Ensure git repo is updated on ansible_user
       git:
         repo: https://github.com/ohad24/encyclo-flower.git
