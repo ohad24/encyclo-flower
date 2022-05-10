@@ -11,11 +11,11 @@ on:
       - "v*.*.*"
     paths:
       # NOTE: Path filters are ignored for tag pushes
-      - "swag/**"
+      - "src/web/**"
   pull_request:
     branches: [main]
     paths:
-      - "swag/**"
+      - "src/web/**"
 
 env:
   DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-swag
@@ -51,7 +51,7 @@ jobs:
         # Docs: https://github.com/docker/build-push-action
         uses: docker/build-push-action@v3
         with:
-          context: swag
+          context: src/web
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -12,7 +12,7 @@ updates:
 
   # Manage dependencies for encyclo-flower-swag docker image
   - package-ecosystem: "docker"
-    directory: "/swag"
+    directory: "/src/web"
     schedule:
       interval: "daily"
 
