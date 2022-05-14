@@ -3,6 +3,7 @@
 [![SWAG build](https://github.com/ohad24/encyclo-flower/actions/workflows/swag.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/swag.yml)
 [![Ansible deployment](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml)
 [![Known Vulnerabilities](https://snyk.io/test/github/ohad24/encyclo-flower/badge.svg?targetFile=src/api/requirements.txt)](https://snyk.io/test/github/ohad24/encyclo-flower)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f58c7a17253340d7be1344a12e984e7a)](https://www.codacy.com/gh/ohad24/encyclo-flower/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ohad24/encyclo-flower&amp;utm_campaign=Badge_Grade)
 
 ### Development install and run
 Environment variables:  
