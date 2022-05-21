@@ -2,6 +2,7 @@
 [![API build](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/api.yml)
 [![SWAG build](https://github.com/ohad24/encyclo-flower/actions/workflows/swag.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/swag.yml)
 [![Ansible deployment](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml/badge.svg)](https://github.com/ohad24/encyclo-flower/actions/workflows/server.yml)
+[![codecov](https://codecov.io/gh/ohad24/encyclo-flower/branch/main/graph/badge.svg?token=SX4X7ULMXX)](https://codecov.io/gh/ohad24/encyclo-flower)
 
 [![Known Vulnerabilities](https://snyk.io/test/github/ohad24/encyclo-flower/badge.svg?targetFile=src/api/requirements.txt)](https://snyk.io/test/github/ohad24/encyclo-flower)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f58c7a17253340d7be1344a12e984e7a)](https://www.codacy.com/gh/ohad24/encyclo-flower/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ohad24/encyclo-flower&amp;utm_campaign=Badge_Grade)

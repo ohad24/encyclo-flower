@@ -20,6 +20,7 @@ on:
     paths:
       - "src/api/**"
       - "tests/api/**"
+      - ".github/workflows/api.yml"
 
 env:
   DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-api
@@ -36,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest
+          pip install flake8 pytest pytest-cov
           pip install -r src/api/requirements.txt
       - name: Lint with flake8
         run: |
@@ -55,7 +56,9 @@ jobs:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
-          pytest tests/api/
+          pytest --cov=src/api/ --cov-report=xml tests/api/
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
 
   build:
     runs-on: ubuntu-latest
