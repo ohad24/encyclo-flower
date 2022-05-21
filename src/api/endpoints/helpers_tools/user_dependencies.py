@@ -98,7 +98,8 @@ async def get_user_from_email_registration_token(
     expiration_minutes = timedelta(minutes=settings.EMAIL_VERIFICATION_EXPIRES_MINUTES)
     if (
         not verification_data
-        or verification_data["create_dt"] + expiration_minutes < datetime.utcnow()
+        or verification_data["create_dt"] + expiration_minutes
+        < datetime.now().astimezone()
     ):
         raise HTTPException(
             status_code=404, detail=ExceptionEmailVerificationTokenNotFound().detail
@@ -133,7 +134,8 @@ async def get_user_from_reset_password_token(
     )
     if (
         not verification_data
-        or verification_data["create_dt"] + expiration_minutes < datetime.utcnow()
+        or verification_data["create_dt"] + expiration_minutes
+        < datetime.now().astimezone()
     ):
         raise HTTPException(
             status_code=404, detail=ExceptionUserResetPasswordTokenNotFound().detail
