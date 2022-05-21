@@ -3,6 +3,8 @@ FROM python:3.10-slim
 ARG USERNAME=appuser
 ARG APPDIR=/app
 
+ENV TZ=Asia/Jerusalem
+
 # These env variables MUST be provided in all environments
 ENV MONGO_DB_NAME=
 ENV MONGO_URI=

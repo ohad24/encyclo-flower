@@ -120,7 +120,7 @@ class TestCreateUser:
         data = next(
             db.email_verification_tokens.find({}).sort("create_dt", -1).limit(1)
         )
-        print(data)
+        # print(data)
         # * Act
         response = client.get(self._users_url + f"verify-email/{data['token']}")
         # * Assert
