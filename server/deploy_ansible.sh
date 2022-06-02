@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # This should run on the server and deploy the ansible playbook on demand
 cd ${HOME}/encyclo-flower/server
 git fetch origin main
