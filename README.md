@@ -10,8 +10,21 @@
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ohad24/encyclo-flower.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ohad24/encyclo-flower/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ohad24/encyclo-flower.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ohad24/encyclo-flower/context:python)
 
+Hello all 👋, Welcome to the Encyclo-Flower site source code. This repo contains the source code for the entire site tech stack (Backend API, Frontend, VM configuration, CI/CD automation, tests, and SWAG web server).
+
+## Site main features
+
+* Custom search across more then 3000 species of plants.
+* User image recognition to identify plant species.
+* Community questions and answers to help users find the right plant they looking for.
+* Community observations, users can share their observations and plant images.
+
 ## Development install and run
 
+### Backend
+
+**API is running on Python 3.10**  
+Install:  
 Environment variables:
 
 * GOOGLE_APPLICATION_CREDENTIALS - path to Google Cloud Service Account JSON file.  
@@ -22,37 +35,14 @@ Environment variables:
     To create new one run: `openssl rand -hex 32`  
 * SMTP_USER - SMTP username (gmail address). Not mandatory.  
 * SMTP_PASS - SMTP password. Not mandatory.  
-
-### Development libraries
-
-For testing + coverage, formatting and linting:
-
-```bash
-pip install pytest pytest-cov black flake8
-```
-
-#### Generic commands
-
-Find all `todo:`s and urgent (`# !`) comments in the code (`src/api`).  
-
-  ```bash
-  # -r search subdirectories
-  # -n print line numbers
-  # -i ignore case
-  # -E extended regex
-  grep -r -n -i -E 'todo\:|\# \!' src/api
-  ```
-
-#### backend
-
-**API is running on Python 3.10**  
-Install:  
-Tests:  
-Environment variables:  
-
 * TESTS_GET_PLANTS_NAMES_LIMIT - query limit for get_plants_names  
-  
+
+Tests:
+
   ```bash
+  # For testing + coverage, formatting and linting:
+  pip install pytest pytest-cov black flake8
+
   # pwd
   # ./encyclo-flower
   # enter venv
@@ -63,11 +53,12 @@ Environment variables:
   
   # format
   black src/api/
+
   # lint
   flake8 src/api/
   ```
 
-  Run:
+Run:
 
   ```bash
   # enter venv
@@ -75,7 +66,12 @@ Environment variables:
   uvicorn main:app --reload
   ```
 
-### Ansible
+#### Dev environment
+
+* express - [http://localhost:8081/](http://localhost:8081/)
+* swagger - [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## Ansible (Server automatic configuration)
 
   ```bash
   sudo apt install ansible
@@ -86,12 +82,7 @@ Environment variables:
   ansible-playbook -i hosts playbook.yml
   ```
 
-### dev environment
-
-* express - [http://localhost:8081/](http://localhost:8081/)
-* swagger - [http://localhost:8000/docs](http://localhost:8000/docs)
-
-## docs
+## Docs
 
 ### learning assets
 
