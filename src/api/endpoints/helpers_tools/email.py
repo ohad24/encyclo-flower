@@ -3,7 +3,7 @@ from pydantic import EmailStr
 from core.config import get_settings
 from models.user import UserVerificationTokenData, UserVerificationTokenDataExt
 from db import get_db
-from pymongo import MongoClient
+from pymongo.database import Database
 import os
 import logging
 
@@ -20,7 +20,7 @@ def send_email(msg: EmailMessage):
 
 
 def setup_email_verification(
-    user_id: str, email: EmailStr, base_url: str, db: MongoClient = get_db()
+    user_id: str, email: EmailStr, base_url: str, db: Database = get_db()
 ):
     """
     Setup and send email verification token to user email.
@@ -58,7 +58,7 @@ def setup_email_verification(
 
 
 def setup_reset_password_email(
-    user_id: str, email: EmailStr, base_url: str, db: MongoClient = get_db()
+    user_id: str, email: EmailStr, base_url: str, db: Database = get_db()
 ):
     """
     Setup and send email verification token to user email.

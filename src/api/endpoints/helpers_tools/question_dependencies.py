@@ -1,5 +1,5 @@
 from db import get_db
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from fastapi import HTTPException, Depends
 from models.user import UserInDB
 from models.user_questions import (
@@ -20,7 +20,7 @@ from models.exceptions import (
 
 
 async def validate_question_by_id(
-    question_id: str, db: MongoClient = Depends(get_db)
+    question_id: str, db: Database = Depends(get_db)
 ) -> QuestionOut:
     query_filter = dict(question_id=question_id, deleted=False)
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)

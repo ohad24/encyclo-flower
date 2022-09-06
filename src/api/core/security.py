@@ -16,7 +16,7 @@ from models.exceptions import (
     ExceptionUserNotPrivilege,
 )
 from models.token import TokenData
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from db import get_db
 
 settings = get_settings()
@@ -55,7 +55,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def search_user_in_db_from_token(token_data: TokenData, db: MongoClient) -> dict:
+def search_user_in_db_from_token(token_data: TokenData, db: Database) -> dict:
     """
     Search user in db from token data
     """
@@ -89,7 +89,7 @@ def validate_token_exists_and_not_expired(token_data: TokenData) -> bool:
 
 
 async def get_current_user_if_exists(
-    token: str | None = Depends(oauth2_scheme), db: MongoClient = Depends(get_db)
+    token: str | None = Depends(oauth2_scheme), db: Database = Depends(get_db)
 ) -> UserMinimalMetadataOut:
     """
     Function to extract user from token.
@@ -107,7 +107,7 @@ async def get_current_user_if_exists(
 
 async def get_current_user(
     token: str | None = Depends(oauth2_scheme),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ) -> UserInDB:
     """
     Validate the user in the token and db
@@ -163,7 +163,7 @@ async def get_current_privilege_user(
 
 async def get_user_for_login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ) -> UserInDB:
     """
     Login dependency.
@@ -182,7 +182,7 @@ async def get_user_for_login(
 
 def validate_http_basic_cred(
     credentials: HTTPBasicCredentials = Depends(HTTPBasic()),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     """
     For docs page, only for active superusers.

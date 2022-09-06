@@ -27,7 +27,7 @@ from models.generic import (
 )
 from core.security import get_current_active_user
 import db
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from endpoints.helpers_tools.observation_dependencies import (
     get_current_observation,
     get_current_observation_w_valid_owner,
@@ -70,7 +70,7 @@ OBSERVATION_THUMBNAILS_PATH = OBSERVATIONS_IMAGES_PATH / "thumbnails"
 @router.get("/", response_model=List[ObservationsPreview])
 async def get_all_observations(
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     query_filter = dict(deleted=False, submitted=True)
     pipeline = prepare_aggregate_pipeline_w_users(
@@ -91,7 +91,7 @@ async def get_observation_by_id(
 async def add_observation(
     observation: Observation,
     user: UserInDB = Depends(get_current_active_user),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     observationInDB = ObservationInDB(**observation.dict(), user_id=user.user_id)
     db.observations.insert_one(observationInDB.dict())
@@ -102,7 +102,7 @@ async def add_observation(
 async def edit_observation(
     observation_data: Observation,
     observationInDB: ObservationInDB = Depends(get_current_observation_w_valid_editor),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     db.observations.update_one(
         {"observation_id": observationInDB.observation_id},
@@ -114,7 +114,7 @@ async def edit_observation(
 @router.put("/{observation_id}/submit", status_code=204)
 async def submit_observation(
     observation: ObservationOut = Depends(get_current_observation_w_valid_owner),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     db.observations.update_one(
         {"observation_id": observation.observation_id},
@@ -142,7 +142,7 @@ async def add_image_to_observation(
     observationInDB: ObservationOut = Depends(get_current_observation_w_valid_owner),
     image: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     if len(observationInDB.images) >= 10:
         # TODO: change to http exception
@@ -204,7 +204,7 @@ async def add_image_to_observation(
 async def update_image_metadata(
     user_image_metadata: ObservationImageMeta,
     image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     # * check if plant_id is valid
     plant = db.plants.find_one({"plant_id": user_image_metadata.plant_id})
@@ -238,7 +238,7 @@ async def update_image_metadata(
 @router.delete("/{observation_id}/image/{image_id}", status_code=204)
 async def delete_image_from_observation(
     image_data: ObservationImageInDB_w_oid = Depends(get_image_data_oid_w_valid_editor),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     # * delete image and thumbnail from storage
     delete_from_gstorage(image_data.image.file_name, OBSERVATIONS_IMAGES_PATH)
@@ -257,7 +257,7 @@ async def add_comment(
     comment: Comment,
     user: UserInDB = Depends(get_current_active_user),
     observation_id: str = Depends(get_observation_id),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     comment_data = CommentInDB(
         user_id=user.user_id,
@@ -273,7 +273,7 @@ async def add_comment(
 async def get_comments(
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
     observation_id: str = Depends(get_observation_id),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     query_filter = dict(
         type="observation",
@@ -310,7 +310,7 @@ async def rotate_image_in_observation(
 @router.delete("/{observation_id}", status_code=204)
 async def delete_observation(
     observation: ObservationInDB = Depends(get_current_observation_w_valid_owner),
-    db: MongoClient = Depends(db.get_db),
+    db: Database = Depends(db.get_db),
 ):
     """
     Only set deleted flag to true in DB

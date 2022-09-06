@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Depends
 from endpoints.helpers_tools import detect_vision_api, detect_google_search
 from core.config import get_settings
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from db import get_db
 from models.helpers import gen_image_file_name
 from datetime import datetime
@@ -20,7 +20,7 @@ router = APIRouter()
 async def images(
     file: UploadFile = File(...),
     user_data: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     # TODO: add response model (list of plants)
     # * init respose model

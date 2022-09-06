@@ -1,5 +1,5 @@
 from db import get_db
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from fastapi import HTTPException, Depends
 from models.user import UserInDB
 from models.user_observations import (
@@ -16,7 +16,7 @@ from endpoints.helpers_tools.db import prepare_aggregate_pipeline_w_users
 
 
 async def validate_observation_by_id(
-    observation_id: str, db: MongoClient = Depends(get_db)
+    observation_id: str, db: Database = Depends(get_db)
 ) -> ObservationOut:
     query_filter = dict(observation_id=observation_id, deleted=False)
     pipeline = prepare_aggregate_pipeline_w_users(query_filter, 0, 1)

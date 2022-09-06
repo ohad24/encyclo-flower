@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from typing import List, Union
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from db import get_db
 from models.user import (
     BaseUserOut,
@@ -64,7 +64,7 @@ router = APIRouter()
     },
 )
 async def read_users(
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
     search_params: QuerySearchPageParams = Depends(QuerySearchPageParams),
 ) -> List[UserInDB]:
     return list(db.users.find({}).skip(search_params.skip).limit(search_params.limit))
@@ -103,7 +103,7 @@ async def read_current_user(
 async def read_user(
     requested_user: UserInDB = Depends(get_existing_user),
     current_user: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ) -> UserOut:
     """
     exclude email and phone if the requested user is not the current user.
@@ -164,7 +164,7 @@ async def read_user(
 async def update_user(
     username: str,
     user_in: UpdateUserIn,
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     db.users.update_one(
         {"username": username},
@@ -198,7 +198,7 @@ async def create_user(
     user_in: CreateUserIn,
     request: Request,
     background_tasks: BackgroundTasks,
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     # * hash the password
     hash_password = get_password_hash(user_in.password.get_secret_value())
@@ -234,7 +234,7 @@ async def create_user(
 )
 async def verify_email(
     user_id: str = Depends(get_user_from_email_registration_token),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     db.users.update_one(
         {"user_id": user_id},
