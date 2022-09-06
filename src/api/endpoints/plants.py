@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Query
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from db import get_db
 from models.plant import Plant, SearchOutList, PreSearchData, PlantAutoCompleteOut
 from endpoints.helpers_tools.plant_dependencies import (
@@ -32,7 +32,7 @@ router = APIRouter()
 )
 async def autocomplete(
     search_input: str = Query("", min_length=2),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     query = prepare_query_plant_name_text(search_input)
     plants = [
@@ -75,7 +75,7 @@ async def get_plant(
 )
 async def search(
     pre_search_data: PreSearchData = Depends(get_pre_search_data),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     # * init return data
     out_plants = SearchOutList(
@@ -120,7 +120,7 @@ async def search(
 async def add_favorite(
     current_user: UserInDB = Depends(get_current_active_user),
     favorite_plant: FavoritePlant = Depends(get_favorite_plant_data),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     result = db.users.update_one(
         {"user_id": current_user.user_id},
@@ -151,7 +151,7 @@ async def add_favorite(
 async def remove_favorite(
     current_user: UserInDB = Depends(get_current_active_user),
     favorite_plant: FavoritePlant = Depends(get_favorite_plant_data),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     result = db.users.update_one(
         {"user_id": current_user.user_id},

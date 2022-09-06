@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status, Depends
 from db import get_db
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from models.plant import Plant, SearchIn, PreSearchData
 from models.exceptions import (
     ExceptionPlantNotFound,
@@ -18,7 +18,7 @@ settings = get_settings()
 
 async def get_plant_from_science_name(
     science_name: str,
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ) -> Plant:
     plant = db.plants.find_one({"science_name": science_name})
     if not plant:
@@ -64,7 +64,7 @@ async def prepare_search_query(search_input: SearchIn) -> dict:
 async def get_pre_search_data(
     search_input: SearchIn,
     query: dict = Depends(prepare_search_query),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ) -> PreSearchData:
 
     # * check if document exist

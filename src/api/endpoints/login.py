@@ -11,7 +11,7 @@ from models.exceptions import (
     ExceptionUserResetPasswordTokenNotFound,
 )
 from db import get_db
-from pymongo import MongoClient
+from pymongo.database import Database
 from endpoints.helpers_tools.user_dependencies import (
     get_user_from_email,
     get_user_from_reset_password_token,
@@ -87,7 +87,7 @@ def reset_password_request(
 def reset_password(
     passwords_data: ResetPasswordIn,
     user_id: str = Depends(get_user_from_reset_password_token),
-    db: MongoClient = Depends(get_db),
+    db: Database = Depends(get_db),
 ):
     hashed_password = get_password_hash(passwords_data.password.get_secret_value())
     db.users.update_one(

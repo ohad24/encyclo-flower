@@ -1,5 +1,5 @@
 from db import get_db
-from pymongo.mongo_client import MongoClient
+from pymongo.database import Database
 from models.user import (
     CreateUserIn,
     UserInDB,
@@ -34,7 +34,7 @@ async def validate_accept_terms_of_service(user_in: CreateUserIn):
 
 
 async def validate_username_and_email_not_in_db(
-    user_in: CreateUserIn, db: MongoClient = Depends(get_db)
+    user_in: CreateUserIn, db: Database = Depends(get_db)
 ):
     user = db.users.find_one(
         {"$or": [{"username": user_in.username}, {"email": user_in.email}]}
@@ -76,7 +76,7 @@ async def validate_match_passwords__reset_password(passwords_data: UserPasswordI
 
 
 async def get_existing_user(
-    username: str, db: MongoClient = Depends(get_db)
+    username: str, db: Database = Depends(get_db)
 ) -> UserInDB:
     """
     Check if given user is exists in DB.
@@ -88,7 +88,7 @@ async def get_existing_user(
 
 
 async def get_user_from_email_registration_token(
-    token: str, db: MongoClient = Depends(get_db)
+    token: str, db: Database = Depends(get_db)
 ) -> str:
     """
     Validate email registration token and return username.
@@ -108,7 +108,7 @@ async def get_user_from_email_registration_token(
 
 
 async def get_user_from_email(
-    email: UserForgetPasswordRequest, db: MongoClient = Depends(get_db)
+    email: UserForgetPasswordRequest, db: Database = Depends(get_db)
 ) -> UserInDB:
     """
     Validate email and return user.
@@ -120,7 +120,7 @@ async def get_user_from_email(
 
 
 async def get_user_from_reset_password_token(
-    passwords_data: ResetPasswordIn, db: MongoClient = Depends(get_db)
+    passwords_data: ResetPasswordIn, db: Database = Depends(get_db)
 ) -> str:
     """
     Validate reset password token and return username.
