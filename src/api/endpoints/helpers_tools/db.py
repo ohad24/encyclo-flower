@@ -18,52 +18,36 @@ def prepare_query_plant_name_text(name: str) -> dict:
     return {"$or": name_text_or}
 
 
-def prepare_query_detect_image(
-    result_google_search_by_image, result_search_by_vision_api
-) -> dict:
-    # * search in db
-    query_or = []
-
-    if result_google_search_by_image.kb_panel.scientific_name:
-        # * kb.scientific_name > db.plants.science_name
-        query_scientific_name = prepare_query_plant_name_text(
-            result_google_search_by_image.kb_panel.scientific_name
-        )
-        query_or.append(query_scientific_name)
-
-        # * kb.scientific_name (first word) > science_name (beginning of the word)
-        query_first_world = prepare_query_plant_name_text(
-            result_google_search_by_image.kb_panel.scientific_name.split(" ")[0]
-        )
-        query_or.append(query_first_world)
-
-    if result_google_search_by_image.kb_panel.higher_classification:
-        # * kb.higher_classification > db.plants.taxon.family
-        # TODO: need to be stranslate to heb
-        query_higher_classification = {
-            "taxon.family": result_google_search_by_image.kb_panel.higher_classification
-        }
-        query_or.append(query_higher_classification)
-
-    if result_google_search_by_image.kb_panel.family:
-        # * kb.family > db.plants.taxon.family
-        # TODO: need to be stranslate to heb
-        query_family = {"taxon.family": result_google_search_by_image.kb_panel.family}
-        query_or.append(query_family)
-
-    if result_search_by_vision_api.labels:
-        # * vision.labels > taxon.family/subfamily/genus
-        # TODO: need to be stranslate to heb
-        # TODO: need to filter words like "family"
-        query_or.append({"taxon.family": {"$in": result_search_by_vision_api.labels}})
-        query_or.append(
-            {"taxon.subfamily": {"$in": result_search_by_vision_api.labels}}
-        )
-        query_or.append({"taxon.genus": {"$in": result_search_by_vision_api.labels}})
-    from pprint import pprint
-
-    pprint(query_or)
-    return {"$or": query_or}
+def prepare_query_detect_image(result_detect_api_response: list) -> list:
+    # * prepare data for DB (or query)
+    or_query = [
+        {"science_name": x["class_name"]} for x in result_detect_api_response.json()
+    ]
+    pipeline = [
+        {"$match": {"$or": or_query}},
+        {
+            "$project": {
+                "_id": 0,
+                "heb_name": 1,
+                "science_name": 1,
+                "images.file_name": 1,
+                "images.level": 1,
+            }
+        },
+        {
+            "$project": {
+                "heb_name": 1,
+                "science_name": 1,
+                "images": {"$slice": ["$images", 5]},
+                # TODO: need to upgrade to mongo 6 https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortArray/
+                # TODO: PR #129 https://github.com/ohad24/encyclo-flower/issues/129
+                # "result": {
+                #     "$sortArray": {"input": "$images", "sortBy": {"images.level": 1}}
+                # },
+            }
+        },
+    ]
+    return pipeline
 
 
 def prepare_aggregate_pipeline_w_users(

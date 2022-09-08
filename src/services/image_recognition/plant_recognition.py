@@ -1,3 +1,8 @@
+import os
+
+# * set env variables
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 from tflite_support.task import vision
 from tflite_support.task import core
 from tflite_support.task import processor
@@ -6,6 +11,8 @@ from pydantic import BaseModel
 import numpy as np
 from PIL import Image
 from io import BytesIO
+from typing import List
+
 
 NUMBER_OF_RESULTS = 5
 
@@ -17,9 +24,10 @@ class Classification(BaseModel):
 
 app = FastAPI()
 
+# TODO: timming the detection
 
-@app.post("/detect/")
-async def detect(file: UploadFile = File(...)):
+@app.post("/detect/", response_model=List[Classification])
+async def detect(file: UploadFile = File(...)) -> List[Classification]:
     # * convert file to image (ndarray)
     image_bytes = np.array(Image.open(BytesIO(file.file.read())))
     # * load model
@@ -45,7 +53,9 @@ async def detect(file: UploadFile = File(...)):
                 class_name=classification_result.classifications[0]
                 .classes[i]
                 .class_name,
-                score=classification_result.classifications[0].classes[i].score,
+                score=round(
+                    classification_result.classifications[0].classes[i].score, 5
+                ),
             )
         )
-    return {"predictions": predictions}
+    return predictions
