@@ -19,6 +19,7 @@ router = APIRouter()
 
 # TODO: set api limitter for this endpoint (by ip or user)
 
+
 @router.post("/image/")
 async def images(
     file: UploadFile = File(...),
@@ -54,19 +55,18 @@ async def images(
     blob.upload_from_file(file.file, content_type=file.content_type)
 
     # * save apis_result to DB
-    additional_data = dict(
+    metadata = dict(
         user_data=user_data.dict(include={"username", "user_id"}),
-        self_link=blob.self_link,
-        media_link=blob.media_link,
-        public_url=blob.public_url,
         orig_file_name=file.filename,
         file_name=new_file_name,
         content_type=file.content_type,
         ts=datetime.utcnow(),
+        detection_service_response_time_sec=round(
+            float(api_response.headers["x-process-time"]), 5
+        ),
     )
-    api_response = api_response.json()
     db.images_detections.insert_one(
-        dict(api_response=api_response, db_result=db_result, additional_data=additional_data)
+        dict(metadata=metadata, api_response=api_response.json(), db_result=db_result)
     )
 
     # * increase user usage counter of images detection if signed in

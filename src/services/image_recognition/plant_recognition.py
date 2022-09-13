@@ -6,12 +6,13 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 from tflite_support.task import vision
 from tflite_support.task import core
 from tflite_support.task import processor
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Request
 from pydantic import BaseModel
 import numpy as np
 from PIL import Image
 from io import BytesIO
 from typing import List
+from time import time
 
 
 NUMBER_OF_RESULTS = 5
@@ -24,7 +25,15 @@ class Classification(BaseModel):
 
 app = FastAPI()
 
-# TODO: timming the detection
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time()
+    response = await call_next(request)
+    process_time = time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
 
 @app.post("/detect/", response_model=List[Classification])
 async def detect(file: UploadFile = File(...)) -> List[Classification]:
