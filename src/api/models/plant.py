@@ -160,3 +160,22 @@ class PlantAutoCompleteOut(BaseModel):
     plant_id: str
     heb_name: str
     science_name: str
+
+
+class PlantPredictionImage(BaseModel):
+    file_name: str
+    level: str | None
+
+    @validator("level")
+    def set_level(cls, level):
+        """
+        Because the level in DB is null by default
+        """
+        return level or "e"
+
+
+class PlantPrediction(BaseModel):
+    heb_name: str
+    science_name: str
+    images: List[PlantPredictionImage] = Field(default_factory=list)
+    score: float = Field(default=0.0, description="Prediction score")

@@ -35,6 +35,7 @@ Environment variables:
     To create new one run: `openssl rand -hex 32`  
 * SMTP_USER - SMTP username (gmail address). Not mandatory.  
 * SMTP_PASS - SMTP password. Not mandatory.  
+* DETECT_API_SRV - URL to the detect API server. (default: http://localhost:5001)  
 * TESTS_GET_PLANTS_NAMES_LIMIT - query limit for get_plants_names  
 
 Tests:

@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # * Search plant
     ITEMS_PER_PAGE: int = 30
 
+    # * Plant detection
+    DETECT_API_SRV = os.environ.get("DETECT_API_SRV", "http://localhost:5001/detect/")
+
 
 @lru_cache()
 def get_settings():

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, File, UploadFile, Depends
 from endpoints.helpers_tools import detect_vision_api, detect_google_search
+from endpoints.helpers_tools.storage import upload_to_gstorage
 from core.config import get_settings
 from pymongo.database import Database
 from db import get_db
@@ -8,10 +9,11 @@ from datetime import datetime
 from core.security import get_current_user_if_exists
 from endpoints.helpers_tools.generic import get_today_str
 from endpoints.helpers_tools.db import prepare_query_detect_image
-from core.gstorage import bucket
 from models.user import UserMinimalMetadataOut
-import os
 import requests
+from models.plant import PlantPrediction
+from typing import List
+from pathlib import Path
 
 settings = get_settings()
 
@@ -20,41 +22,48 @@ router = APIRouter()
 # TODO: set api limitter for this endpoint (by ip or user)
 
 
-@router.post("/image/")
+@router.post(
+    "/image/",
+    response_model=List[PlantPrediction],
+    summary="Detect plant from image",
+    description="Detect plant from image using the external service",
+)
 async def images(
     file: UploadFile = File(...),
     user_data: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
     db: Database = Depends(get_db),
-):
+) -> List[PlantPrediction]:
     # * send file to image recognition API
-    # TODO: add this to global config/vars
-    DETECT_API_SRV = os.environ.get("API_SRV", "http://localhost:5001/detect/")
-    api_response = requests.post(DETECT_API_SRV, files={"file": file.file})
+    api_response = requests.post(settings.DETECT_API_SRV, files={"file": file.file})
 
     # * prepare pipeline
     pipeline = prepare_query_detect_image(api_response)
 
-    # * search in db
-    db_result = list(db.plants.aggregate(pipeline))
+    # * search in db and convert to PlantPrediction
+    plant_predictions = list(
+        PlantPrediction(**x) for x in db.plants.aggregate(pipeline)
+    )
 
     # * merge score from api to db result
-    for idx, db_item in enumerate(db_result):
+    for idx, db_item in enumerate(plant_predictions):
         for api_item in api_response.json():
-            if api_item["class_name"] == db_item["science_name"]:
-                db_result[idx]["score"] = api_item["score"]
+            if db_item.science_name == api_item["class_name"]:
+                plant_predictions[idx].score = api_item["score"]
                 break
 
     # * sort by score
-    db_result = sorted(db_result, key=lambda x: x["score"], reverse=True)
+    plant_predictions = sorted(plant_predictions, key=lambda x: x.score, reverse=True)
+
+    # * generate image file name
+    new_file_name = gen_image_file_name(file.filename)
 
     # * upload image to cloud storage
-    # TODO: move to background task
-    await file.seek(0)
-    new_file_name = gen_image_file_name(file.filename)
-    blob = bucket.blob("image_api_files/" + new_file_name)
-    blob.upload_from_file(file.file, content_type=file.content_type)
+    # TODO: move to background task (?)
+    upload_to_gstorage(
+        new_file_name, Path("image_api_files"), file.file.read(), file.content_type
+    )
 
-    # * save apis_result to DB
+    # * save all data in DB (image_detections collection)
     metadata = dict(
         user_data=user_data.dict(include={"username", "user_id"}),
         orig_file_name=file.filename,
@@ -66,7 +75,11 @@ async def images(
         ),
     )
     db.images_detections.insert_one(
-        dict(metadata=metadata, api_response=api_response.json(), db_result=db_result)
+        dict(
+            metadata=metadata,
+            api_response=api_response.json(),
+            db_resaults=[x.dict() for x in plant_predictions],
+        )
     )
 
     # * increase user usage counter of images detection if signed in
@@ -76,4 +89,4 @@ async def images(
             {"$inc": {f"counters.image_detection.{get_today_str()}": 1}},
         )
 
-    return db_result  # TODO: replace with final response model
+    return plant_predictions
