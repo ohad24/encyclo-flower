@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from core.config import get_settings
 from router import api_router, base_router
 
@@ -10,6 +11,15 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
     openapi_url="/api/openapi.json",
+)
+
+# TODO: update CORS after finish frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 api_main_router = APIRouter(prefix=settings.API_PREFIX)
