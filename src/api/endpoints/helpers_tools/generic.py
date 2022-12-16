@@ -162,11 +162,13 @@ def format_search_out_plant(
     Get most common text by location commeness classifications.
     """
 
-    # * get first image, sort by image.level, the most lowest. default None
-    image = min(plant.images, key=lambda x: x.level, default=None)
+    # * get top (up to 5) images, sort by image.level, the most lowest. default None
+    images = sorted(plant.images, key=lambda x: x.level)
     # * if image exists, get image file name
-    if image:
-        image = image.file_name
+    if images:
+        images = [
+            image.file_name for image in images[: 5 if len(images) > 5 else len(images)]
+        ]
 
     # * filter locations if locations name is not empty (from user input)
     if location_names:
@@ -192,7 +194,7 @@ def format_search_out_plant(
         heb_name=plant.heb_name,
         science_name=plant.science_name,
         colors=plant.colors,
-        image=image,
+        images=images,
         commoness=commoness,
         locations=filtered_locations,
     )
