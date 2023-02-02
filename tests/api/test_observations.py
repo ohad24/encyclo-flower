@@ -3,6 +3,7 @@ from test_main import client
 import pytest
 from pathlib import Path
 from conftest import google_credential_not_found
+from images_data import upload_file_multi_params
 
 
 @pytest.fixture(scope="module")
@@ -152,68 +153,6 @@ class TestObservation:
         assert user_observation.observation_id is not None
         assert user_observation.observation_id[:2] == "o-"  # TODO: remove later
 
-    # TODO: use the common asset (images_data.py)
-    upload_file_multi_params = [
-        {
-            "metadata": {},
-            "files": [
-                (
-                    "image",
-                    [
-                        "IMG_with_exif.jpg",
-                    ],
-                )
-            ],
-            "test_name": "Minimum metadata + with gps data",
-        },
-        {
-            "metadata": {
-                "description": "test image",
-                "content_category": "פרי",
-                "plant_id": "sfdm76",
-                "month_taken": "דצמבר",
-                "location_name": "כרמל",
-            },
-            "files": [
-                (
-                    "image",
-                    [
-                        "IMG_with_exif.jpg",
-                    ],
-                )
-            ],
-            "test_name": "Maximum metadata + with gps data",
-        },
-        {
-            "metadata": {},
-            "files": [
-                (
-                    "image",
-                    [
-                        "58NY77V207Q7H06.jpg",
-                    ],
-                )
-            ],
-            "test_name": "Minimum metadata + with no gps data",
-        },
-        {
-            "metadata": {
-                "description": "test image",
-                "what_in_image": "פרי",
-                "plant_id": "sfdm76",
-            },
-            "files": [
-                (
-                    "image",
-                    [
-                        "58NY77V207Q7H06.jpg",
-                    ],
-                )
-            ],
-            "test_name": "Maximum metadata + with no gps data",
-        },
-    ]
-
     @google_credential_not_found
     @pytest.mark.parametrize(
         "file_data",
@@ -223,12 +162,18 @@ class TestObservation:
     def test_upload_image(self, user_observation, file_data):
         # * Arrange
         # * read file as bytes and set it in file_data
-        file_data["files"][0][1].append(
-            Path(f"tests/assets/images/{file_data['files'][0][1][0]}").read_bytes()
-        )
+        file_name = file_data["file_name"]
+        files = {
+            "image": tuple(
+                [
+                    file_name,
+                    Path(f"tests/assets/images/{file_name}").read_bytes(),
+                ]
+            )
+        }
         # * Act
         response = user_observation.upload_image(
-            files=file_data["files"], metadata=file_data["metadata"]
+            files=files, metadata=file_data["metadata"]
         )
         # * Assert
         assert response.status_code == 200, response.text
@@ -241,11 +186,11 @@ class TestObservation:
         # * assert
         assert (
             response.json()["images"][1]["month_taken"]
-            == self.upload_file_multi_params[1]["metadata"]["month_taken"]
+            == upload_file_multi_params[1]["metadata"]["month_taken"]
         ), response.json()["images"][1]["month_taken"]
         assert (
             response.json()["images"][1]["location_name"]
-            == self.upload_file_multi_params[1]["metadata"]["location_name"]
+            == upload_file_multi_params[1]["metadata"]["location_name"]
         ), response.json()["images"][1]["location_name"]
 
     @google_credential_not_found
@@ -374,11 +319,20 @@ class TestObservation:
         # * Arrange
         observation = user_observation.get_observation(user_observation.observation_id)
         current_images_count = len(observation.json()["images"])
+        file_name = upload_file_multi_params[0]["file_name"]
+        files = {
+            "image": tuple(
+                [
+                    file_name,
+                    Path(f"tests/assets/images/{file_name}").read_bytes(),
+                ]
+            )
+        }
         # * Act
         while current_images_count < 11:
             response = user_observation.upload_image(
-                files=self.upload_file_multi_params[0]["files"],
-                metadata=self.upload_file_multi_params[0]["metadata"],
+                files=files,
+                metadata=upload_file_multi_params[0]["metadata"],
             )
             current_images_count += 1
         # * Assert
