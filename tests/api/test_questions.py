@@ -150,12 +150,18 @@ class TestQuestion:
     def test_upload_image(self, user_question, file_data):
         # * Arrange
         # * read file as bytes and set it in file_data
-        file_data["files"][0][1].append(
-            Path(f"tests/assets/images/{file_data['files'][0][1][0]}").read_bytes()
-        )
+        file_name = file_data["file_name"]
+        files = {
+            "image": tuple(
+                [
+                    file_name,
+                    Path(f"tests/assets/images/{file_name}").read_bytes(),
+                ]
+            )
+        }
         # * Act
         response = user_question.upload_image(
-            files=file_data["files"], metadata=file_data["metadata"]
+            files=files, metadata=file_data["metadata"]
         )
         # * Assert
         assert response.status_code == 200, response.text

@@ -124,7 +124,7 @@ class SearchOut(BaseModel):
     heb_name: str
     science_name: str
     colors: List[COLORS]
-    image: str = Field(default=None, description="Image file name")
+    images: List[str] = Field(default=[], description="List of images file name")
     commoness: LocationCommonEnum
     _locations: List[PlantLocation] = Field(
         description="Locations of the plant. For debugging only"
@@ -138,9 +138,9 @@ class SearchOutList(BaseModel):
     plants: List[Optional[SearchOut]] = []
 
     def sort_plants(self):
-        """Sort plants list on two keys, first by image, second by commoness."""
+        """Sort plants list on two keys, first by images (if exists), second by commoness."""
         self.plants.sort(
-            key=lambda x: (0 if x.image else 1, LocationCommonEnum(x.commoness).name)
+            key=lambda x: (0 if x.images else 1, LocationCommonEnum(x.commoness).name)
         )
 
 

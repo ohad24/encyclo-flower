@@ -174,7 +174,7 @@ class TestSearch:
 
         # * 1 is image, 0 is not
         result_image_order = [
-            1 if x["image"] else 0 for x in response.json().get("plants")
+            1 if x["images"] else 0 for x in response.json().get("plants")
         ]
 
         # * Assert
@@ -230,7 +230,7 @@ class TestSearch:
 
         # * extract commoness only from results with image (because the two level sort)
         result_commoness_order = [
-            x["commoness"] for x in response.json()["plants"] if x["image"]
+            x["commoness"] for x in response.json()["plants"] if x["images"]
         ]
 
         # * Assert
