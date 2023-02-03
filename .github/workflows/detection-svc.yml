@@ -46,6 +46,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest pytest-cov requests
           pip install -r src/services/image_recognition/requirements.txt
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+      - name: 'Download PlantDetect.tflite model'
+        run: 'gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/'
       - name: Lint with flake8
         run: |
           # TODO: configure flake8
