@@ -1,0 +1,46 @@
+# This workflow should control anything to do with detection service
+# Including tests, building the docker image and pushing it
+# It should run on both development and production scenarios
+# Production workflow (tagging the image as "latest") should run only on tagged version push
+
+
+name: Detection service workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+    paths:
+      # NOTE: Path filters are ignored for tag pushes
+      - "src/services/image_recognition/**"
+      - "tests/image_recognition/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/services/image_recognition/**"
+      - "tests/image_recognition/**"
+      - ".github/workflows/detection-svc.yml"
+
+
+env:
+  DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-detect-svc
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    # actions/checkout MUST come before auth
+    - uses: 'actions/checkout@v3'
+
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
