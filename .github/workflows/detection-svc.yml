@@ -80,3 +80,10 @@ jobs:
       uses: 'google-github-actions/auth@v1'
       with:
         credentials_json: '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}'
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+    - name: 'Download PlantDetect.tflite model'
+      run: 'gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/'
+    - name: 'Build tmp image'
+      working-directory: 'src/services/image_recognition/'
+      run: 'gcloud builds submit --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp'
