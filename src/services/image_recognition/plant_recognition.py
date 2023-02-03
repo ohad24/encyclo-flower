@@ -40,7 +40,7 @@ async def detect(file: UploadFile = File(...)) -> List[Classification]:
     # * convert file to image (ndarray)
     image_bytes = np.array(Image.open(BytesIO(file.file.read())))
     # * load model
-    base_options = core.BaseOptions(file_name="model.tflite")
+    base_options = core.BaseOptions(file_name="PlantDetect.tflite")
     classification_options = processor.ClassificationOptions(
         max_results=NUMBER_OF_RESULTS
     )

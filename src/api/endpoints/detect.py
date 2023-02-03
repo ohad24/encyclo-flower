@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Depends
+from fastapi import APIRouter, File, UploadFile, Depends, HTTPException
 from endpoints.helpers_tools import detect_vision_api, detect_google_search
 from endpoints.helpers_tools.storage import upload_to_gstorage
 from core.config import get_settings
@@ -14,6 +14,7 @@ import requests
 from models.plant import PlantPrediction
 from typing import List
 from pathlib import Path
+from models.exceptions import ExceptionImageDetectionServiceUnavailable
 
 settings = get_settings()
 
@@ -27,6 +28,12 @@ router = APIRouter()
     response_model=List[PlantPrediction],
     summary="Detect plant from image",
     description="Detect plant from image using the external service",
+    responses={
+        503: {
+            "model": ExceptionImageDetectionServiceUnavailable,
+            "description": ExceptionImageDetectionServiceUnavailable().detail,
+        }
+    },
 )
 async def images(
     file: UploadFile = File(...),
@@ -34,7 +41,13 @@ async def images(
     db: Database = Depends(get_db),
 ) -> List[PlantPrediction]:
     # * send file to image recognition API
-    api_response = requests.post(settings.DETECT_API_SRV, files={"file": file.file})
+    try:
+        api_response = requests.post(settings.DETECT_API_SRV, files={"file": file.file})
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(
+            status_code=503,
+            detail=ExceptionImageDetectionServiceUnavailable().detail,
+        )
 
     # * prepare pipeline
     pipeline = prepare_query_detect_image(api_response)
