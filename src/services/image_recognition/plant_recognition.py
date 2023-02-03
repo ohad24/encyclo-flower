@@ -13,6 +13,7 @@ from PIL import Image
 from io import BytesIO
 from typing import List
 from time import time
+from pathlib import Path
 
 
 NUMBER_OF_RESULTS = 5
@@ -40,7 +41,8 @@ async def detect(file: UploadFile = File(...)) -> List[Classification]:
     # * convert file to image (ndarray)
     image_bytes = np.array(Image.open(BytesIO(file.file.read())))
     # * load model
-    base_options = core.BaseOptions(file_name="PlantDetect.tflite")
+    model_file_path = Path(os.path.dirname(os.path.abspath(__file__))) / "PlantDetect.tflite"
+    base_options = core.BaseOptions(file_name=str(model_file_path))
     classification_options = processor.ClassificationOptions(
         max_results=NUMBER_OF_RESULTS
     )
