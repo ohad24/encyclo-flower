@@ -87,6 +87,6 @@ jobs:
     
     - name: 'Build tmp image'
       working-directory: 'src/services/image_recognition/'
-      run: 'gcloud builds submit ----gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp'
+      run: 'gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp'
 
 
