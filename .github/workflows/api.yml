@@ -57,7 +57,7 @@ jobs:
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
           export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plant --region us-central1 --format=json | jq .status.url --raw-output)
-          pytest --cov=src/api/ --cov-report=xml tests/api/
+          pytest -x --cov=src/api/ --cov-report=xml tests/api/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
 
