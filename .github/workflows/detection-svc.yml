@@ -93,7 +93,18 @@ jobs:
       # working-directory: 'src/services/image_recognition/'
       # run: 'gcloud run deploy detect --image us-central1-docker.pkg.dev/encyclo-flower/us/detect --region us-central1 --allow-unauthenticated'
       run: 'gcloud run deploy detect-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp --region us-central1'
-    
-    
 
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.8"
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pytest-cov requests google-auth
 
+    - name: 'Test tmp container'
+      run: |
+        pytest tests/image_recognition/test_cloud_run.py \
+          --url=$(gcloud run services describe detect-tmp --region us-central1 --format=json | \
+                  jq .status.url --raw-output)
