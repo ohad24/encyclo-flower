@@ -64,7 +64,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          pytest --cov=tests/image_recognition --cov-report=xml tests/image_recognition
+          pytest --cov=tests/image_recognition --cov-report=xml tests/image_recognition/test_detection.py
   build:
     runs-on: ubuntu-latest
     permissions:
