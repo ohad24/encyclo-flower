@@ -103,7 +103,7 @@ jobs:
   # * dev subdomain / pre-production
   deploy-dev:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'ref/heads/main' and github.event_name != 'release'}}
+    if: ${{ github.ref == 'ref/heads/main' && github.event_name != 'release'}}
     steps:
       - uses: "actions/checkout@v3"
       - id: "auth"
@@ -123,6 +123,6 @@ jobs:
 
   deploy-prod:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'ref/heads/main' and github.event_name == 'release'}}
+    if: ${{ github.ref == 'ref/heads/main' && github.event_name == 'release'}}
     steps:
       - uses: "actions/checkout@v3"
