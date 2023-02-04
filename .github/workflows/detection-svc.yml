@@ -95,7 +95,7 @@ jobs:
       - name: "Test tmp container"
         run: |
           pytest tests/image_recognition/test_cloud_run.py \
-            --url=$(gcloud run services describe ef-text-detect-plant-tmp --region us-central1 --format=json | \
+            --url=$(gcloud run services describe ef-test-detect-plant-tmp --region us-central1 --format=json | \
                     jq .status.url --raw-output)
       - name: "Delete tmp container"
         run: "gcloud run services delete ef-text-detect-plant-tmp --region us-central1 --quiet"
