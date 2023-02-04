@@ -6,7 +6,7 @@ from pymongo.database import Database
 from db import get_db
 from models.helpers import gen_image_file_name
 from datetime import datetime
-from core.security import get_current_user_if_exists
+from core.security import get_current_user_if_exists, validate_detection_usage
 from endpoints.helpers_tools.generic import get_today_str
 from endpoints.helpers_tools.db import prepare_query_detect_image
 from models.user import UserMinimalMetadataOut
@@ -14,7 +14,10 @@ import requests
 from models.plant import PlantPrediction
 from typing import List
 from pathlib import Path
-from models.exceptions import ExceptionImageDetectionServiceUnavailable
+from models.exceptions import (
+    ExceptionImageDetectionServiceUnavailable,
+    ExceptionTooManyRequests,
+)
 import google.auth.transport.requests
 import google.oauth2.id_token
 import logging
@@ -35,8 +38,13 @@ router = APIRouter()
         503: {
             "model": ExceptionImageDetectionServiceUnavailable,
             "description": ExceptionImageDetectionServiceUnavailable().detail,
-        }
+        },
+        429: {
+            "model": ExceptionTooManyRequests,
+            "description": ExceptionTooManyRequests().detail,
+        },
     },
+    dependencies=[Depends(validate_detection_usage)],
 )
 async def images(
     file: UploadFile = File(...),
@@ -104,7 +112,7 @@ async def images(
         dict(
             metadata=metadata,
             api_response=api_response.json(),
-            db_resaults=[x.dict() for x in plant_predictions],
+            db_results=[x.dict() for x in plant_predictions],
         )
     )
 

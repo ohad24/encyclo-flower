@@ -35,6 +35,8 @@ class Settings(BaseSettings):
 
     # * Plant detection
     DETECT_API_SRV = os.environ.get("DETECT_API_SRV", "http://localhost:5001/detect/")
+    DETECT_USAGE_RATE_TIME_WINDOW_SECONDS = 5 * 60
+    DETECT_USAGE_RATE_REQUEST_NUM = 20
 
 
 @lru_cache()

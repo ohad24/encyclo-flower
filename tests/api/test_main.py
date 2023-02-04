@@ -4,6 +4,13 @@ from main import app
 import pytest
 from conftest import google_credential_not_found, get_db
 from requests.auth import HTTPBasicAuth
+from core.config import get_settings
+import time
+
+settings = get_settings()
+
+settings.DETECT_USAGE_RATE_REQUEST_NUM = 3
+settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS = 10
 
 
 client = TestClient(app)
@@ -493,3 +500,39 @@ class TestDetectImage:
             ],
             "score": 0.125,
         }
+
+    def test_detect_rate_limit(self, auth_headers, detect_image_url):
+        # * Arrange
+        auth_headers.pop("Content-Type", None)
+        t = time.time()
+        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+        for _ in range(0, settings.DETECT_USAGE_RATE_REQUEST_NUM - 1):
+            # * Act
+            response = client.post(
+                detect_image_url,
+                headers=auth_headers,
+                files=files,
+            )
+            # * Assert
+            assert response.status_code == 200
+        response = client.post(
+            detect_image_url,
+            headers=auth_headers,
+            files=files,
+        )
+        # * Assert
+        assert response.status_code == 429
+        assert response.json()["detail"] == "Too many requests"
+
+        # * Wait for rate limit to reset
+        while time.time() - t < settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS:
+            time.sleep(0.5)
+
+        # * Act
+        response = client.post(
+            detect_image_url,
+            headers=auth_headers,
+            files=files,
+        )
+        # * Assert
+        assert response.status_code == 200

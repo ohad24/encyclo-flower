@@ -105,3 +105,7 @@ class ExceptionQuestionImageNotFound(BaseModel):
 
 class ExceptionImageDetectionServiceUnavailable(BaseModel):
     detail: str = "Image detection service is unavailable"
+
+
+class ExceptionTooManyRequests(BaseModel):
+    detail: str = "Too many requests"

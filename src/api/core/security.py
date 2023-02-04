@@ -14,6 +14,7 @@ from models.exceptions import (
     ExceptionUserNotFound,
     ExceptionLogin,
     ExceptionUserNotPrivilege,
+    ExceptionTooManyRequests,
 )
 from models.token import TokenData
 from pymongo.database import Database
@@ -37,6 +38,12 @@ e403 = HTTPException(
 e401 = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
+)
+
+
+e429 = HTTPException(
+    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+    detail=ExceptionTooManyRequests().detail,
 )
 
 
@@ -194,3 +201,30 @@ def validate_http_basic_cred(
         raise HTTPException(
             detail=ExceptionLogin().detail, status_code=status.HTTP_401_UNAUTHORIZED
         )
+
+
+DETECT_USAGE_DB = {}
+
+
+def validate_detection_usage(
+    user_data: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
+):
+    if user_data.username not in DETECT_USAGE_DB:
+        DETECT_USAGE_DB[user_data.username] = []
+    DETECT_USAGE_DB[user_data.username].append(datetime.now())
+
+    # * remove old requests
+    DETECT_USAGE_DB[user_data.username] = [
+        x
+        for x in DETECT_USAGE_DB[user_data.username]
+        if x
+        > datetime.now()
+        - timedelta(seconds=settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS)
+    ]
+
+    # * check if too many requests
+    if (
+        len(DETECT_USAGE_DB[user_data.username])
+        > settings.DETECT_USAGE_RATE_REQUEST_NUM
+    ):
+        raise e429
