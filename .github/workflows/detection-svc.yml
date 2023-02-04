@@ -98,7 +98,7 @@ jobs:
             --url=$(gcloud run services describe ef-test-detect-plant-tmp --region us-central1 --format=json | \
                     jq .status.url --raw-output)
       - name: "Delete tmp container"
-        run: "gcloud run services delete ef-text-detect-plant-tmp --region us-central1 --quiet"
+        run: "gcloud run services delete ef-test-detect-plant-tmp --region us-central1 --quiet"
 
   # * dev subdomain / pre-production
   deploy-dev:
