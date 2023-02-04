@@ -3,8 +3,7 @@
 # It should run on both development and production scenarios
 # Production workflow (tagging the image as "latest") should run only on tagged version push
 
-
-name: Detection service workflow
+name: Detection service
 
 on:
   workflow_dispatch:
@@ -23,10 +22,8 @@ on:
       - "tests/image_recognition/**"
       - ".github/workflows/detection-svc.yml"
 
-
 env:
   DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-detect-svc
-
 
 jobs:
   test:
@@ -46,15 +43,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest pytest-cov requests
           pip install -r src/services/image_recognition/requirements.txt
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v1'
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
         with:
-          credentials_json: '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}'
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
-      - name: 'Download PlantDetect.tflite model'
-        run: 'gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/'
+          credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Download PlantDetect.tflite model"
+        run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
       - name: Lint with flake8
         run: |
           # TODO: configure flake8
@@ -68,43 +65,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: "read"
+      id-token: "write"
 
     steps:
-    # actions/checkout MUST come before auth
-    - uses: 'actions/checkout@v3'
-
-    - id: 'auth'
-      name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v1'
-      with:
-        credentials_json: '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}'
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v1'
-    - name: 'Download PlantDetect.tflite model'
-      run: 'gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/'
-    
-    - name: 'Build tmp image'
-      working-directory: 'src/services/image_recognition/'
-      run: 'gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp'
-    
-    - name: 'Run tmp image'
-      # working-directory: 'src/services/image_recognition/'
-      # run: 'gcloud run deploy detect --image us-central1-docker.pkg.dev/encyclo-flower/us/detect --region us-central1 --allow-unauthenticated'
-      run: 'gcloud run deploy detect-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp --region us-central1'
-
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.8"
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest pytest-cov requests google-auth
-
-    - name: 'Test tmp container'
-      run: |
-        pytest tests/image_recognition/test_cloud_run.py \
-          --url=$(gcloud run services describe detect-tmp --region us-central1 --format=json | \
-                  jq .status.url --raw-output)
+      # actions/checkout MUST come before auth
+      - uses: "actions/checkout@v3"
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest requests google-auth
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Download PlantDetect.tflite model"
+        run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
+      - name: "Build tmp image"
+        working-directory: "src/services/image_recognition/"
+        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp"
+      - name: "Run tmp container"
+        run: "gcloud run deploy detect-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp --region us-central1"
+      - name: "Test tmp container"
+        run: |
+          pytest tests/image_recognition/test_cloud_run.py \
+            --url=$(gcloud run services describe detect-tmp --region us-central1 --format=json | \
+                    jq .status.url --raw-output)
+      - name: "Delete tmp container"
+        run: "gcloud run services delete detect-tmp --region us-central1 --quiet"
