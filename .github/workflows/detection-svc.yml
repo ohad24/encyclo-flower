@@ -7,6 +7,8 @@ name: Detection service
 
 on:
   workflow_dispatch:
+  release: # * https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release
+    types: [released]
   push:
     branches: [main]
     tags:
@@ -28,6 +30,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.8
@@ -64,12 +67,8 @@ jobs:
           pytest --cov=tests/image_recognition --cov-report=xml tests/image_recognition/test_detection.py
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: "read"
-      id-token: "write"
-
+    if: github.event_name == 'pull_request'
     steps:
-      # actions/checkout MUST come before auth
       - uses: "actions/checkout@v3"
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
@@ -90,13 +89,40 @@ jobs:
         run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
       - name: "Build tmp image"
         working-directory: "src/services/image_recognition/"
-        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp"
+        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/ef-text-detect-plant-tmp"
       - name: "Run tmp container"
-        run: "gcloud run deploy detect-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp --region us-central1"
+        run: "gcloud run deploy ef-text-detect-plant-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/ef-text-detect-plant-tmp --region us-central1"
       - name: "Test tmp container"
         run: |
           pytest tests/image_recognition/test_cloud_run.py \
-            --url=$(gcloud run services describe detect-tmp --region us-central1 --format=json | \
+            --url=$(gcloud run services describe ef-text-detect-plant-tmp --region us-central1 --format=json | \
                     jq .status.url --raw-output)
       - name: "Delete tmp container"
-        run: "gcloud run services delete detect-tmp --region us-central1 --quiet"
+        run: "gcloud run services delete ef-text-detect-plant-tmp --region us-central1 --quiet"
+
+  # * dev subdomain / pre-production
+  deploy-dev:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'ref/heads/main' and github.event_name != 'release'}}
+    steps:
+      - uses: "actions/checkout@v3"
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Download PlantDetect.tflite model"
+        run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
+      - name: "Build dev image"
+        working-directory: "src/services/image_recognition/"
+        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/ef-dev-detect-plant"
+      - name: "Run tmp container"
+        run: "gcloud run deploy ef-dev-detect-plant --image us-central1-docker.pkg.dev/encyclo-flower/us/ef-dev-detect-plant --region --region us-central1"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'ref/heads/main' and github.event_name == 'release'}}
+    steps:
+      - uses: "actions/checkout@v3"
