@@ -33,7 +33,7 @@ def get_helpers_url(base_url):
 
 
 @pytest.fixture
-def get_detect_image_url(base_url):
+def detect_image_url(base_url):
     # * Arrange
     return base_url + "detect/image/"
 
@@ -468,20 +468,28 @@ class TestHelpers:
         assert response.json()["detail"] == "location not found"
 
 
-@pytest.mark.skip(reason="Currently not developed fully")
+# @pytest.mark.skip(reason="Currently not developed fully")
 @google_credential_not_found
 class TestDetectImage:
-    def test_detect_image(self, auth_headers, get_detect_image_url):
+    def test_detect_image(self, auth_headers, detect_image_url):
         # * Arrange
         auth_headers.pop("Content-Type", None)
         files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
         # * Act
         response = client.post(
-            get_detect_image_url,
+            detect_image_url,
             headers=auth_headers,
             files=files,
         )
         # * Assert
-        # print(response.json())
         assert response.status_code == 200
-        # TODO: add test check response data
+        assert len(response.json()) == 5
+        assert response.json()[0] == {
+            "heb_name": "כרכום גייארדו תת-מין חופי",
+            "science_name": "Crocus aleppicus",
+            "images": [
+                {"file_name": "8T7M690R8WKUQCD.jpg", "level": "e"},
+                {"file_name": "O5DB6U4CO3KV9P8.jpg", "level": "e"},
+            ],
+            "score": 0.125,
+        }

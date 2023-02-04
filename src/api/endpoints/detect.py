@@ -15,6 +15,9 @@ from models.plant import PlantPrediction
 from typing import List
 from pathlib import Path
 from models.exceptions import ExceptionImageDetectionServiceUnavailable
+import google.auth.transport.requests
+import google.oauth2.id_token
+import logging
 
 settings = get_settings()
 
@@ -42,8 +45,18 @@ async def images(
 ) -> List[PlantPrediction]:
     # * send file to image recognition API
     try:
-        api_response = requests.post(settings.DETECT_API_SRV, files={"file": file.file})
-    except requests.exceptions.ConnectionError:
+        auth_req = google.auth.transport.requests.Request()
+        id_token = google.oauth2.id_token.fetch_id_token(
+            auth_req, settings.DETECT_API_SRV
+        )
+        headers = {"Authorization": f"Bearer {id_token}"}
+        api_response = requests.post(
+            settings.DETECT_API_SRV + "/detect/",
+            headers=headers,
+            files={"file": file.file},
+        )
+    except requests.exceptions.ConnectionError as e:
+        logging.critical(e)
         raise HTTPException(
             status_code=503,
             detail=ExceptionImageDetectionServiceUnavailable().detail,
