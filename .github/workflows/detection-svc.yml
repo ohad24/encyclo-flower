@@ -84,6 +84,9 @@ jobs:
       uses: 'google-github-actions/setup-gcloud@v1'
     - name: 'Download PlantDetect.tflite model'
       run: 'gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/'
+    
     - name: 'Build tmp image'
       working-directory: 'src/services/image_recognition/'
-      run: 'gcloud builds submit --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp'
+      run: 'gcloud builds submit ----gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/detect-tmp'
+
+
