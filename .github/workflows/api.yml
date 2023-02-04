@@ -55,8 +55,8 @@ jobs:
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
-          DETECT_API_SRV: $(gcloud run services describe ef-prod-detect-plan --region us-central1 --format=json | jq .status.url --raw-output)
         run: |
+          export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plan --region us-central1 --format=json | jq .status.url --raw-output)
           pytest --cov=src/api/ --cov-report=xml tests/api/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
