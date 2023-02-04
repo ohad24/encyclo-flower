@@ -89,9 +89,9 @@ jobs:
         run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
       - name: "Build tmp image"
         working-directory: "src/services/image_recognition/"
-        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/ef-text-detect-plant-tmp"
+        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/ef-test-detect-plant-tmp"
       - name: "Run tmp container"
-        run: "gcloud run deploy ef-text-detect-plant-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/ef-text-detect-plant-tmp --region us-central1"
+        run: "gcloud run deploy ef-test-detect-plant-tmp --image us-central1-docker.pkg.dev/encyclo-flower/us/ef-test-detect-plant-tmp --region us-central1"
       - name: "Test tmp container"
         run: |
           pytest tests/image_recognition/test_cloud_run.py \

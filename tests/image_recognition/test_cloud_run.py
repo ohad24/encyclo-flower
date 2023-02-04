@@ -1,15 +1,16 @@
+"""
+Based on https://github.com/GoogleCloudPlatform/python-docs-samples/blob/HEAD/auth/service-to-service/auth.py
+This script run on GH Actions and test the Cloud Run service after build.
+You can run this locally with
+pytest tests/image_recognition/test_cloud_run.py --url=$( gcloud run services describe detect-tmp --region us-central1 --format=json | jq .status.url --raw-output) --google-cred-file-location=src/api/google_cred.json
+"""
+
 import pytest
 import google.auth.transport.requests
 import google.oauth2.id_token
 import os
 import requests
 from pathlib import Path
-
-
-"""Based on https://github.com/GoogleCloudPlatform/python-docs-samples/blob/HEAD/auth/service-to-service/auth.py
-This script run on GH Actions and test the Cloud Run service after build.
-You can run this locally with
-pytest tests/image_recognition/test_cloud_run.py --url=$( gcloud run services describe detect-tmp --region us-central1 --format=json | jq .status.url --raw-output) --google-cred-file-location=src/api/google_cred.json"""
 
 
 @pytest.fixture(scope="session")
