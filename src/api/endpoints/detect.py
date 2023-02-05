@@ -1,5 +1,4 @@
 from fastapi import APIRouter, File, UploadFile, Depends, HTTPException
-from endpoints.helpers_tools import detect_vision_api, detect_google_search
 from endpoints.helpers_tools.storage import upload_to_gstorage
 from core.config import get_settings
 from pymongo.database import Database
@@ -25,8 +24,6 @@ import logging
 settings = get_settings()
 
 router = APIRouter()
-
-# TODO: set api limitter for this endpoint (by ip or user)
 
 
 @router.post(
