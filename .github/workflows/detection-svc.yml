@@ -17,6 +17,7 @@ on:
       # NOTE: Path filters are ignored for tag pushes
       - "src/services/image_recognition/**"
       - "tests/image_recognition/**"
+      - ".github/workflows/detection-svc.yml"
   pull_request:
     branches: [main]
     paths:
@@ -116,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       _IMG_NAME: ef-dev-detect-plant
-    if: ${{ github.ref == 'ref/heads/main' && github.event_name != 'release'}}
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push'}}
     steps:
       - uses: "actions/checkout@v3"
       - id: "auth"
@@ -146,6 +147,6 @@ jobs:
 
   deploy-prod:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'ref/heads/main' && github.event_name == 'release'}}
+    if: ${{ github.event_name == 'release' && github.event.action == 'released' }}
     steps:
       - uses: "actions/checkout@v3"
