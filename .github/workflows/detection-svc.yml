@@ -25,7 +25,7 @@ on:
       - ".github/workflows/detection-svc.yml"
 
 env:
-  DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-detect-svc
+  _GCP_REGION: us-central1
 
 jobs:
   test:
@@ -54,14 +54,10 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v1"
       - name: "Download PlantDetect.tflite model"
-        run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
-      - name: Lint with flake8
         run: |
-          # TODO: configure flake8
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          gcloud storage cp \
+            gs://ef-prod-private/PlantDetect.tflite \
+            src/services/image_recognition/
       - name: Test with pytest
         run: |
           pytest --cov=tests/image_recognition --cov-report=xml tests/image_recognition/test_detection.py
@@ -88,27 +84,39 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v1"
       - name: "Download PlantDetect.tflite model"
-        run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
+        run: |
+          gcloud storage cp \
+            gs://ef-prod-private/PlantDetect.tflite \
+            src/services/image_recognition/
       - name: "Build tmp image"
         working-directory: "src/services/image_recognition/"
         run: |
           gcloud builds submit \
             --config=cloudbuild.yaml \
-            --substitutions=_IMG_NAME=${{env._IMG_NAME}}
-      #   run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/${{env.IMG_NAME}}"
+            --substitutions=_IMG_NAME=${{env._IMG_NAME}} \
+            --substitutions=_GCP_REGION=${{env._GCP_REGION}}
       - name: "Run tmp container"
-        run: "gcloud run deploy ${{env.IMG_NAME}} --image us-central1-docker.pkg.dev/encyclo-flower/us/${{env.IMG_NAME}} --region us-central1"
+        # * container name is the same as the image name
+        run: |
+          gcloud run deploy ${{env._IMG_NAME}} \
+            --image ${{env._GCP_REGION}}-docker.pkg.dev/encyclo-flower/us/${{env._IMG_NAME}} \
+            --region ${{env._GCP_REGION}}
       - name: "Test tmp container"
         run: |
           pytest tests/image_recognition/test_cloud_run.py \
-            --url=$(gcloud run services describe ${{env.IMG_NAME}} --region us-central1 --format=json | \
-                    jq .status.url --raw-output)
+            --url=$(gcloud run services describe ${{env._IMG_NAME}} \
+              --region ${{env._GCP_REGION}} --format=json | \
+                jq .status.url --raw-output)
       - name: "Delete tmp container"
-        run: "gcloud run services delete ${{env.IMG_NAME}} --region us-central1 --quiet"
+        run: |
+          gcloud run services delete ${{env._IMG_NAME}} \
+            --region ${{env._GCP_REGION}} --quiet
 
   # * dev subdomain / pre-production
   deploy-dev:
     runs-on: ubuntu-latest
+    env:
+      _IMG_NAME: ef-dev-detect-plant
     if: ${{ github.ref == 'ref/heads/main' && github.event_name != 'release'}}
     steps:
       - uses: "actions/checkout@v3"
@@ -120,12 +128,23 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v1"
       - name: "Download PlantDetect.tflite model"
-        run: "gcloud storage cp gs://ef-prod-private/PlantDetect.tflite src/services/image_recognition/"
+        run: |
+          gcloud storage cp \
+            gs://ef-prod-private/PlantDetect.tflite \
+            src/services/image_recognition/
       - name: "Build dev image"
         working-directory: "src/services/image_recognition/"
-        run: "gcloud builds submit --gcs-log-dir=gs://ef-test-gh-actions/build-logs --suppress-logs --tag us-central1-docker.pkg.dev/encyclo-flower/us/ef-dev-detect-plant"
+        run: |
+          gcloud builds submit \
+            --config=cloudbuild.yaml \
+            --substitutions=_IMG_NAME=${{env._IMG_NAME}} \
+            --substitutions=_GCP_REGION=${{env._GCP_REGION}}
       - name: "Run tmp container"
-        run: "gcloud run deploy ef-dev-detect-plant --image us-central1-docker.pkg.dev/encyclo-flower/us/ef-dev-detect-plant --region --region us-central1"
+        # * container name is the same as the image name
+        run: |
+          gcloud run deploy ${{env._IMG_NAME}} \
+            --image ${{env._GCP_REGION}}-docker.pkg.dev/encyclo-flower/us/${{env._IMG_NAME}} \
+            --region ${{env._GCP_REGION}}
 
   deploy-prod:
     runs-on: ubuntu-latest
