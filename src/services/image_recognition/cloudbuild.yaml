@@ -1,0 +1,14 @@
+steps:
+  # Uses the docker build step to build an image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/encyclo-flower/us/detect${_IMG_NAME}",
+        ".",
+      ]
+
+# my-image is pushed to Container Registry
+images:
+  - "us-central1-docker.pkg.dev/encyclo-flower/us/detect${_IMG_NAME}"
