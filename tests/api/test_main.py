@@ -479,7 +479,7 @@ class TestDetectImage:
     settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS = 10
 
     @pytest.fixture(autouse=True)
-    def headers(self, auth_headers):
+    def set_detection_headers(self, auth_headers):
         auth_headers.pop("Content-Type", None)
         self.headers = auth_headers
 
@@ -542,7 +542,8 @@ class TestDetectImage:
         assert response.status_code == 200
 
     @pytest.fixture
-    def break_detect_api_srv(self):
+    @staticmethod
+    def break_detect_api_srv():
         t = settings.DETECT_API_SRV
         settings.DETECT_API_SRV = "http://localhost:6969/"
         yield
