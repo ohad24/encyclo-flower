@@ -11,6 +11,7 @@ import google.oauth2.id_token
 import os
 import requests
 from pathlib import Path
+from conftest import ASSERT_DETECT_DATA
 
 
 @pytest.fixture(scope="session")
@@ -74,10 +75,4 @@ def test_authorized(id_token, files, service_url):
     headers = {"Authorization": f"Bearer {id_token}"}
     response = requests.post(service_url, headers=headers, files=files)
     assert response.status_code == 200, response.text
-    assert response.json() == [
-        {"class_name": "Erodium gruinum", "score": 0.13281},
-        {"class_name": "Ipomoea indica", "score": 0.05469},
-        {"class_name": "Solanum laciniatum", "score": 0.04688},
-        {"class_name": "Nicandra physalodes", "score": 0.04297},
-        {"class_name": "Hibiscus trionum", "score": 0.02344},
-    ]
+    assert response.json() == ASSERT_DETECT_DATA
