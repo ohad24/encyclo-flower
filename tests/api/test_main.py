@@ -4,6 +4,10 @@ from main import app
 import pytest
 from conftest import google_credential_not_found, get_db
 from requests.auth import HTTPBasicAuth
+from core.config import get_settings
+import time
+
+settings = get_settings()
 
 
 client = TestClient(app)
@@ -33,7 +37,7 @@ def get_helpers_url(base_url):
 
 
 @pytest.fixture
-def get_detect_image_url(base_url):
+def detect_image_url(base_url):
     # * Arrange
     return base_url + "detect/image/"
 
@@ -468,20 +472,91 @@ class TestHelpers:
         assert response.json()["detail"] == "location not found"
 
 
-@pytest.mark.skip(reason="Currently not developed fully")
 @google_credential_not_found
 class TestDetectImage:
-    def test_detect_image(self, auth_headers, get_detect_image_url):
-        # * Arrange
+
+    settings.DETECT_USAGE_RATE_REQUEST_NUM = 3
+    settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS = 10
+
+    @pytest.fixture(autouse=True)
+    def set_detection_headers(self, auth_headers):
         auth_headers.pop("Content-Type", None)
-        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+        self.headers = auth_headers
+
+    @pytest.fixture(autouse=True)
+    def set_upload_files(self):
+        self.files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+
+    def test_detect_image(self, detect_image_url):
         # * Act
         response = client.post(
-            get_detect_image_url,
-            headers=auth_headers,
-            files=files,
+            detect_image_url,
+            headers=self.headers,
+            files=self.files,
         )
         # * Assert
-        # print(response.json())
         assert response.status_code == 200
-        # TODO: add test check response data
+        assert len(response.json()) == 5
+        assert response.json()[0] == {
+            "heb_name": "כרכום גייארדו תת-מין חופי",
+            "science_name": "Crocus aleppicus",
+            "images": [
+                {"file_name": "8T7M690R8WKUQCD.jpg", "level": "e"},
+                {"file_name": "O5DB6U4CO3KV9P8.jpg", "level": "e"},
+            ],
+            "score": 0.125,
+        }
+
+    def test_detect_rate_limit(self, detect_image_url):
+        # * Arrange
+        t = time.time()
+        for _ in range(0, settings.DETECT_USAGE_RATE_REQUEST_NUM - 1):
+            # * Act
+            response = client.post(
+                detect_image_url,
+                headers=self.headers,
+                files=self.files,
+            )
+            # * Assert
+            assert response.status_code == 200
+        response = client.post(
+            detect_image_url,
+            headers=self.headers,
+            files=self.files,
+        )
+        # * Assert
+        assert response.status_code == 429
+        assert response.json()["detail"] == "Too many requests"
+
+        # * Wait for rate limit to reset
+        while time.time() - t < settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS:
+            time.sleep(0.5)
+
+        # * Act
+        response = client.post(
+            detect_image_url,
+            headers=self.headers,
+            files=self.files,
+        )
+        # * Assert
+        assert response.status_code == 200
+
+    @pytest.fixture
+    @staticmethod
+    def break_detect_api_srv():
+        t = settings.DETECT_API_SRV
+        settings.DETECT_API_SRV = "http://localhost:6969/"
+        yield
+        settings.DETECT_API_SRV = t
+
+    @pytest.mark.usefixtures("break_detect_api_srv")
+    def test_service_unavailable(self, detect_image_url):
+        # * Act
+        response = client.post(
+            detect_image_url,
+            headers=self.headers,
+            files=self.files,
+        )
+        # * Assert
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Image detection service is unavailable"

@@ -101,3 +101,11 @@ class ExceptionQuestionUserIsNotValidEditor(BaseModel):
 
 class ExceptionQuestionImageNotFound(BaseModel):
     detail: str = "Image not found"
+
+
+class ExceptionImageDetectionServiceUnavailable(BaseModel):
+    detail: str = "Image detection service is unavailable"
+
+
+class ExceptionTooManyRequests(BaseModel):
+    detail: str = "Too many requests"
