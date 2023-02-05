@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Depends, HTTPException
+from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, BackgroundTasks
 from endpoints.helpers_tools.storage import upload_to_gstorage
 from core.config import get_settings
 from pymongo.database import Database
@@ -46,6 +46,7 @@ router = APIRouter()
 async def images(
     file: UploadFile = File(...),
     user_data: UserMinimalMetadataOut = Depends(get_current_user_if_exists),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Database = Depends(get_db),
 ) -> List[PlantPrediction]:
     # * send file to image recognition API
@@ -89,9 +90,12 @@ async def images(
     new_file_name = gen_image_file_name(file.filename)
 
     # * upload image to cloud storage
-    # TODO: move to background task (?)
-    upload_to_gstorage(
-        new_file_name, Path("image_api_files"), file.file.read(), file.content_type
+    background_tasks.add_task(
+        upload_to_gstorage,
+        new_file_name,
+        Path("image_api_files"),
+        file.file.read(),
+        file.content_type,
     )
 
     # * save all data in DB (image_detections collection)
