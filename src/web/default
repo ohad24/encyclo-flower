@@ -46,6 +46,7 @@ server {
 
     # This will tell search engines not to index dev.* paths
     add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+    add_header Access-Control-Allow-Origin *;
 
     include /config/nginx/ssl.conf;
     client_max_body_size 0;
