@@ -9,9 +9,6 @@ import time
 
 settings = get_settings()
 
-settings.DETECT_USAGE_RATE_REQUEST_NUM = 3
-settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS = 10
-
 
 client = TestClient(app)
 
@@ -477,15 +474,25 @@ class TestHelpers:
 
 @google_credential_not_found
 class TestDetectImage:
-    def test_detect_image(self, auth_headers, detect_image_url):
-        # * Arrange
+
+    settings.DETECT_USAGE_RATE_REQUEST_NUM = 3
+    settings.DETECT_USAGE_RATE_TIME_WINDOW_SECONDS = 10
+
+    @pytest.fixture(autouse=True)
+    def headers(self, auth_headers):
         auth_headers.pop("Content-Type", None)
-        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+        self.headers = auth_headers
+
+    @pytest.fixture(autouse=True)
+    def set_upload_files(self):
+        self.files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+
+    def test_detect_image(self, detect_image_url):
         # * Act
         response = client.post(
             detect_image_url,
-            headers=auth_headers,
-            files=files,
+            headers=self.headers,
+            files=self.files,
         )
         # * Assert
         assert response.status_code == 200
@@ -500,24 +507,22 @@ class TestDetectImage:
             "score": 0.125,
         }
 
-    def test_detect_rate_limit(self, auth_headers, detect_image_url):
+    def test_detect_rate_limit(self, detect_image_url):
         # * Arrange
-        auth_headers.pop("Content-Type", None)
         t = time.time()
-        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
         for _ in range(0, settings.DETECT_USAGE_RATE_REQUEST_NUM - 1):
             # * Act
             response = client.post(
                 detect_image_url,
-                headers=auth_headers,
-                files=files,
+                headers=self.headers,
+                files=self.files,
             )
             # * Assert
             assert response.status_code == 200
         response = client.post(
             detect_image_url,
-            headers=auth_headers,
-            files=files,
+            headers=self.headers,
+            files=self.files,
         )
         # * Assert
         assert response.status_code == 429
@@ -530,8 +535,8 @@ class TestDetectImage:
         # * Act
         response = client.post(
             detect_image_url,
-            headers=auth_headers,
-            files=files,
+            headers=self.headers,
+            files=self.files,
         )
         # * Assert
         assert response.status_code == 200
@@ -544,15 +549,12 @@ class TestDetectImage:
         settings.DETECT_API_SRV = t
 
     @pytest.mark.usefixtures("break_detect_api_srv")
-    def test_service_unavailable(self, auth_headers, detect_image_url):
-        # * Arrange
-        auth_headers.pop("Content-Type", None)
-        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+    def test_service_unavailable(self, detect_image_url):
         # * Act
         response = client.post(
             detect_image_url,
-            headers=auth_headers,
-            files=files,
+            headers=self.headers,
+            files=self.files,
         )
         # * Assert
         assert response.status_code == 503
