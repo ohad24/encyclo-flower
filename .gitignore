@@ -22,3 +22,4 @@ src/api/.env
 src/api/google_cred.json
 .dccache
 *.tflite
+dev.yml
