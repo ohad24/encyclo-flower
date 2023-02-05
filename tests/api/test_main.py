@@ -475,7 +475,6 @@ class TestHelpers:
         assert response.json()["detail"] == "location not found"
 
 
-# @pytest.mark.skip(reason="Currently not developed fully")
 @google_credential_not_found
 class TestDetectImage:
     def test_detect_image(self, auth_headers, detect_image_url):
