@@ -5,13 +5,13 @@ steps:
       [
         "build",
         "-t",
-        "{_GCP_REGION}-docker.pkg.dev/encyclo-flower/us/${_IMG_NAME}",
+        "${_GCP_REGION}-docker.pkg.dev/encyclo-flower/us/${_IMG_NAME}",
         ".",
       ]
 
 # my-image is pushed to Container Registry
 images:
-  - "{_GCP_REGION}-docker.pkg.dev/encyclo-flower/us/${_IMG_NAME}"
+  - "${_GCP_REGION}-docker.pkg.dev/encyclo-flower/us/${_IMG_NAME}"
 
 options:
   logging: CLOUD_LOGGING_ONLY

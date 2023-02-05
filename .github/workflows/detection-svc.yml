@@ -88,11 +88,6 @@ jobs:
           gcloud storage cp \
             gs://ef-prod-private/PlantDetect.tflite \
             src/services/image_recognition/
-      - name: "print env"
-        # ! remove this
-        run: |
-          echo ${{env._IMG_NAME}}
-          echo ${{env._GCP_REGION}}
       - name: "Build tmp image"
         working-directory: "src/services/image_recognition/"
         run: |
