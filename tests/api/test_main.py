@@ -536,3 +536,25 @@ class TestDetectImage:
         )
         # * Assert
         assert response.status_code == 200
+
+    @pytest.fixture
+    def break_detect_api_srv(self):
+        t = settings.DETECT_API_SRV
+        settings.DETECT_API_SRV = "http://localhost:6969/"
+        yield
+        settings.DETECT_API_SRV = t
+
+    @pytest.mark.usefixtures("break_detect_api_srv")
+    def test_service_unavailable(self, auth_headers, detect_image_url):
+        # * Arrange
+        auth_headers.pop("Content-Type", None)
+        files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+        # * Act
+        response = client.post(
+            detect_image_url,
+            headers=auth_headers,
+            files=files,
+        )
+        # * Assert
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Image detection service is unavailable"
