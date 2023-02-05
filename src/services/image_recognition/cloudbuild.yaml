@@ -12,3 +12,6 @@ steps:
 # my-image is pushed to Container Registry
 images:
   - "us-central1-docker.pkg.dev/encyclo-flower/us/detect${_IMG_NAME}"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
