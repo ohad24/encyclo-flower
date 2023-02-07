@@ -28,6 +28,11 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      MONGO_USERNAME: supercharge
+      MONGO_PASSWORD: secret
+      MONGO_DATABASE: test
+      MONGO_URI: mongodb://${{env.MONGO_USERNAME}}:${{env.MONGO_PASSWORD}}@localhost:27017/${{env.MONGO_DATABASE}?authSource=admin
     steps:
       - uses: actions/checkout@v3
       - name: Install OS dependencies
@@ -65,17 +70,17 @@ jobs:
         uses: supercharge/mongodb-github-action@1.8.0
         with:
           mongodb-version: 5
-          mongodb-username: supercharge
-          mongodb-password: secret
-          mongodb-db: test
+          mongodb-username: ${{ env.MONGO_USERNAME }}
+          mongodb-password: ${{ env.MONGO_PASSWORD }}
+          mongodb-db: ${{ env.MONGO_DATABASE }}
       - name: Load plants data
         # run: mongoimport --uri ${{ secrets.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
         run: |
-          mongoimport --uri mongodb://supercharge:secret@localhost:27017/test?authSource=admin --collection plants --file plants_data.json --jsonArray
+          mongoimport --uri ${{ env.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
       - name: Test with pytest
         env:
           # MONGO_URI: ${{ secrets.MONGO_URI }}
-          MONGO_URI: mongodb://supercharge:secret@localhost:27017/test?authSource=admin
+          MONGO_URI: ${{ env.MONGO_URI }}
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
           export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plant --region us-central1 --format=json | jq .status.url --raw-output)
