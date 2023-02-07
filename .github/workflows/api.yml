@@ -74,12 +74,9 @@ jobs:
           mongodb-password: ${{ env.MONGO_PASSWORD }}
           mongodb-db: ${{ env.MONGO_DATABASE }}
       - name: Load plants data
-        # run: mongoimport --uri ${{ secrets.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
-        run: |
-          mongoimport --uri ${{ env.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
+        run: mongoimport --uri ${{ env.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
       - name: Test with pytest
         env:
-          # MONGO_URI: ${{ secrets.MONGO_URI }}
           MONGO_URI: ${{ env.MONGO_URI }}
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
