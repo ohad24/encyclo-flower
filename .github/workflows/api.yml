@@ -30,10 +30,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      # - name: Install OS dependencies
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y mongo-tools
+      - name: Install OS dependencies
+        run: |
+          wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-org-tools gnupg
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
@@ -69,15 +71,11 @@ jobs:
       - name: Load plants data
         # run: mongoimport --uri ${{ secrets.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
         run: |
-          wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-org-tools gnupg
-          mongoimport --uri mongodb://supercharge:secret@localhost:27017/test --collection plants --file plants_data.json --jsonArray
+          mongoimport --uri mongodb://supercharge:secret@localhost:27017/test?authSource=admin --collection plants --file plants_data.json --jsonArray
       - name: Test with pytest
         env:
           # MONGO_URI: ${{ secrets.MONGO_URI }}
-          MONGO_URI: mongodb://supercharge:secret@localhost:27017/test
+          MONGO_URI: mongodb://supercharge:secret@localhost:27017/test?authSource=admin
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
           export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plant --region us-central1 --format=json | jq .status.url --raw-output)
