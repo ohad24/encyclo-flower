@@ -32,7 +32,7 @@ jobs:
       MONGO_USERNAME: supercharge
       MONGO_PASSWORD: secret
       MONGO_DATABASE: test
-      MONGO_URI: mongodb://${{env.MONGO_USERNAME}}:${{env.MONGO_PASSWORD}}@localhost:27017/${{env.MONGO_DATABASE}?authSource=admin
+      MONGO_URI: mongodb://supercharge:secret@localhost:27017/test?authSource=admin
     steps:
       - uses: actions/checkout@v3
       - name: Install OS dependencies
