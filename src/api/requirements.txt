@@ -9,7 +9,7 @@ passlib==1.7.4
 Pillow==9.4.0
 pydantic[email]==1.10.4
 pymongo[srv]==4.3.3
-python-dotenv==0.21.0
+python-dotenv==0.21.1
 python-jose==3.3.0
 python-multipart==0.0.5
 requests-toolbelt==0.10.1
