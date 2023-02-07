@@ -1,6 +1,6 @@
 tflite-runtime==2.10.0
 tflite-support==0.4.0
-Pillow==9.2.0
+Pillow==9.3.0
 fastapi==0.82.0
 uvicorn==0.18.3
 python-multipart==0.0.5
