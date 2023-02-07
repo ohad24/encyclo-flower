@@ -30,6 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install OS dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mongo-tools
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
@@ -51,9 +55,24 @@ jobs:
         uses: "google-github-actions/auth@v1"
         with:
           credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Download latest plants data file"
+        run: gsutil cp $(gsutil ls gs://ef-prod-private/plants_data | sort -r | head -n 1) plants_data.json
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: 5
+          mongodb-username: supercharge
+          mongodb-password: secret
+          mongodb-db: test
+      - name: Load plants data
+        # run: mongoimport --uri ${{ secrets.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
+        run: mongoimport --uri mongodb://supercharge:secret@localhost:27017/test --collection plants --file plants_data.json --jsonArray
       - name: Test with pytest
         env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
+          # MONGO_URI: ${{ secrets.MONGO_URI }}
+          MONGO_URI: mongodb://supercharge:secret@localhost:27017/test
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
           export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plant --region us-central1 --format=json | jq .status.url --raw-output)
