@@ -28,8 +28,19 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      MONGO_USERNAME: supercharge
+      MONGO_PASSWORD: secret
+      MONGO_DATABASE: test
+      MONGO_URI: mongodb://supercharge:secret@localhost:27017/test?authSource=admin
     steps:
       - uses: actions/checkout@v3
+      - name: Install OS dependencies
+        run: |
+          wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-org-tools gnupg
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
@@ -51,9 +62,22 @@ jobs:
         uses: "google-github-actions/auth@v1"
         with:
           credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Download latest plants data file"
+        run: gsutil cp $(gsutil ls gs://ef-prod-private/plants_data | sort -r | head -n 1) plants_data.json
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: 5
+          mongodb-username: ${{ env.MONGO_USERNAME }}
+          mongodb-password: ${{ env.MONGO_PASSWORD }}
+          mongodb-db: ${{ env.MONGO_DATABASE }}
+      - name: Load plants data
+        run: mongoimport --uri ${{ env.MONGO_URI }} --collection plants --file plants_data.json --jsonArray
       - name: Test with pytest
         env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
+          MONGO_URI: ${{ env.MONGO_URI }}
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
         run: |
           export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plant --region us-central1 --format=json | jq .status.url --raw-output)
