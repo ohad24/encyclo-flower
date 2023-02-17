@@ -16,3 +16,4 @@ requests-toolbelt==0.10.1
 Shapely==2.0.1
 tzlocal==4.2
 uvicorn==0.20.0
+numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
