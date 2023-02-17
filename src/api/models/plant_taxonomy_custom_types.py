@@ -1130,4 +1130,4 @@ FAMILY = Literal[
 # * For future use
 # clade4 = []
 
-SUBFAMILY = Literal["פרפרניים", "מימוסיים \ שיטיים", "קסאלפיניים"]
+SUBFAMILY = Literal["פרפרניים", r"מימוסיים \ שיטיים", "קסאלפיניים"]
