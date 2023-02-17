@@ -61,8 +61,7 @@ async def images(
             headers=headers,
             files={"file": file.file},
         )
-    except requests.exceptions.ConnectionError as e:
-        logging.critical(e)
+    except requests.exceptions.ConnectionError:
         raise HTTPException(
             status_code=503,
             detail=ExceptionImageDetectionServiceUnavailable().detail,

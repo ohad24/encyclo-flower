@@ -60,7 +60,7 @@ class TestSearch:
         # * Act
         response = client.post(
             self._plants_search_url,
-            data=json.dumps({"name_text": "not_a_real_name"}),
+            content=json.dumps({"name_text": "not_a_real_name"}),
         )
         # * Assert
         assert response.status_code == 404, response.json()

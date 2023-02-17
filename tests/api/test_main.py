@@ -94,7 +94,7 @@ class TestCreateUser:
         # * Act
         response = client.post(
             self._users_url,
-            data=self._login_json,
+            content=self._login_json,
         )
         # * Assert
         assert response.status_code == 201
@@ -103,7 +103,7 @@ class TestCreateUser:
         # * Act
         response = client.post(
             self._users_url,
-            data=self._login_json,
+            content=self._login_json,
         )
         # * Assert
         assert response.status_code == 400
@@ -551,6 +551,10 @@ class TestDetectImage:
 
     @pytest.mark.usefixtures("break_detect_api_srv")
     def test_service_unavailable(self, detect_image_url):
+        import logging
+        logger = logging.getLogger('urllib3')
+        # logger.disabled = True
+        logger.propagate = False
         # * Act
         response = client.post(
             detect_image_url,
