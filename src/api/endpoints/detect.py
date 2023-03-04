@@ -19,7 +19,6 @@ from models.exceptions import (
 )
 import google.auth.transport.requests
 import google.oauth2.id_token
-import logging
 
 settings = get_settings()
 
@@ -61,8 +60,7 @@ async def images(
             headers=headers,
             files={"file": file.file},
         )
-    except requests.exceptions.ConnectionError as e:
-        logging.critical(e)
+    except requests.exceptions.ConnectionError:
         raise HTTPException(
             status_code=503,
             detail=ExceptionImageDetectionServiceUnavailable().detail,

@@ -79,6 +79,7 @@ jobs:
         env:
           MONGO_URI: ${{ env.MONGO_URI }}
           CLOUD_BUCKET: ${{ secrets.CLOUD_BUCKET }}
+          TESTS_GET_PLANTS_NAMES_LIMIT: 0  # * This will test all the plants in the DB from test_get_plant.
         run: |
           export DETECT_API_SRV=$(gcloud run services describe ef-prod-detect-plant --region us-central1 --format=json | jq .status.url --raw-output)
           pytest -x --cov=src/api/ --cov-report=xml tests/api/
