@@ -19,7 +19,6 @@ from models.exceptions import (
 )
 import google.auth.transport.requests
 import google.oauth2.id_token
-import logging
 
 settings = get_settings()
 
