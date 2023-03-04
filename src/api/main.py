@@ -32,4 +32,4 @@ api_main_router.include_router(base_router)
 app.include_router(api_main_router)
 
 # * Prometheus metrics
-Instrumentator().instrument(app).expose(app)
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
