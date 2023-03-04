@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import get_settings
 from router import api_router, base_router
+from prometheus_fastapi_instrumentator import Instrumentator
 
 settings = get_settings()
 
@@ -29,3 +30,6 @@ api_main_router.include_router(
 )  # TODO: set as variable from config (repo ?)
 api_main_router.include_router(base_router)
 app.include_router(api_main_router)
+
+# * Prometheus metrics
+Instrumentator().instrument(app).expose(app, include_in_schema=False)

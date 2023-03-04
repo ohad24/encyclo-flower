@@ -564,3 +564,13 @@ class TestDetectImage:
         # * Assert
         assert response.status_code == 503
         assert response.json()["detail"] == "Image detection service is unavailable"
+
+
+class TestMetrics:
+    metrics_url = "/metrics"
+
+    def test_get_metrics(self):
+        # * Act
+        response = client.get(self.metrics_url)
+        # * Assert
+        assert response.status_code == 200, f"response: {response.text}"
