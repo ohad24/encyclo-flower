@@ -563,12 +563,10 @@ class TestDetectImage:
 
 
 class TestMetrics:
-    @pytest.fixture
-    def get_metrics_url(self):
-        return "/metrics"
+    metrics_url = "/metrics"
 
-    def test_get_metrics(self, get_metrics_url):
+    def test_get_metrics(self):
         # * Act
-        response = client.get(get_metrics_url)
+        response = client.get(self.metrics_url)
         # * Assert
         assert response.status_code == 200, f"response: {response.text}"
