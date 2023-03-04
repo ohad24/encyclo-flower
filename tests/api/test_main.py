@@ -6,6 +6,8 @@ from conftest import google_credential_not_found, get_db
 from requests.auth import HTTPBasicAuth
 from core.config import get_settings
 import time
+import logging
+
 
 settings = get_settings()
 
@@ -551,9 +553,7 @@ class TestDetectImage:
 
     @pytest.mark.usefixtures("break_detect_api_srv")
     def test_service_unavailable(self, detect_image_url):
-        import logging
         logger = logging.getLogger('urllib3')
-        # logger.disabled = True
         logger.propagate = False
         # * Act
         response = client.post(
