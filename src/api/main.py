@@ -31,7 +31,5 @@ api_main_router.include_router(
 api_main_router.include_router(base_router)
 app.include_router(api_main_router)
 
-
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app).expose(app)
+# * Prometheus metrics
+Instrumentator().instrument(app).expose(app)

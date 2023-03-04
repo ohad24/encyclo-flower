@@ -560,3 +560,15 @@ class TestDetectImage:
         # * Assert
         assert response.status_code == 503
         assert response.json()["detail"] == "Image detection service is unavailable"
+
+
+class TestMetrics:
+    @pytest.fixture
+    def get_metrics_url(self):
+        return "/metrics"
+
+    def test_get_metrics(self, get_metrics_url):
+        # * Act
+        response = client.get(get_metrics_url)
+        # * Assert
+        assert response.status_code == 200, f"response: {response.text}"
