@@ -10,6 +10,11 @@ updates:
     schedule:
       interval: "daily"
 
+  - package-ecosystem: "pip"
+    directory: "src/services/image_recognition"
+    schedule:
+      interval: "daily"
+
   # Manage dependencies for encyclo-flower-swag docker image
   - package-ecosystem: "docker"
     directory: "/src/web"
