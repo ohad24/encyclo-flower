@@ -62,10 +62,10 @@ async def detect(file: UploadFile = File(...)) -> List[Classification]:
         predictions.append(
             Classification(
                 class_name=classification_result.classifications[0]
-                .classes[i]
-                .class_name,
+                .categories[i]
+                .category_name,
                 score=round(
-                    classification_result.classifications[0].classes[i].score, 5
+                    classification_result.classifications[0].categories[i].score, 5
                 ),
             )
         )
