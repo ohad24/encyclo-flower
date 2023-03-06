@@ -4,9 +4,9 @@ def pytest_addoption(parser):
 
 
 ASSERT_DETECT_DATA = [
-    {"class_name": "Erodium gruinum", "score": 0.13281},
-    {"class_name": "Ipomoea indica", "score": 0.05469},
-    {"class_name": "Solanum laciniatum", "score": 0.04688},
-    {"class_name": "Nicandra physalodes", "score": 0.04297},
-    {"class_name": "Hibiscus trionum", "score": 0.02344},
+    {"class_name": "Erodium gruinum", "score": 0.09766},
+    {"class_name": "Solanum laciniatum", "score": 0.05078},
+    {"class_name": "Ipomoea indica", "score": 0.03906},
+    {"class_name": "Nicandra physalodes", "score": 0.03516},
+    {"class_name": "Hibiscus trionum", "score": 0.03125},
 ]

@@ -1,5 +1,5 @@
 tflite-runtime==2.11.0
-tflite-support==0.4.0
+tflite-support==0.4.3
 Pillow==9.4.0
 fastapi==0.92.0
 uvicorn==0.20.0
