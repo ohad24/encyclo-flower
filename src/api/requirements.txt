@@ -7,7 +7,7 @@ google-cloud-vision==3.4.0
 httpx==0.23.3
 passlib==1.7.4
 Pillow==9.4.0
-prometheus-fastapi-instrumentator==5.10.0
+prometheus-fastapi-instrumentator==5.11.1
 pydantic[email]==1.10.6
 pymongo[srv]==4.3.3
 python-dotenv==1.0.0
