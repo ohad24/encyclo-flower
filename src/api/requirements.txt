@@ -1,4 +1,4 @@
-beautifulsoup4==4.11.2
+beautifulsoup4==4.12.1
 envsmtp==0.0.2
 exif==1.6.0
 fastapi==0.95.0
