@@ -3,7 +3,7 @@ envsmtp==0.0.2
 exif==1.6.0
 fastapi==0.95.0
 google-cloud-storage==2.7.0
-google-cloud-vision==3.4.0
+google-cloud-vision==3.4.1
 httpx==0.23.3
 passlib==1.7.4
 Pillow==9.4.0
