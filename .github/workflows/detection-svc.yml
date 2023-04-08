@@ -147,6 +147,32 @@ jobs:
 
   deploy-prod:
     runs-on: ubuntu-latest
+    env:
+      _IMG_NAME: ef-prod-detect-plant
     if: ${{ github.event_name == 'release' && github.event.action == 'released' }}
     steps:
       - uses: "actions/checkout@v3"
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Download PlantDetect.tflite model"
+        run: |
+          gcloud storage cp \
+            gs://ef-prod-private/PlantDetect.tflite \
+            src/services/image_recognition/
+      - name: "Build prod image"
+        working-directory: "src/services/image_recognition/"
+        run: |
+          gcloud builds submit \
+            --config=cloudbuild.yaml \
+            --substitutions=_IMG_NAME=${{env._IMG_NAME}},_GCP_REGION=${{env._GCP_REGION}}
+      - name: "Run tmp container"
+        # * container name is the same as the image name
+        run: |
+          gcloud run deploy ${{env._IMG_NAME}} \
+            --image ${{env._GCP_REGION}}-docker.pkg.dev/encyclo-flower/us/${{env._IMG_NAME}} \
+            --region ${{env._GCP_REGION}}
