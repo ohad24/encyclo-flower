@@ -4,7 +4,7 @@ exif==1.6.0
 fastapi==0.95.2
 google-cloud-storage==2.9.0
 google-cloud-vision==3.4.1
-httpx==0.23.3
+httpx==0.24.1
 passlib==1.7.4
 Pillow==9.5.0
 prometheus-fastapi-instrumentator==6.0.0
