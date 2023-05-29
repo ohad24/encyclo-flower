@@ -1,7 +1,7 @@
 beautifulsoup4==4.12.2
 envsmtp==0.0.2
 exif==1.6.0
-fastapi==0.95.0
+fastapi==0.95.2
 google-cloud-storage==2.9.0
 google-cloud-vision==3.4.1
 httpx==0.23.3
