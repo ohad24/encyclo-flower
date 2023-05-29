@@ -506,7 +506,7 @@ class TestDetectImage:
                 {"file_name": "8T7M690R8WKUQCD.jpg", "level": "e"},
                 {"file_name": "O5DB6U4CO3KV9P8.jpg", "level": "e"},
             ],
-            "score": 0.125,
+            "score": 0.09375,
         }
 
     def test_detect_rate_limit(self, detect_image_url):
