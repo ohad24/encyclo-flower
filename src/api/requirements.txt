@@ -15,5 +15,5 @@ python-jose==3.3.0
 python-multipart==0.0.6
 requests-toolbelt==1.0.0
 Shapely==2.0.1
-tzlocal==4.3
+tzlocal==5.0.1
 uvicorn==0.22.0
