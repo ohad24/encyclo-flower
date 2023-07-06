@@ -111,30 +111,30 @@ async def read_user(
     # TODO: Refactor this in the future when needed
 
     # * set requested user object
-    requested_user = UserOut(**requested_user.dict())
+    requested_user_out = UserOut(**requested_user.dict())
 
     # * get user observations (all of them)
     observations = list(
         db.observations.find(
-            {"user_id": requested_user.user_id, "submitted": True, "deleted": False}
+            {"user_id": requested_user_out.user_id, "submitted": True, "deleted": False}
         ).sort("create_dt", -1)
     )
     observations = list(map(format_obj_image_preview, observations))
-    requested_user.observations = [ObservationPreviewBase(**x) for x in observations]
+    requested_user_out.observations = [ObservationPreviewBase(**x) for x in observations]
 
     # * get user questions (all of them)
     questions = list(
         db.questions.find(
-            {"user_id": requested_user.user_id, "submitted": True, "deleted": False}
+            {"user_id": requested_user_out.user_id, "submitted": True, "deleted": False}
         ).sort("create_dt", -1)
     )
     questions = list(map(format_obj_image_preview, questions))
-    requested_user.questions = [QuestionPreviewBase(**x) for x in questions]
+    requested_user_out.questions = [QuestionPreviewBase(**x) for x in questions]
 
     # TODO: add list of detection user (not developed yet)
 
     # * get favorite plants images
-    favorite_plants_ids = [x.plant_id for x in requested_user.favorite_plants]
+    favorite_plants_ids = [x.plant_id for x in requested_user_out.favorite_plants]
     if favorite_plants_ids:
         plants = db.plants.find(
             {"plant_id": {"$in": favorite_plants_ids}},
@@ -153,14 +153,14 @@ async def read_user(
                 : 4 if len(plant["images"]) > 4 else len(plant["images"])
             ]
         # * add images to favorite plants
-        for favorite_plant in requested_user.favorite_plants:
+        for favorite_plant in requested_user_out.favorite_plants:
             favorite_plant.images = plants_d[favorite_plant.plant_id]
 
-    if requested_user.username == current_user.username or current_user.is_superuser:
+    if requested_user_out.username == current_user.username or current_user.is_superuser:
         # * When requested user is the current user or current user is a superuser
-        return requested_user
+        return requested_user_out
     # * When requested user is not the current user or current user is not a superuser
-    return requested_user.dict(exclude={"email", "phone"})
+    return requested_user_out.dict(exclude={"email", "phone"})
 
 
 @router.put(
