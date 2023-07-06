@@ -134,9 +134,17 @@ async def read_user(
     requested_user_out.questions = [QuestionPreviewBase(**x) for x in questions]
 
     requested_user_out.image_detections = [
-        x for x in db.images_detections.find(
+        x
+        for x in db.images_detections.find(
             {"metadata.user_data.user_id": requested_user_out.user_id},
-            {"db_result": 1, "_id": 0},
+            {
+                "db_results": 1,
+                "metadata.file_name": 1,
+                "metadata.orig_file_name": 1,
+                "metadata.content_type": 1,
+                "metadata.ts": 1,
+                "_id": 0,
+            },
         )
     ]
 

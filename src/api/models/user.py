@@ -115,7 +115,9 @@ class UserOut(BaseUserOut):
 
     observations: List[ObservationPreviewBase] = []
     questions: List[QuestionPreviewBase] = []
-    image_detections: List = []
+    image_detections: List[
+        dict
+    ] = []  # TODO: the dict should be replace with something like(!) PlantPrediction
     favorite_plants: List[FavoritePlant] = []
 
 
@@ -162,4 +164,5 @@ class CheckFavoritePlant(BaseModel):
     """
     Output for check if plant is in user's favorite plants.
     """
+
     is_favorite: bool
