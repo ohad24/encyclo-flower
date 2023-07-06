@@ -120,7 +120,9 @@ async def read_user(
         ).sort("create_dt", -1)
     )
     observations = list(map(format_obj_image_preview, observations))
-    requested_user_out.observations = [ObservationPreviewBase(**x) for x in observations]
+    requested_user_out.observations = [
+        ObservationPreviewBase(**x) for x in observations
+    ]
 
     # * get user questions (all of them)
     questions = list(
@@ -131,7 +133,12 @@ async def read_user(
     questions = list(map(format_obj_image_preview, questions))
     requested_user_out.questions = [QuestionPreviewBase(**x) for x in questions]
 
-    # TODO: add list of detection user (not developed yet)
+    requested_user_out.image_detections = [
+        x for x in db.images_detections.find(
+            {"metadata.user_data.user_id": requested_user_out.user_id},
+            {"db_result": 1, "_id": 0},
+        )
+    ]
 
     # * get favorite plants images
     favorite_plants_ids = [x.plant_id for x in requested_user_out.favorite_plants]
@@ -156,7 +163,10 @@ async def read_user(
         for favorite_plant in requested_user_out.favorite_plants:
             favorite_plant.images = plants_d[favorite_plant.plant_id]
 
-    if requested_user_out.username == current_user.username or current_user.is_superuser:
+    if (
+        requested_user_out.username == current_user.username
+        or current_user.is_superuser
+    ):
         # * When requested user is the current user or current user is a superuser
         return requested_user_out
     # * When requested user is not the current user or current user is not a superuser
