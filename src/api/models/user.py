@@ -68,6 +68,7 @@ class FavoritePlant(BaseModel):
     plant_id: str
     heb_name: str
     science_name: str
+    images: List[dict] = []
 
 
 class UserInDB(UserBase):
@@ -115,7 +116,7 @@ class UserOut(BaseUserOut):
     observations: List[ObservationPreviewBase] = []
     questions: List[QuestionPreviewBase] = []
     image_detections: List = []
-    favorite_plants: List = []
+    favorite_plants: List[FavoritePlant] = []
 
 
 class UserMinimalMetadataOut(BaseModel):

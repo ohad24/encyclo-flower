@@ -133,6 +133,29 @@ async def read_user(
 
     # TODO: add list of detection user (not developed yet)
 
+    # * get favorite plants images
+    favorite_plants_ids = [x.plant_id for x in requested_user.favorite_plants]
+    if favorite_plants_ids:
+        plants = db.plants.find(
+            {"plant_id": {"$in": favorite_plants_ids}},
+            {
+                "images.author_name": 1,
+                "images.source_url_page": 1,
+                "images.file_name": 1,
+                "plant_id": 1,
+            },
+        )
+
+        # * convert to dict
+        plants_d = {}
+        for plant in plants:
+            plants_d[plant["plant_id"]] = plant["images"][
+                : 4 if len(plant["images"]) > 4 else len(plant["images"])
+            ]
+        # * add images to favorite plants
+        for favorite_plant in requested_user.favorite_plants:
+            favorite_plant.images = plants_d[favorite_plant.plant_id]
+
     if requested_user.username == current_user.username or current_user.is_superuser:
         # * When requested user is the current user or current user is a superuser
         return requested_user
