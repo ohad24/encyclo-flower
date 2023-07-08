@@ -70,6 +70,10 @@ class FavoritePlant(BaseModel):
     science_name: str
 
 
+class FavoritePlantOut(FavoritePlant):
+    images: List[dict] = []  # TODO: replace dict with favorite plant image (out)
+
+
 class UserInDB(UserBase):
     """
     User object in DB.
@@ -114,8 +118,10 @@ class UserOut(BaseUserOut):
 
     observations: List[ObservationPreviewBase] = []
     questions: List[QuestionPreviewBase] = []
-    image_detections: List = []
-    favorite_plants: List = []
+    image_detections: List[
+        dict
+    ] = []  # TODO: the dict should be replace with something like(!) PlantPrediction
+    favorite_plants: List[FavoritePlantOut] = []
 
 
 class UserMinimalMetadataOut(BaseModel):
@@ -161,4 +167,5 @@ class CheckFavoritePlant(BaseModel):
     """
     Output for check if plant is in user's favorite plants.
     """
+
     is_favorite: bool
