@@ -120,14 +120,22 @@ class SearchIn(BaseModel):
     page: int = Field(ge=1, default=1)
 
 
+class SearchImageOut(BaseModel):
+    file_name: str
+    source_url_page: Optional[AnyUrl]
+    author_name: Optional[str]
+
+
 class SearchOut(BaseModel):
     heb_name: str
     science_name: str
     colors: List[COLORS]
-    images: List[str] = Field(default=[], description="List of images file name")
+    images: List[SearchImageOut] = Field(
+        default=[], description="List of SearchImageOut"
+    )
     commoness: LocationCommonEnum
     _locations: List[PlantLocation] = Field(
-        description="Locations of the plant. For debugging only"
+        default=[], description="Locations of the plant. For debugging only"
     )
 
 
