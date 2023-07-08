@@ -9,7 +9,7 @@ from models.generic import LocationKMLtranslate
 from models.custom_types import HebMonths, HebMonthLiteral
 from endpoints.helpers_tools.storage import download_from_gstorage, upload_to_gstorage
 from pathlib import Path
-from models.plant import Plant, SearchOut
+from models.plant import Plant, SearchOut, SearchImageOut
 from models.plant_custom_types import LocationCommonEnum
 
 
@@ -167,7 +167,8 @@ def format_search_out_plant(
     # * if image exists, get image file name
     if images:
         images = [
-            image.file_name for image in images[: 5 if len(images) > 5 else len(images)]
+            SearchImageOut(**image.dict())
+            for image in images[: 5 if len(images) > 5 else len(images)]
         ]
 
     # * filter locations if locations name is not empty (from user input)
