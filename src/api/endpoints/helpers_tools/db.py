@@ -1,3 +1,7 @@
+from models.custom_types import LocationHebLiteral
+from typing import Optional
+
+
 def prepare_query_plant_name_text(name: str) -> dict:
     name_text_or = [
         {"science_name": {"$regex": name, "$options": "-i"}},
@@ -18,13 +22,16 @@ def prepare_query_plant_name_text(name: str) -> dict:
     return {"$or": name_text_or}
 
 
-def prepare_query_detect_image(result_detect_api_response: list) -> list:
+def prepare_query_detect_image(
+    result_detect_api_response: list, location_name: Optional[LocationHebLiteral]
+) -> list:
     # * prepare data for DB (or query)
-    or_query = [
-        {"science_name": x["class_name"]} for x in result_detect_api_response.json()
-    ]
+    or_query = [{"science_name": x["class_name"]} for x in result_detect_api_response]
+    and_query = {"$and": [{"$or": or_query}]}
+    if location_name:
+        and_query["$and"].append({"locations.location_name": location_name})  # type: ignore
     pipeline = [
-        {"$match": {"$or": or_query}},
+        {"$match": and_query},
         {
             "$project": {
                 "_id": 0,
