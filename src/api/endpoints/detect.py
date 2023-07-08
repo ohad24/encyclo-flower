@@ -6,7 +6,7 @@ from db import get_db
 from models.helpers import gen_image_file_name
 from datetime import datetime
 from core.security import get_current_user_if_exists, validate_detection_usage
-from endpoints.helpers_tools.generic import get_today_str
+from endpoints.helpers_tools.generic import get_today_str, get_image_metadata
 from endpoints.helpers_tools.db import prepare_query_detect_image
 from models.user import UserMinimalMetadataOut
 import requests
@@ -66,8 +66,16 @@ async def images(
             detail=ExceptionImageDetectionServiceUnavailable().detail,
         )
 
+    # * get image bytes
+    await file.seek(0)
+    image_bytes = file.file.read()
+    # * get image metadata from exif
+    image_location, _ = get_image_metadata(image_bytes)
+
     # * prepare pipeline
-    pipeline = prepare_query_detect_image(api_response)
+    pipeline = prepare_query_detect_image(
+        api_response.json(), image_location.location_name
+    )
 
     # * search in db and convert to PlantPrediction
     plant_predictions = list(

@@ -506,6 +506,9 @@ class TestDetectImage:
     @pytest.fixture(autouse=True)
     def set_upload_files(self):
         self.files = {"file": open("tests/assets/images/IWU8AAVDDDEEKRC.jpg", "rb")}
+        self.files_w_exif = {
+            "file": open("tests/assets/images/IMG_with_exif.jpg", "rb")
+        }
 
     def test_detect_image(self, detect_image_url):
         # * Act
@@ -527,10 +530,50 @@ class TestDetectImage:
             "score": 0.09375,
         }
 
+    def test_detect_image_w_exif(self, detect_image_url):
+        """
+        Duplicated from test_detect_image
+        """
+        # * Act
+        response = client.post(
+            detect_image_url,
+            headers=self.headers,
+            files=self.files_w_exif,
+        )
+        # * Assert
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert response.json() == [
+            {
+                "heb_name": "בצעוני מצוי",
+                "science_name": "Eleocharis palustris",
+                "images": [
+                    {"file_name": "A1G7YH08SNCUDAE.jpg", "level": "e"},
+                    {"file_name": "GV09UCKZOHSB9AY.jpg", "level": "e"},
+                    {"file_name": "AE8IPUT6OO1C0D8.jpg", "level": "e"},
+                    {"file_name": "CPEK2CRGUP554JM.jpg", "level": "e"},
+                    {"file_name": "YSB6JZCXXDAOAGZ.jpg", "level": "e"},
+                ],
+                "score": 0.08594,
+            },
+            {
+                "heb_name": "פיסטיה צפה",
+                "science_name": "Pistia stratiotes",
+                "images": [
+                    {"file_name": "TENC0HWQV3RZIP0.jpg", "level": "e"},
+                    {"file_name": "ZDNLC0ECDRH9BLY.jpg", "level": "e"},
+                    {"file_name": "Q4M8737DSO8I5MV.jpg", "level": "e"},
+                    {"file_name": "ZCC3P1PFO3F4P50.jpg", "level": "e"},
+                    {"file_name": "YZFYG422QFNG735.jpg", "level": "e"},
+                ],
+                "score": 0.01953,
+            },
+        ]
+
     def test_detect_rate_limit(self, detect_image_url):
         # * Arrange
         t = time.time()
-        for _ in range(0, settings.DETECT_USAGE_RATE_REQUEST_NUM - 1):
+        for _ in range(0, settings.DETECT_USAGE_RATE_REQUEST_NUM - 2):
             # * Act
             response = client.post(
                 detect_image_url,
