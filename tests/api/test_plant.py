@@ -277,7 +277,7 @@ class TestFavorite:
         # * Act
         response = client.put(self._favorite_add_url, headers=auth_headers)
         # * Assert
-        assert response.status_code == 204
+        assert response.status_code == 204, response.text
 
     def test_add_favorite__no_login(self):
         # * Act
@@ -342,3 +342,19 @@ class TestFavorite:
         # * Assert
         assert response.status_code == 200
         assert response.json()["is_favorite"] is False
+
+    # from test_main import get_users_url
+
+    # @pytest.fixture(autouse=True)
+    # def prepare_test_data(self, get_users_url):
+    #     # * Arrange
+    #     self._users_url = get_users_url
+    #     self._users_url_me = get_users_url + "me"
+
+    # def test_get_current_user(self, auth_headers):
+    #     self._users_url_me = self._users_url_me
+    #     # * Act
+    #     response = client.get(self._users_url_me, headers=auth_headers)
+    #     # * Assert
+    #     assert response.status_code == 200
+    #     assert response.json()["username"] == pytest.test_username

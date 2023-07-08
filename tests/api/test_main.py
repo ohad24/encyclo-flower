@@ -176,6 +176,23 @@ class TestLogin:
         assert response.status_code == 401
 
 
+@pytest.fixture
+def add_favorite_plant_to_user():
+    db = get_db()
+    db.users.update_one(
+        {"username": pytest.test_username},
+        {
+            "$addToSet": {
+                "favorite_plants": {
+                    "plant_id": "3gtgb4",
+                    "heb_name": "חוורית חרוזה",
+                    "science_name": "Blackstonia perfoliata",
+                }
+            }
+        },
+    )
+
+
 class TestUserAccess:
     @pytest.fixture(autouse=True)
     def prepare_test_data(self, get_users_url):
@@ -183,6 +200,7 @@ class TestUserAccess:
         self._users_url = get_users_url
         self._users_url_me = get_users_url + "me"
 
+    @pytest.mark.usefixtures("add_favorite_plant_to_user")
     def test_get_current_user(self, auth_headers):
         # * Act
         response = client.get(self._users_url_me, headers=auth_headers)
@@ -553,7 +571,7 @@ class TestDetectImage:
 
     @pytest.mark.usefixtures("break_detect_api_srv")
     def test_service_unavailable(self, detect_image_url):
-        logger = logging.getLogger('urllib3')
+        logger = logging.getLogger("urllib3")
         logger.propagate = False
         # * Act
         response = client.post(

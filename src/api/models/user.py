@@ -68,7 +68,10 @@ class FavoritePlant(BaseModel):
     plant_id: str
     heb_name: str
     science_name: str
-    images: List[dict] = []
+
+
+class FavoritePlantOut(FavoritePlant):
+    images: List[dict] = []  # TODO: replace dict with favorite plant image (out)
 
 
 class UserInDB(UserBase):
@@ -118,7 +121,7 @@ class UserOut(BaseUserOut):
     image_detections: List[
         dict
     ] = []  # TODO: the dict should be replace with something like(!) PlantPrediction
-    favorite_plants: List[FavoritePlant] = []
+    favorite_plants: List[FavoritePlantOut] = []
 
 
 class UserMinimalMetadataOut(BaseModel):
