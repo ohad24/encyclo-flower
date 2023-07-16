@@ -173,6 +173,8 @@ class PlantAutoCompleteOut(BaseModel):
 class PlantPredictionImage(BaseModel):
     file_name: str
     level: str | None
+    source_url: str | None
+    author_name: str | None
 
     @validator("level")
     def set_level(cls, level):
