@@ -100,7 +100,7 @@ async def images(
         upload_to_gstorage,
         new_file_name,
         Path("image_api_files"),
-        file.file.read(),
+        image_bytes,
         file.content_type,
     )
 
