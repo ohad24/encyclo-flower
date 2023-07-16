@@ -40,7 +40,7 @@ def prepare_query_detect_image(
                 "images.file_name": 1,
                 "images.level": 1,
                 "images.author_name": 1,
-                "images.source_url": 1,
+                "images.source_url_page": 1,
             }
         },
         {
