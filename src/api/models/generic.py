@@ -69,6 +69,7 @@ class CommentOut(Comment):
 class ImagePreview(BaseModel):
     # TODO: link to thumbnail
     file_name: str
+    created_dt: datetime
     content_category: ImageContentCategoryLiteral | None = None
 
 
