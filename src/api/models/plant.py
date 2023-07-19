@@ -98,6 +98,12 @@ class Plant(BaseModel):
     spine: List[SPINE]
     images: List[Optional[PlantImage]]
 
+    @validator("flowering_seasons")
+    def order_flowering_seasons(cls, v):
+        if v:
+            return sorted(v)
+        return v
+
 
 class SearchIn(BaseModel):
     name_text: Optional[str]

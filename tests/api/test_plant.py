@@ -32,6 +32,7 @@ class TestPlant(object):
         # * Assert
         assert response.status_code == 200
         assert response.json()["science_name"] == science_name
+        assert response.json()["flowering_seasons"] == sorted(response.json()["flowering_seasons"])
 
     def test_get_plant_not_found(self, plants_url):
         # * Act
