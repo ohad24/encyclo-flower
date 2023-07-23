@@ -1,11 +1,9 @@
 import type { NextPage } from "next";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
-import LoginAndRegisterModel from "../components/LoginAndRegisterModel/LoginAndRegisterModel";
 import Suggestions from "../components/Suggestions/Suggestions";
 import TopToolbar from "../components/TopToolbar/TopToolbar";
 import { getAll } from "services/flowersService";
-import { IQuestion } from "helpers/interfaces";
 import Router, { useRouter } from "next/router";
 import MoreButton from "components/Buttons/MoreButton";
 

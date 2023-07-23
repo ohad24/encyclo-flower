@@ -346,6 +346,8 @@ const MyProfile = () => {
           <SearchResult
             key={favorite_plant.plant_id}
             result={favorite_plant}
+            textButton={"לדף הצמח"}
+            widthButton={118}
             index={index}
           />
         ))}

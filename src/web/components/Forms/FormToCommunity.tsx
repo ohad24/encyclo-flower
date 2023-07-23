@@ -35,15 +35,14 @@ const FormToCommunity = ({
       </div>
 
       <Input
-        className="srelative p-2 mb-8 max-w-[100%] min-h-[80px] caret-color: #60a5fa inputQuestion placeholder-sky-900 text-sky-900 "
+        className="relative p-2 mb-8 max-w-[100%] min-h-[80px] caret-color: #60a5fa placeholder-sky-900 text-sky-900 pb-12"
         placeholder="מהי שאלתך?"
         onBlur={handleChange}
         minLength={5}
         required
         style={{
-          backgroundColor: "rgb(229 231 235)",
-          paddingBottom: "50px",
           borderRadius: "25px",
+          backgroundColor: "rgb(229 231 235)",
         }}
       />
       <div className="flex flex-row gap-10 ml-auto flex-wrap">

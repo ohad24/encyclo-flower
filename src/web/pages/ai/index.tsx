@@ -6,12 +6,9 @@ import ModalDirective from "components/Modals/ModalDirective";
 import ImagePlant from "components/ImagePlant/ImagePlant";
 import SearchResults from "components/SearchResults/SearchResults";
 import SearchResult from "components/SearchResult/SearchResult";
-import { useRouter } from "next/router";
-import { nanoid } from "nanoid";
 
 const FlowerAI = () => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const router = useRouter();
   const store = useSelector((state: any) => state);
 
   return (
@@ -24,23 +21,29 @@ const FlowerAI = () => {
           className="flex flex-row flex-wrap max-w-[768px] m-auto gap-5 items-center" // items-center
         >
           {" "}
-          {router.query.im ? (
-            <img
-              alt="undefined"
-              src={router.query.im as string}
-              className="w-[350px] h-[285px] rounded-3xl m-auto md:m-0 object-cover"
-            />
-          ) : (
-            Array.from(store.selectedImages).map((selectedImage, index) => {
-              return <ImagePlant key={nanoid()} index={index} />;
-            })
-          )}
+          {Array.from(store.selectedImages).map((selectedImage: any, index) => {
+            return (
+              <ImagePlant
+                key={selectedImage.name}
+                index={index}
+                selectedImage={selectedImage}
+              />
+            );
+          })}
         </div>
         <SearchResults length={store.results.length} />
 
         {store.results &&
           store.results.map((result: any, index: number) => {
-            return <SearchResult result={result} index={index} />;
+            return (
+              <SearchResult
+                key={result.science_name}
+                result={result}
+                index={index}
+                widthButton={109}
+                textButton={"זה הצמח"}
+              />
+            );
           })}
       </div>
     </Layout>

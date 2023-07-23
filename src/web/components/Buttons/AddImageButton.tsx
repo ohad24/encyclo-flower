@@ -15,9 +15,8 @@ const AddImageButton = ({ questionsIds, setQuestionsIds }: Props) => {
       <label htmlFor="filePicker">+ הוספת תמונה</label>
       <input
         id="filePicker"
-        style={{ visibility: "hidden" }}
         type={"file"}
-        className="text-secondary text-sm text-center max-w-[150px]"
+        className="text-secondary text-sm text-center max-w-[150px] invisible"
         onChange={(e) =>
           addImage(e, store, questionsIds, setQuestionsIds, dispatch)
         }

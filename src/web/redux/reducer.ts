@@ -1,5 +1,6 @@
 const initialState = {
   results: [],
+  resultsByAttributes: [],
   selectedImages: [],
   imagesCommunity: [],
   plant: {},
@@ -12,12 +13,15 @@ const initialState = {
   isQuestion: false,
   plantName: "",
   username: "",
+  pathname: "",
 };
 
 const applyChanges = (state = initialState, action: any) => {
   switch (action.type) {
     case "UpdateResults":
       return { ...state, results: action.payload };
+    case "UpdateResultsByAttributes":
+      return { ...state, resultsByAttributes: action.payload };
     case "UpdateSelectedImages":
       return { ...state, selectedImages: action.payload };
     case "UpdateImagesCommunity":
@@ -42,6 +46,8 @@ const applyChanges = (state = initialState, action: any) => {
       return { ...state, plantName: action.payload };
     case "UpdateUserName":
       return { ...state, username: action.payload };
+    case "UpdatePathName":
+      return { ...state, pathname: action.payload };
     default:
       return state;
   }

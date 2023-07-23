@@ -8,18 +8,13 @@ const NextIcon = ({ size = 16, color = "#" }: Props) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="svg-icon"
+      className="svg-icon mr-2 mt-3.5 font-bold"
       viewBox="0 0 1028 1024"
       version="1.1"
       width={size}
       height={size}
       overflow="hidden"
       transform="rotate(90)"
-      style={{
-        marginTop: "14px",
-        marginRight: "8px",
-        fontWeight: "700",
-      }}
     >
       <path
         fill={color}
@@ -34,3 +29,8 @@ const NextIcon = ({ size = 16, color = "#" }: Props) => {
 };
 
 export default NextIcon;
+
+/*
+
+
+        */

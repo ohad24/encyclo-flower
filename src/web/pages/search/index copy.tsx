@@ -114,12 +114,12 @@ import SearchResult from "components/SearchResult/SearchResult";
 import SearchResults from "components/SearchResults/SearchResults";
 import RotateIcon from "components/Icons/CamaraIcon copy";
 import { UpdateResultsByAttributes } from "redux/action";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 // Main component
 const Search = () => {
-  const store = useSelector((state: any) => state);
   const [value, setValue] = React.useState<string>("1");
+  const [searchResults, setSearchResults] = React.useState<ISearchResult[]>([]);
   const [isNoResults, setNoResults] = React.useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
@@ -144,12 +144,11 @@ const Search = () => {
     page: 1,
   });
 
-  /*
   useEffect(() => {
     return () => {
       resetAll();
     };
-  }, []);*/
+  }, []);
 
   const onChange = <T,>(name: string, value: T) => {
     setState({ ...state, [name]: value });
@@ -295,13 +294,14 @@ const Search = () => {
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      dispatch(UpdateResultsByAttributes([]));
+      setSearchResults([]);
       setIsSubmitting(true);
       setNoResults(false);
       const values = removeEmptyValues(state);
       const { data } = await searchPlant("plants/search", values);
       setIsSubmitting(false);
-      dispatch(UpdateResultsByAttributes(data.plants));
+      dispatch(UpdateResultsByAttributes(data.results));
+      setSearchResults(data.plants);
     } catch (err: any) {
       const error = err;
       console.log("error", error);
@@ -349,14 +349,11 @@ const Search = () => {
       protected: false,
       page: 1,
     });
-    dispatch(UpdateResultsByAttributes([]));
   };
 
   useEffect(() => {
     console.log("no result", isNoResults);
   }, [isNoResults]);
-
-  console.log(store);
 
   return (
     <Layout>
@@ -590,14 +587,13 @@ const Search = () => {
             )}
           </form>
 
-          {store.resultsByAttributes.length > 0 ? (
-            <SearchResults length={store.resultsByAttributes.length} />
+          {searchResults.length > 0 ? (
+            <SearchResults length={searchResults.length} />
           ) : null}
-          {store.resultsByAttributes &&
-            store.resultsByAttributes.map((result: any, index: number) => {
+          {searchResults &&
+            searchResults.map((result: any, index: number) => {
               return (
                 <SearchResult
-                  key={result.heb_name}
                   result={result}
                   index={index}
                   widthButton={109}

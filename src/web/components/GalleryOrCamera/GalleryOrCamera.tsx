@@ -92,9 +92,8 @@ const GalleryOrCamera = (props: {
       >
         <input
           id="filePicker"
-          style={{ visibility: "hidden" }}
           type={"file"}
-          className="text-secondary text-sm text-center max-w-[150px]"
+          className="text-secondary text-sm text-center invisible max-w-[150px]"
           onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
           multiple={props.isAI ? true : false}
         ></input>

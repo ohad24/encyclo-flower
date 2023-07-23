@@ -26,7 +26,6 @@ import {
 } from "services/flowersService";
 import EditIcon from "components/Icons/EditIcon";
 import SearchIcon from "components/Icons/SearchIcon";
-import GalleryIcon from "components/Icons/Gallery";
 import RightIcon from "components/Icons/RightIcon";
 import Router, { withRouter } from "next/router";
 import NewSearch from "components/NewSearch/NewSearch";
@@ -245,7 +244,6 @@ const PlanetDetails = () => {
               <div className="flex flex-wrap gap-1 ">
                 {planet.colors?.map((color) => {
                   const bgColor = getColors(color);
-
                   return (
                     <div
                       key={color}
@@ -293,6 +291,7 @@ const PlanetDetails = () => {
               if (planet.taxon[k] !== null) {
                 return (
                   <div
+                    key={key}
                     className="flex flex-col"
                     style={{
                       position: "relative",
@@ -550,9 +549,8 @@ const PlanetDetails = () => {
             questionsIds={[]}
             setQuestionsIds={() => {}}
           />
-
           <button
-            onClick={() => nextPage("/ai")}
+            onClick={() => nextPage(store.pathname)}
             className="flex flex-col-reverse text-base m-auto text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 h-[100px] w-[120px] mt-2 sm:mt-5 rounded-3xl"
           >
             <span className="table m-auto">

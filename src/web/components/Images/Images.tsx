@@ -71,6 +71,8 @@ const Images = (props: {
     dispatch(UpdatePlantName(props.plantName));
   };
 
+  console.log(props.photos);
+
   return (
     <div
       className="flex flex-row items-center text-secondary mt-2 w-[100%] "
@@ -159,12 +161,12 @@ const Images = (props: {
           }}
         >
           {props.photos.map((image: any, i: number) => (
-            <div key={image.image_id} className="max-w-[100%]">
+            <div key={image.file_name} className="max-w-[100%]">
               <img
                 className="max-w-[235px] h-[190px] sm:max-w-[360px] sm:h-[302px] rounded-2xl object-cover"
                 onClick={(e) => clickImage(e, image, i)}
                 key={i}
-                id={image.image_id}
+                id={image.file_name}
                 loading="lazy"
                 alt={undefined}
                 src={

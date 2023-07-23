@@ -1,7 +1,7 @@
 import Layout from "components/Layout/Layout";
 import React, { useEffect } from "react";
 import "../../styles/QuestionCommunity.module.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getAll,
   submit,
@@ -37,7 +37,6 @@ const QuestionCommunity = () => {
 
   const postQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       setIsSubmitting(true);
       await updateQuestionObservation(

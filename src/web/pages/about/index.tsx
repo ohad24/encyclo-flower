@@ -12,7 +12,7 @@ const About = () => {
               תומכים
             </p>
           </div>
-          <motion.p
+          <motion.div
             className="text-secondary mb-10 max-w-[1000px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -65,7 +65,7 @@ const About = () => {
             <br /> <br />
             הגדרה נעימה! <br />
             צוות אנציקלופרח.
-          </motion.p>
+          </motion.div>
         </div>
       </div>
     </Layout>

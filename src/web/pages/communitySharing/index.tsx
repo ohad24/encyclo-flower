@@ -19,6 +19,7 @@ const CommunitySharing = () => {
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
   const store = useSelector((state: any) => state);
+
   const dispatch = useDispatch();
 
   useEffect(() => {

@@ -16,7 +16,7 @@ const ImagePlant = (props: { index: number; selectedImage: any }) => {
       <div>
         <img
           alt="undefined"
-          src={URL.createObjectURL(props.selectedImage)}
+          src={URL.createObjectURL(store.selectedImages[props.index])}
           className="w-[374px] h-[306px] rounded-3xl object-cover"
         />
         <button

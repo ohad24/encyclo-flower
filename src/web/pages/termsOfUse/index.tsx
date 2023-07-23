@@ -12,7 +12,7 @@ const About = () => {
               תנאי שימוש{" "}
             </p>
           </div>
-          <motion.p
+          <motion.div
             className="text-secondary mb-10 max-w-[1000px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -64,7 +64,7 @@ const About = () => {
             בעת שאתם עושים שימוש באתר ובמקרה בו התגלעה כל מחולקת אתם מסכימים
             להלן כי האמור לעיל נמצא תחת סמכות השיפוט הבלעדי של החוק הישראלי תוך
             שימוש במערכת בתי המשפט הישראליים בלבד במחוז צפון.
-          </motion.p>
+          </motion.div>
         </div>
       </div>
     </Layout>

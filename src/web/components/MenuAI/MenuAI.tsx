@@ -31,6 +31,7 @@ const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
 
   const askTheCommunity = async () => {
     try {
+      dispatch(updateImagesCommunity([]));
       const data = (
         await createQuestion("community/questions/", "מהי שאלתך?", store.token)
       ).data;

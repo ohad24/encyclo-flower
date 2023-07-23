@@ -3,7 +3,6 @@ import Link from "next/link";
 import React from "react";
 import glass from "../../images/glass.png";
 import link from "../../images/link.png";
-import Router, { useRouter } from "next/router";
 import { createObservation } from "services/flowersService";
 import { useDispatch, useSelector } from "react-redux";
 import { UpdateObservationId, updateImagesCommunity } from "redux/action";
@@ -24,9 +23,6 @@ const TopToolbar = () => {
       ).data;
       console.log(data.observation_id);
       dispatch(UpdateObservationId(data.observation_id));
-      Router.push({
-        pathname: "/communitySharing",
-      });
     } catch (err) {
       console.log(err);
     }
@@ -43,23 +39,25 @@ const TopToolbar = () => {
         <Link href="/search">
           <div className="flex flex-col items-center justify-center p-2">
             <div>
-              <Image src={glass} alt="Search" />
+              <Image src={glass} alt="Camara" />
             </div>
             <div className="text-secondary font-bold font-xl">מנוע חיפוש</div>
           </div>
         </Link>
       </div>
       <div className="toolbar-card">
-        <div
-          className="flex flex-col items-center justify-center p-2"
-          onClick={askTheCommunity}
-        >
-          <div>
-            <Image src={link} alt="Share" />
+        <Link href="/communitySharing">
+          <div
+            className="flex flex-col items-center justify-center p-2"
+            onClick={askTheCommunity}
+          >
+            <div>
+              <Image src={link} alt="Camara" />
+            </div>
+            <div className="text-secondary font-bold font-xl">שיתוף </div>
+            <div className="text-sm">תצפית\תמונות\פריחה\טיול</div>
           </div>
-          <div className="text-secondary font-bold font-xl">שיתוף </div>
-          <div className="text-sm">תצפית\תמונות\פריחה\טיול</div>
-        </div>
+        </Link>
       </div>
     </div>
   );

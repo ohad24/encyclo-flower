@@ -8,27 +8,12 @@ const PostQuestionButton = () => {
     <button
       type="submit"
       style={{
-        display: "flex",
-        flexDirection: "row",
-        minHeight: "43px",
-        fontSize: "23px",
-        color: "#003e5b",
-        fontWeight: "700",
-        textAlign: "center",
-        borderRadius: "10px",
-        marginRight: "auto",
         filter: "drop-shadow(2.728px 2.925px 10.5px rgba(0,255,40,0.57))",
         backgroundImage: "linear-gradient(135deg, #65d890 0%, #50d653 100%)",
       }}
-      className="relative w-[100%] sm:w-[38%]"
+      className="flex flex-row text-2xl	text-sky-900 text-center font-bold mr-auto min-h-[43px] relative w-[100%] sm:w-[38%] rounded-xl	bg-gradient-to-r from-green-400 to-green-500"
     >
-      <span
-        style={{
-          margin: "auto",
-          display: "flex",
-          flexDirection: "row",
-        }}
-      >
+      <span className="flex flex-row m-auto">
         {store.isQuestion ? "פרסם שאלה" : "פרסם תצפית"}{" "}
         <NextIcon size={12} color="#003e5b" />
       </span>

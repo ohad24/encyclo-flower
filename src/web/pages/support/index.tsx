@@ -1,9 +1,10 @@
-import Image from "next/image";
 import React from "react";
-import Layout from "../../components/Layout/Layout";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import support1 from "../../images/support-1.png";
 import support2 from "../../images/support-2.jpg";
 import support3 from "../../images/support-3.jpg";
+import Layout from "../../components/Layout/Layout";
 
 const Support = () => {
   return (
@@ -14,8 +15,13 @@ const Support = () => {
             תומכים
           </p>
         </div>
-        <div className="flex justify-center text-lg">
-          <p className="text-secondary max-w-[1001px]">
+        <motion.div
+          className="flex justify-center text-lg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7 }}
+        >
+          <div className="text-secondary max-w-[1001px]">
             <p className="font-bold">
               הקמת מיזם אנציקלופרח התאפשרה הודות לקבלת המיזם למרכז היזמות
               והחדשנות של מכללת תל-חי והקרן הקיימת לישראל.
@@ -60,8 +66,8 @@ const Support = () => {
             </div>
             * מעוניינים לתמוך גם אתם במיזם? להתפרסם כנותני חסות? לקדם את שמירת
             צמחי הבר? כתבו לנו – והצטרפו למשפחת אנציקלופרח ולדרך המשותפת.
-          </p>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </Layout>
   );

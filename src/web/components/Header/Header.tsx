@@ -53,7 +53,6 @@ const Header = () => {
     if (!menuCookie) {
       console.log("undefiend");
     } else {
-      console.log("found menuId: " + menuCookie);
       setMenuId(Number(menuCookie));
     }
   }, []);
@@ -109,7 +108,9 @@ const Header = () => {
         </div>
         <div className="grow flex items-center justify-center cursor-pointer ">
           <Link href="/">
-            <Image src={logo} alt="Logo" priority />
+            <a>
+              <Image src={logo} alt="Logo" priority />
+            </a>
           </Link>
         </div>
         <div className="flex flex-col items-center justify-center p-2 md:p-4 ">

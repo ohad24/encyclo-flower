@@ -1,8 +1,7 @@
 import React from "react";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
-import Image from "next/image";
-import logo from "../../images/logo.png";
+
 import Router, { useRouter } from "next/router";
 
 type Props = {
@@ -20,13 +19,18 @@ const Layout = ({ children }: Props) => {
       <Header />
       <div className="grow px-4">{children}</div>
       <Footer />
-      <div className="text-center w-[100%] bg-gray-400 text-white text-sm pb-1 ">
-        כל הזכויות שמורות – אנציקלופרח |{" "}
-        <button onClick={nextPage}> תנאי שימוש </button> |{" "}
-        <Image src={logo} alt="Logo" width={66.13} height={34} />
-      </div>
     </div>
   );
 };
 
 export default Layout;
+
+/*
+
+<div className="text-center w-[100%] bg-gray-400 text-white text-sm pb-1 ">
+        כל הזכויות שמורות – אנציקלופרח |{" "}
+        <button onClick={nextPage}> תנאי שימוש </button> |{" "}
+        <Image src={logo} alt="Logo" width={66.13} height={34} />
+      </div>
+
+*/

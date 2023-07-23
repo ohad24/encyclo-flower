@@ -34,7 +34,7 @@ const FlowerShape = ({ startIngIndex, onShapeChange }: Props) => {
         {currentShapes.map((shape, index) => {
           return (
             <div
-              key={index}
+              key={shape.name}
               className={`border  ${
                 shape.isActive ? "border-primary border-2" : "border-gray-400"
               } p-[3px] rounded-xl cursor-pointer transition duration-300 hover:scale-[1.2]`}

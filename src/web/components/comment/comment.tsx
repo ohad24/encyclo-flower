@@ -1,5 +1,4 @@
 import React from "react";
-import LikeIcon from "components/Icons/LikeIcon";
 
 const Comment = (props: { comment: any }) => {
   const getTime = () => {

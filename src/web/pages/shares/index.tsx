@@ -62,6 +62,7 @@ const Shares = () => {
         >
           {observations.map((observation) => (
             <Suggestions
+              key={observation.observation_id}
               str={"observation_text"}
               question={observation}
               isQuestion={false}

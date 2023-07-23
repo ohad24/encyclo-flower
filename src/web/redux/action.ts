@@ -1,6 +1,15 @@
+import { ISearchResult } from "helpers/interfaces";
+
 const updateResults = (arr: Object[]) => {
   return {
     type: "UpdateResults",
+    payload: arr,
+  };
+};
+
+const UpdateResultsByAttributes = (arr: ISearchResult[]) => {
+  return {
+    type: "UpdateResultsByAttributes",
     payload: arr,
   };
 };
@@ -89,8 +98,16 @@ const UpdateUserName = (username: string) => {
   };
 };
 
+const UpdatePathName = (pathname: string) => {
+  return {
+    type: "UpdatePathName",
+    payload: pathname,
+  };
+};
+
 export {
   updateResults,
+  UpdateResultsByAttributes,
   updatePlant,
   UpdateClickCapture,
   updateSelectedImages,
@@ -103,4 +120,5 @@ export {
   UpdateIsQuestion,
   UpdatePlantName,
   UpdateUserName,
+  UpdatePathName,
 };
