@@ -11,13 +11,6 @@ const SharesCommunity = () => {
   const [yourComment, setYourComment] = useState<string>("");
   const [comments, setComments] = useState<string[]>([]);
 
-  useEffect(() => {
-    async function getData() {
-      await getComments();
-    }
-    getData();
-  }, []);
-
   const getComments = async () => {
     try {
       const data = (
@@ -37,6 +30,14 @@ const SharesCommunity = () => {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    async function getData() {
+      await getComments();
+    }
+    getData();
+  }, [getComments]);
+
   const getDate = () => {
     return (
       store.question.created_dt.slice(8, 10) +

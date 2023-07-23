@@ -144,12 +144,6 @@ const Search = () => {
     page: 1,
   });
 
-  useEffect(() => {
-    return () => {
-      resetAll();
-    };
-  }, []);
-
   const onChange = <T,>(name: string, value: T) => {
     setState({ ...state, [name]: value });
   };
@@ -350,6 +344,12 @@ const Search = () => {
       page: 1,
     });
   };
+
+  useEffect(() => {
+    return () => {
+      resetAll();
+    };
+  }, [resetAll]);
 
   useEffect(() => {
     console.log("no result", isNoResults);

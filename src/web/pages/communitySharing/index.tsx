@@ -22,14 +22,6 @@ const CommunitySharing = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    async function getData() {
-      await getImages();
-    }
-    getData();
-    dispatch(UpdateIsQuestion(false));
-  }, [questionsIds]);
-
   const getImages = async () => {
     try {
       const data = (
@@ -40,6 +32,14 @@ const CommunitySharing = () => {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    async function getData() {
+      await getImages();
+    }
+    getData();
+    dispatch(UpdateIsQuestion(false));
+  }, [getImages, dispatch, questionsIds]);
 
   const postQuestion = async (e: React.FormEvent) => {
     e.preventDefault();

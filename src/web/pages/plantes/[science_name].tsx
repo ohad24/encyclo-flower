@@ -151,7 +151,7 @@ const PlanetDetails = () => {
       }
     }
     checkFavorite();
-  }, [router.query.science_name]);
+  }, [router.query.science_name, store.token]);
 
   const firstMonth: number = planet.flowering_seasons[0] - 1;
   const lastMonth: number =

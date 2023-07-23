@@ -168,7 +168,7 @@ const Images = (props: {
                 key={i}
                 id={image.file_name}
                 loading="lazy"
-                alt={undefined}
+                alt="undefined"
                 src={
                   !props.imagesDetections
                     ? props.imageFromTheUser
@@ -199,7 +199,7 @@ const Images = (props: {
                           objectFit="contain"
                           layout="fill"
                           src={link}
-                          alt="example "
+                          alt="undefined"
                         />{" "}
                       </div>
                     </a>

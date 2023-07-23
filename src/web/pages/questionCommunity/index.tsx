@@ -18,13 +18,6 @@ const QuestionCommunity = () => {
   const [images, setImages] = React.useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
-  useEffect(() => {
-    async function getData() {
-      await getImages();
-    }
-    getData();
-  }, [questionsIds]);
-
   const getImages = async () => {
     try {
       const data = (await getAll(`community/questions/${store.questionId}`))
@@ -34,6 +27,13 @@ const QuestionCommunity = () => {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    async function getData() {
+      await getImages();
+    }
+    getData();
+  }, [getImages, questionsIds]);
 
   const postQuestion = async (e: React.FormEvent) => {
     e.preventDefault();

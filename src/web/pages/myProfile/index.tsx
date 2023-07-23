@@ -53,7 +53,7 @@ const MyProfile = () => {
       }
     }
     getUser();
-  }, []);
+  }, [store.token]);
 
   const onChange = (
     e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>

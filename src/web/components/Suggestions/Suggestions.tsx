@@ -32,7 +32,7 @@ const Suggestions = (props: {
       }
     }
     getData();
-  }, [dispatch]);
+  }, [dispatch, props.question]);
 
   const getDate = () => {
     return (

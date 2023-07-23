@@ -56,7 +56,7 @@ const SearchResult = (props: {
             textAlign: "center",
             paddingTop: "5px",
             paddingRight: "7.5px",
-            paddingLeft: "2px",
+            paddingLeft: "10px",
             marginTop: "16px",
           }}
           onClick={() => nextPlantPage()}

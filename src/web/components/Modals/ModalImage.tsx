@@ -39,7 +39,7 @@ const ModalImage = (props: {
             </p>
             <img
               className={`flex sm:h-[400px] md:h-[500px] w-[100%] m-auto rounded-2xl object-cover pl-2 pr-2`}
-              alt={undefined}
+              alt="undefined"
               role="presentation"
               src={props.image.url}
             />
@@ -63,8 +63,8 @@ const ModalImage = (props: {
                         objectFit="contain"
                         layout="fill"
                         src={link}
-                        alt="example "
-                      />{" "}
+                        alt="undefined"
+                      />
                     </div>
                   </a>
                 </div>
