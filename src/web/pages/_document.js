@@ -6,12 +6,10 @@ class Document extends NextDocument {
   static async getInitialProps(ctx) {
     return await NextDocument.getInitialProps(ctx);
   }
-
   render() {
     const { locale } = this.props.__NEXT_DATA__;
     const dir = locale === "ar" ? "rtl" : "rtl";
 
-    // נק' פסיק Html
     return (
       <Html dir={dir} lang={locale}>
         <Head />

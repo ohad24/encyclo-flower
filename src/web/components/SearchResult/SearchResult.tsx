@@ -24,24 +24,12 @@ const SearchResult = (props: {
     <div className="flex flex-col items-center mt-5 text-secondary m-auto">
       <div className="flex flex-row flex-wrap gap-5 w-[100%] mb-2">
         <div className="flex flex-row gap-1 font-bold">
-          <div
-            style={{
-              color: "orange",
-              fontSize: "35px",
-              height: "50px",
-            }}
-          >
+          <div className="h-[50px] text-4xl mt-1  text-amber-500">
             {props.index + 1}.
           </div>
           <div>
             <div
-              className="cursor-pointer"
-              style={{
-                paddingTop: "25px",
-                height: "50px",
-                margin: "0",
-                lineHeight: "18px",
-              }}
+              className="cursor-pointer pt-6 m-0 h-[50px] leading-4"
               onClick={() => nextPlantPage()}
             >
               {props.result.heb_name}
@@ -50,15 +38,7 @@ const SearchResult = (props: {
           </div>
         </div>
         <button
-          className={`flex flex-row gap-1 mr-auto font-bold text-white bg-sky-800 rounded-xl w-[${props.widthButton}px]`}
-          style={{
-            minHeight: "35px",
-            textAlign: "center",
-            paddingTop: "5px",
-            paddingRight: "7.5px",
-            paddingLeft: "10px",
-            marginTop: "16px",
-          }}
+          className={`flex flex-row gap-1 pt-1.5 pr-2 pl-3 mt-4 mr-auto font-bold text-white text-center bg-sky-800 rounded-xl w-[${props.widthButton}px] min-h-[35px]`}
           onClick={() => nextPlantPage()}
         >
           <CheckIcon size={23} color={"white"}></CheckIcon>

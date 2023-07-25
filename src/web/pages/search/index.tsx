@@ -144,13 +144,6 @@ const Search = () => {
     page: 1,
   });
 
-  /*
-  useEffect(() => {
-    return () => {
-      resetAll();
-    };
-  }, []);*/
-
   const onChange = <T,>(name: string, value: T) => {
     setState({ ...state, [name]: value });
   };

@@ -72,12 +72,7 @@ const Suggestions = (props: {
                 ? props.question.username
                 : null}
             </p>
-            <p
-              className="text-xs text-gray-400 m-auto"
-              style={{ direction: "ltr" }}
-            >
-              {getDate()}
-            </p>
+            <p className="text-xs text-gray-400 m-auto">{getDate()}</p>
           </div>
           <p className="text-secondary text-base font-medium">
             {props.question !== undefined

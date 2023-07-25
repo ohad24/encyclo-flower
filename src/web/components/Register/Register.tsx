@@ -160,10 +160,7 @@ const Register = () => {
       </div>
     );
   return (
-    <div
-      style={{ overflow: "hidden" }}
-      className="flex  flex-col items-center  justify-center "
-    >
+    <div className="flex  flex-col items-center justify-center overflow-hidden">
       <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
         <div className="flex flex-col">
           <p className="text-sm text-secondary font-bold mb-2">שם פרטי</p>

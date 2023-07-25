@@ -118,9 +118,8 @@ const NewSearch = (props: {
       )}
       <input
         id="filePicker"
-        style={{ visibility: "hidden" }}
         type={"file"}
-        className="text-secondary text-sm text-center max-w-[150px]"
+        className="text-secondary text-sm text-center max-w-[150px] invisible"
         onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
         multiple={props.isAI ? true : false}
       ></input>

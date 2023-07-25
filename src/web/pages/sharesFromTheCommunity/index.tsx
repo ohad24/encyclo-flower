@@ -11,6 +11,44 @@ const SharesCommunity = () => {
   const [yourComment, setYourComment] = useState<string>("");
   const [comments, setComments] = useState<string[]>([]);
 
+  useEffect(() => {
+    async function getData() {
+      try {
+        const data = (
+          await getAll(
+            store.isQuestion
+              ? `community/questions/${store.question.question_id}/comments`
+              : `community/observations/${store.question.observation_id}/comments`
+          )
+        ).data;
+        setComments(
+          data.sort(
+            (a: any, b: any) =>
+              new Date(b.create_dt).getTime() - new Date(a.create_dt).getTime()
+          )
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    getData();
+  }, []);
+
+  const getDate = () => {
+    return (
+      store.question.created_dt.slice(8, 10) +
+      "." +
+      store.question.created_dt.slice(5, 7) +
+      "." +
+      store.question.created_dt.slice(0, 4)
+    );
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setYourComment(value);
+  };
+
   const getComments = async () => {
     try {
       const data = (
@@ -29,28 +67,6 @@ const SharesCommunity = () => {
     } catch (err) {
       console.log(err);
     }
-  };
-
-  useEffect(() => {
-    async function getData() {
-      await getComments();
-    }
-    getData();
-  }, [getComments]);
-
-  const getDate = () => {
-    return (
-      store.question.created_dt.slice(8, 10) +
-      "." +
-      store.question.created_dt.slice(5, 7) +
-      "." +
-      store.question.created_dt.slice(0, 4)
-    );
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setYourComment(value);
   };
 
   const sendComment = async (e: React.FormEvent<HTMLFormElement>) => {

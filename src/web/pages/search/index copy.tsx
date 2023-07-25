@@ -346,12 +346,6 @@ const Search = () => {
   };
 
   useEffect(() => {
-    return () => {
-      resetAll();
-    };
-  }, [resetAll]);
-
-  useEffect(() => {
     console.log("no result", isNoResults);
   }, [isNoResults]);
 

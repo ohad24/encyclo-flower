@@ -120,10 +120,7 @@ const LoginAndRegisterModel = ({ isOpen, onClose }: Props) => {
               </TabList>
               <TabPanels className="min-h-[350px] flex items-center justify-center">
                 <TabPanel>
-                  <div
-                    style={{ overflow: "hidden" }}
-                    className="flex  flex-col items-center  justify-center "
-                  >
+                  <div className="flex  flex-col items-center  justify-center overflow-hidden">
                     <div>
                       <div className=" flex flex-col gap-4 w-[200px]   md:w-[300px]">
                         <div>

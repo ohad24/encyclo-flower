@@ -45,10 +45,7 @@ const ModalImage = (props: {
             />
             <div className="flex flex-row">
               <div className="flex items-center mt-2 mb-5 ml-3 mr-3">
-                <div
-                  className="text-secondary text-sm ml-auto"
-                  style={{ direction: "rtl" }}
-                >
+                <div className="text-secondary text-sm ml-auto">
                   צילום:{" "}
                   {props.image.author_name
                     ? props.image.author_name

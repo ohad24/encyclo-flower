@@ -74,91 +74,48 @@ const Images = (props: {
   console.log(props.photos);
 
   return (
-    <div
-      className="flex flex-row items-center text-secondary mt-2 w-[100%] "
-      style={{
-        position: "relative",
-      }}
-    >
-      <div
-        className="flex flex-row gap-2.5 max-w-[100%]"
-        style={{ direction: "rtl" }}
-      >
+    <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]	">
+      <div className="flex flex-row gap-2.5 max-w-[100%]">
         {props.photos.length > 0 ? (
           <div>
             {!arrowDisable ? (
               <button
+                className="absolute flex w-[20px] h-[20px] rounded-full font-bold pl-0.5"
                 onClick={(e) => {
                   handleHorizantalScroll(e, elementRef.current, 25, 100, 10);
                 }}
                 style={{
-                  width: "20px",
-                  height: "20px",
                   background: "rgba(240,240,240,0.8)",
-                  borderRadius: "100%",
-                  display: "flex",
                   justifyContent: "space-between",
-                  position: "absolute",
-                  right: "0%",
                   top: "141px",
-                  fontWeight: "700",
                   fontSize: "17px",
-                  paddingLeft: "2px",
                 }}
               >
-                <div
-                  style={{
-                    position: "relative",
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "100%",
-                    bottom: "4px",
-                  }}
-                >
+                <div className="relative w-[20px] h-[20px] rounded-full bottom-1">
                   {"<"}
                 </div>
               </button>
             ) : null}
             <button
-              className="top-[90px] sm:top-[141px]"
+              className="top-[90px] sm:top-[141px] absolute flex w-[20px] h-[20px] rounded-full font-bold pl-0 left-0"
               onClick={(e) => {
                 handleHorizantalScroll(e, elementRef.current, 25, 100, -10);
               }}
               style={{
-                width: "20px",
-                height: "20px",
                 background: "rgba(240,240,240,0.8)",
-                borderRadius: "100%",
-                display: "flex",
                 justifyContent: "space-between",
-                position: "absolute",
-                left: "0%",
-                fontWeight: "700",
                 fontSize: "17px",
-                paddingLeft: "0px",
               }}
             >
-              <div
-                style={{
-                  position: "relative",
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "100%",
-                  bottom: "4px",
-                }}
-              >
+              <div className="relative w-[20px] h-[20px] rounded-full bottom-1">
                 {">"}
               </div>
             </button>
           </div>
         ) : null}
         <div
-          className="flex flex-row items-start gap-3 text-secondary max-w-[100%]"
+          className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-hidden"
           ref={elementRef}
-          style={{
-            display: "flex",
-            overflow: "hidden",
-          }}
         >
           {props.photos.map((image: any, i: number) => (
             <div key={image.file_name} className="max-w-[100%]">
@@ -184,10 +141,7 @@ const Images = (props: {
                 }
               />
               <div className="flex mt-2 ml-2 mr-2 gap-2 w-[100%] sm:max-w-[360px] ">
-                <div
-                  className="text-secondary text-sm ml-auto"
-                  style={{ direction: "rtl" }}
-                >
+                <div className="text-secondary text-sm ml-auto">
                   צילום:{" "}
                   {image.author_name ? image.author_name : props.username}
                 </div>

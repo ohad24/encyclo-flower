@@ -22,24 +22,20 @@ const CommunitySharing = () => {
 
   const dispatch = useDispatch();
 
-  const getImages = async () => {
-    try {
-      const data = (
-        await getAll(`community/observations/${store.observationId}`)
-      ).data;
-      setImages(data.images);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   useEffect(() => {
     async function getData() {
-      await getImages();
+      try {
+        const data = (
+          await getAll(`community/observations/${store.observationId}`)
+        ).data;
+        setImages(data.images);
+      } catch (err) {
+        console.log(err);
+      }
     }
     getData();
     dispatch(UpdateIsQuestion(false));
-  }, [getImages, dispatch, questionsIds]);
+  }, [dispatch, questionsIds]);
 
   const postQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +57,17 @@ const CommunitySharing = () => {
     } catch (err) {
       console.log(err);
       setIsSubmitting(false);
+    }
+  };
+
+  const getImages = async () => {
+    try {
+      const data = (
+        await getAll(`community/observations/${store.observationId}`)
+      ).data;
+      setImages(data.images);
+    } catch (err) {
+      console.log(err);
     }
   };
 
