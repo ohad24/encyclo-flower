@@ -33,7 +33,7 @@ server {
     include /config/nginx/ssl.conf;
     client_max_body_size 0;
 
-    include /config/nginx/frontend.conf
+    include /config/nginx/frontend.conf;
     include /config/nginx/subfolders.conf;
 
 }
@@ -52,7 +52,7 @@ server {
     include /config/nginx/ssl.conf;
     client_max_body_size 0;
 
-    include /config/nginx/frontend.conf
+    include /config/nginx/frontend.conf;
     include /config/nginx/subfolders.conf;
 
 }
