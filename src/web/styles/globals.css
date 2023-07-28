@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  transition: all 0.5s linear;
+}
+
+@layer components {
+  .default-container {
+    @apply mx-auto w-full;
+  }
+
+  .input {
+    @apply bg-gray-100 rounded p-[.4rem] outline-none focus:border focus:border-primary transition duration-300;
+  }
+
+  .button-primary {
+    @apply bg-primary shadow hover:shadow-xl text-secondary cursor-pointer rounded py-1 px-2 transition duration-200;
+  }
+
+  .toolbar-card {
+    @apply bg-gray-200 p-2 rounded-lg  md:w-[200px] flex justify-center shadow hover:bg-white hover:shadow-lg transition duration-150 cursor-pointer;
+  }
+
+  .suggestions-image {
+    @apply w-[80%] md:w-[150px] h-[120px] md:h-[120px] relative rounded-lg overflow-hidden border flex-shrink-0;
+  }
+}
+
+body {
+  direction: rtl;
+  overflow-x: hidden;
+}
+
+.search-rb label span {
+  font-size: 0.8rem;
+}
+
+.wof-loader {
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+}
+
+.loader-bg {
+  z-index: 10000;
+  background-color: #000;
+  height: 100vh;
+  width: 100vw;
+  opacity: 0.8;
+}
+
+.wof-loader-content {
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+}

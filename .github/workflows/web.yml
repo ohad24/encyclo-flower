@@ -1,0 +1,70 @@
+# This workflow should control anything to do with web frontend
+# Including building the docker image and pushing it
+# It should run on both development and production scenarios
+# Production workflow (tagging the image as "latest") should run only on tagged version push
+
+name: Web workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+    paths:
+      - "src/web/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/web/**"
+      - ".github/workflows/web.yml"
+
+env:
+  DOCKER_IMAGE_NAME: ohad24/${{ github.event.repository.name }}-web
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.DOCKER_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}}
+            type=edge
+            type=sha
+
+      - name: Login to DockerHub
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: src/web
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_DEPLOYMENT_HOST }}
+          port: ${{ secrets.SSH_DEPLOYMENT_PORT }}
+          username: ${{ secrets.SSH_DEPLOYMENT_USER }}
+          key: ${{ secrets.SSH_DEPLOYMENT_KEY }}
