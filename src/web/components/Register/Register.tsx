@@ -1,6 +1,6 @@
 import { Select } from "@chakra-ui/react";
 import React, { useState } from "react";
-import api from "../../apis/userAPI";
+import { register } from "services/flowersService";
 
 interface User {
   password: string;
@@ -29,18 +29,6 @@ const initialUser: User = {
   accept_terms_of_service: false,
 };
 
-const fakeUser: User = {
-  password: "123456",
-  confirm_password: "123456",
-  username: "moti2003",
-  f_name: "moti",
-  l_name: "elmakyes",
-  email: "moti@gmail.com",
-  phone: "036383289",
-  settlement: "tel aviv",
-  sex: "זכר",
-  accept_terms_of_service: true,
-};
 const Register = () => {
   const [user, setUser] = useState<User>(initialUser);
   const [errors, setErrors] = useState({
@@ -130,7 +118,7 @@ const Register = () => {
     if (!validateForm()) return;
     setIsRegisterError(false);
     try {
-      const { data } = await api.post("users/createUser", user);
+      await register("users/", user);
       setIsRegistered(true);
     } catch (err: any) {
       setIsRegisterError(true);
