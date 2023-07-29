@@ -50,8 +50,6 @@ services:
     restart: always
     env_file:
       - PRODUCTION.env
-    environment:
-      - SERVER_BASE_URL=https://encyclo-flower.com/api/v1
     networks:
       - production
 
@@ -60,8 +58,6 @@ services:
     restart: always
     env_file:
       - DEVELOPMENT.env
-    environment:
-      - SERVER_BASE_URL=https://dev.encyclo-flower.com/api/v1
     networks:
       - production
 
