@@ -1,13 +1,6 @@
 import axios from "axios";
-import { useSelector } from "react-redux";
 
 const API_URL = process.env.SERVER_BASE_URL || "";
-
-//const token = useSelector((state: any) => state.token);
-
-/*const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJpZGFueW9zZWY0MiIsImlhdCI6MTY4NDU5NzkzOS45NDI5Mjc0LCJleHAiOjE2ODg1NzQ5NTd9.skmiNGlfp5cK28PqYSUZJupxUWGoI6qD7tV0xSkOcAU";
-*/
 
 const getAll = (params: string) => axios.get(`${API_URL}/${params}`);
 
@@ -35,6 +28,19 @@ const login = (path: string, obj: object) =>
       accept: "application/json",
     },
   });
+
+const register = (path: string, obj: object) =>
+  axios.post(
+    `${API_URL}/${path}`,
+    JSON.stringify({
+      ...obj,
+    }),
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
 // לצמצם לאחד
 const createQuestion = (path: string, text: string, token: string) =>
@@ -159,6 +165,7 @@ const submit = (path: string, token: string) =>
 export {
   getAll,
   login,
+  register,
   getSearchResults,
   getPlantByName,
   getIsFavorite,
@@ -173,18 +180,3 @@ export {
   update,
   submit,
 };
-
-/*
-const getFiveElements = (obj) => axios.get(API_URL, obj);
-
-const getById = (id) => axios.get(API_URL + "/" + id);
-
-const createData = (obj) => axios.post(API_URL, obj);
-
-const updateData = (id, obj) => axios.put(API_URL + "/" + id, obj);
-
-const deleteData = (id) => axios.delete(API_URL + "/" + id);
-
-export { getFiveElements, getById, createData, updateData, deleteData };*/
-
-/* http://ec2-3-20-223-255.us-east-2.compute.amazonaws.com:5000 */
