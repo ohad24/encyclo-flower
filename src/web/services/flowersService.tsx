@@ -22,6 +22,13 @@ const getIsFavorite = (path: string, token: string) =>
     },
   });
 
+const verifyEmail = (path: string) =>
+  axios.get(`${API_URL}/${path}`, {
+    headers: {
+      accept: "*/*",
+    },
+  });
+
 const login = (path: string, obj: object) =>
   axios.post(`${API_URL}/${path}`, new URLSearchParams({ ...obj }), {
     headers: {
@@ -169,6 +176,7 @@ export {
   getSearchResults,
   getPlantByName,
   getIsFavorite,
+  verifyEmail,
   createQuestion,
   createObservation,
   addComment,
