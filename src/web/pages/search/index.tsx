@@ -109,12 +109,13 @@ const kozim = [
 
 import Loader from "components/Loader/Loader";
 import { ISearchResult, IState } from "helpers/interfaces";
-import { searchPlant } from "services/flowersService";
+import { postWithObj } from "services/flowersService";
 import SearchResult from "components/SearchResult/SearchResult";
 import SearchResults from "components/SearchResults/SearchResults";
 import RotateIcon from "components/Icons/CamaraIcon copy";
 import { UpdateResultsByAttributes } from "redux/action";
 import { useDispatch, useSelector } from "react-redux";
+import HeadLine from "components/Headline/headLine";
 
 // Main component
 const Search = () => {
@@ -292,7 +293,7 @@ const Search = () => {
       setIsSubmitting(true);
       setNoResults(false);
       const values = removeEmptyValues(state);
-      const { data } = await searchPlant("plants/search", values);
+      const { data } = await postWithObj("plants/search", values);
       setIsSubmitting(false);
       dispatch(UpdateResultsByAttributes(data.plants));
     } catch (err: any) {
@@ -349,8 +350,6 @@ const Search = () => {
     console.log("no result", isNoResults);
   }, [isNoResults]);
 
-  console.log(store);
-
   return (
     <Layout>
       <>
@@ -362,11 +361,7 @@ const Search = () => {
             onKeyDown={(e) => (e.key === "Enter" ? submitForm(e) : "")}
             className="flex flex-col justify-center items-center"
           >
-            <div className="flex items-center justify-center my-5">
-              <p className="font-bold text-secondary  border-b-4  border-b-primary mb-7 text-2xl  max-w-[320px] text-center ">
-                חיפוש צמח לפי מאפיינים
-              </p>
-            </div>
+            <HeadLine text={"חיפוש צמח לפי מאפיינים"} width={320} />
             <div className="flex flex-col items-center">
               <div className="w-[90%] md:w-[50%]">
                 <p className="text-secondary mb-2 font-bold text-md">
@@ -441,7 +436,6 @@ const Search = () => {
                       פריחה
                     </p>
                   </div>
-
                   <FlowersMonths onMonthChange={onMonthChange} />
 
                   <p className="font-bold text-secondary text-sm text-center md:w-[60%]  md:mt-8 mb-3">

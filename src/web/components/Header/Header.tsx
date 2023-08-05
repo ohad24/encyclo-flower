@@ -1,27 +1,18 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import logo from "../../images/logo.png";
-import heart from "../../images/heart.svg";
-import account from "../../images/account.png";
 import Cookies from "universal-cookie";
 import MenuIcon from "../MenuIcon/Menu";
 import LoginAndRegisterModel from "../LoginAndRegisterModel/LoginAndRegisterModel";
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalCloseButton,
-} from "@chakra-ui/react";
+
 import { nanoid } from "nanoid";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 
 // Icons components
-import NotificationsIcon from "../Icons/NotificationsIcon";
-import { useDispatch, useSelector } from "react-redux";
-import LogoutIcon from "components/Icons/LogoutIcon";
-import { UpdateToken } from "redux/action";
+import ModalLogin from "components/Modals/ModalLogin";
+import Logo from "components/Logo/Logo";
+import Supports from "components/Supports/Supports";
+import Notifications from "components/Notifications/Notifications";
+import LoginOrRegister from "components/LoginOrRegister/LoginOrRegister";
 
 const cookies = new Cookies();
 const menuItems = [
@@ -37,12 +28,9 @@ const menuItems = [
 ];
 
 const Header = () => {
-  const store = useSelector((state: any) => state);
-  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = React.useState(false);
   const [menuId, setMenuId] = useState(0);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const openLogin = () => setIsLoginOpen(true);
   const handleMenuId = (id: number) => {
     setMenuId(id);
     cookies.set("menuId", id, { path: "/" });
@@ -89,56 +77,15 @@ const Header = () => {
     });
   };
 
-  const logout = () => {
-    dispatch(UpdateToken(""));
-    nextPage("/");
-  };
-
   return (
     <header className="flex flex-col gap-4 default-container pb-2">
       <div className="flex items-center flex-row-reverse">
-        <div
-          className="flex flex-col items-center justify-center p-2 md:p-4 w-[80px] cursor-pointer"
-          onClick={() => nextPage("/support")}
-        >
-          <div>
-            <Image src={heart} alt="Heart" />
-          </div>
-          <div>תומכים</div>
-        </div>
-        <div className="grow flex items-center justify-center cursor-pointer ">
-          <Link href="/">
-            <a>
-              <Image src={logo} alt="Logo" priority />
-            </a>
-          </Link>
-        </div>
+        <Supports nextPage={nextPage} />
+        <Logo />
         <div className="flex flex-col items-center justify-center p-2 md:p-4 ">
           <div className="flex gap-2 md:gap-5 align-center justify-center flex-row-reverse">
-            <div className=" cursor-pointer">
-              <NotificationsIcon />
-            </div>
-            <div className="flex flex-row flex-wrap">
-              {store.token ? (
-                <div onClick={logout}>
-                  <LogoutIcon color="orange" size={24.8} />
-                </div>
-              ) : null}
-
-              <div
-                className=" flex flex-col justify-center items-center cursor-pointer"
-                onClick={() => setIsLoginOpen(store.token ? false : true)}
-              >
-                <div>
-                  <Image src={account} alt="Logo" />
-                </div>
-                {store.token ? (
-                  <div className="hidden md:block text-xs">מחובר</div>
-                ) : (
-                  <div className="hidden md:block text-xs">התחבר \ הרשם</div>
-                )}
-              </div>
-            </div>
+            <Notifications />
+            <LoginOrRegister setIsLoginOpen={setIsLoginOpen} />
 
             <div className="md:hidden" onClick={() => setIsOpen(true)}>
               <MenuIcon />
@@ -155,27 +102,11 @@ const Header = () => {
           setIsLoginOpen(false);
         }}
       />
-      <Modal
-        isCentered
+      <ModalLogin
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        size="2xl"
-      >
-        <ModalOverlay
-          bg="none"
-          backdropFilter="auto"
-          backdropInvert="0%"
-          backdropBlur="5px"
-        />
-        <ModalContent>
-          <ModalCloseButton />
-          <ModalBody className="mt-[2rem]">
-            <nav className="flex flex-col justify-center items-center gap-2 pb-8">
-              {renderMenu(false)}
-            </nav>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        setIsOpen={setIsOpen}
+        renderMenu={renderMenu}
+      />
     </header>
   );
 };

@@ -1,10 +1,11 @@
 import Layout from "components/Layout/Layout";
 import React, { useEffect, useState } from "react";
-import { addComment, getAll } from "services/flowersService";
+import { create, get } from "services/flowersService";
 import { useSelector } from "react-redux";
 import LocationIcon from "components/Icons/LocationIcon";
 import Images from "components/Images/Images";
 import Comment from "components/comment/comment";
+import HeadLine from "components/Headline/headLine";
 
 const SharesCommunity = () => {
   const store = useSelector((state: any) => state);
@@ -15,7 +16,7 @@ const SharesCommunity = () => {
     async function getData() {
       try {
         const data = (
-          await getAll(
+          await get(
             store.isQuestion
               ? `community/questions/${store.question.question_id}/comments`
               : `community/observations/${store.question.observation_id}/comments`
@@ -52,7 +53,7 @@ const SharesCommunity = () => {
   const getComments = async () => {
     try {
       const data = (
-        await getAll(
+        await get(
           store.isQuestion
             ? `community/questions/${store.question.question_id}/comments`
             : `community/observations/${store.question.observation_id}/comments`
@@ -72,11 +73,13 @@ const SharesCommunity = () => {
   const sendComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await addComment(
+      await create(
         store.isQuestion
           ? `community/questions/${store.question.question_id}/comments`
           : `community/observations/${store.question.observation_id}/comment`,
-        yourComment,
+        {
+          comment_text: yourComment,
+        },
         store.token
       );
       await getComments();
@@ -90,11 +93,7 @@ const SharesCommunity = () => {
     <Layout>
       <div className="default-container">
         <div className="flex flex-col justify-center items-center max-w-[52.7%] m-auto">
-          <div className="flex items-center justify-center my-5 ">
-            <p className="font-bold text-secondary  border-b-4  border-b-primary  text-2xl max-w-[205px] text-center ">
-              שיתופים מהקהילה
-            </p>
-          </div>
+          <HeadLine text={"שיתופים מהקהילה"} width={205} />
         </div>
         <div className="max-w-[768px] m-auto">
           <p className="text-orange-300 text-2xl font-black">
@@ -164,19 +163,3 @@ const SharesCommunity = () => {
 };
 
 export default SharesCommunity;
-
-/*
-גרסה הבאה
-<div className="flex gap-1 flex-row-reverse items-center cursor-pointer">
-              <div className="relative h-[16px] w-[16px] flex">
-                <Image
-                  objectFit="contain"
-                  layout="fill"
-                  src={heart}
-                  alt="example "
-                />
-              </div>
-              <p className="text-xs text-sky-900">322</p>
-            </div>
-
-  */

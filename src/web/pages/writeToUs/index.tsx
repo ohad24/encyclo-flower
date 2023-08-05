@@ -1,16 +1,13 @@
 import React from "react";
 import Layout from "../../components/Layout/Layout";
 import { motion } from "framer-motion";
+import HeadLine from "components/Headline/headLine";
 
 const writeToUs = () => {
   return (
     <Layout>
       <div className="default-container">
-        <div className="flex items-center justify-center my-5">
-          <p className="font-bold text-secondary  border-b-4 border-b-orange-300 text-xl w-[80px] text-center ">
-            כתבו לנו{" "}
-          </p>
-        </div>
+        <HeadLine text={"כתבו לנו"} width={80} />
         <motion.div
           className="flex justify-center text-lg"
           initial={{ opacity: 0, height: 0 }}

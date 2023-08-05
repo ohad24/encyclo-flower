@@ -3,10 +3,10 @@ import Link from "next/link";
 import React from "react";
 import glass from "../../images/glass.png";
 import link from "../../images/link.png";
-import Router, { useRouter } from "next/router";
-import { createObservation } from "services/flowersService";
+import Router from "next/router";
+import { create } from "services/flowersService";
 import { useDispatch, useSelector } from "react-redux";
-import { UpdateObservationId, updateImagesCommunity } from "redux/action";
+import { UpdateObservationId } from "redux/action";
 import GalleryOrCamera from "components/GalleryOrCamera/GalleryOrCamera";
 
 const TopToolbar = () => {
@@ -16,9 +16,11 @@ const TopToolbar = () => {
   const askTheCommunity = async () => {
     try {
       const data = (
-        await createObservation(
+        await create(
           "community/observations/",
-          "מהי שאלתך?",
+          {
+            observation_text: "מהי שאלתך?",
+          },
           store.token
         )
       ).data;

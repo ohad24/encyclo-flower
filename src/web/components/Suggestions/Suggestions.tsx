@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { IQuestion, IObservations } from "helpers/interfaces";
-import { getAll } from "services/flowersService";
+import { get } from "services/flowersService";
 import Images from "components/Images/Images";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 import { useDispatch } from "react-redux";
 import { UpdateIsQuestion, UpdateQuestion } from "redux/action";
+import SuggestionsDetails from "components/SuggestionsDetails/SuggestionsDetails";
 
 const Suggestions = (props: {
   question: IQuestion | IObservations;
@@ -18,7 +19,7 @@ const Suggestions = (props: {
     async function getData() {
       try {
         const question = (
-          await getAll(
+          await get(
             `community/${
               "question_id" in props.question
                 ? `questions/${props.question.question_id}`
@@ -33,16 +34,6 @@ const Suggestions = (props: {
     }
     getData();
   }, [dispatch, props.question]);
-
-  const getDate = () => {
-    return (
-      props.question.created_dt.slice(8, 10) +
-      "." +
-      props.question.created_dt.slice(5, 7) +
-      "." +
-      props.question.created_dt.slice(0, 4)
-    );
-  };
 
   const nextPage = () => {
     dispatch(
@@ -63,24 +54,11 @@ const Suggestions = (props: {
       onClick={nextPage}
     >
       <div className="flex flex-col xl:flex-row p-2">
-        <div className="basis-1/2">
-          <div className="flex flex-row flex-wrap w-[100%]">
-            <p className="text-orange-300 font-medium	 mb-1 text-lg">
-              {props.username
-                ? props.username
-                : props.question !== undefined
-                ? props.question.username
-                : null}
-            </p>
-            <p className="text-xs text-gray-400 m-auto">{getDate()}</p>
-          </div>
-          <p className="text-secondary text-base font-medium">
-            {props.question !== undefined
-              ? props.question[`${props.str}` as keyof typeof props.question]
-              : null}
-          </p>
-        </div>
-
+        <SuggestionsDetails
+          username={props.username}
+          question={props.question}
+          str={props.str}
+        />
         <div className="flex flex-wrap basis-1/2 max-w-[100%] xl:max-w-[750px]">
           <div className="xl:mr-auto max-w-[100%]">
             <Images

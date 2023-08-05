@@ -1,3 +1,5 @@
+import ButtonAI from "components/Buttons/ButtonAI";
+import HeadLine from "components/Headline/headLine";
 import CamaraIcon from "components/Icons/CamaraIcon";
 import HeartIcon from "components/Icons/HeartIcon";
 import NewSearch from "components/NewSearch/NewSearch";
@@ -8,7 +10,7 @@ import {
   UpdateQuestionId,
   updateImagesCommunity,
 } from "redux/action";
-import { createQuestion, getSearchResults } from "services/flowersService";
+import { create, postWithAuthorization } from "services/flowersService";
 
 const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
   const dispatch = useDispatch();
@@ -33,7 +35,11 @@ const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
     try {
       dispatch(updateImagesCommunity([]));
       const data = (
-        await createQuestion("community/questions/", "מהי שאלתך?", store.token)
+        await create(
+          "community/questions/",
+          { question_text: "מהי שאלתך?" },
+          store.token
+        )
       ).data;
       dispatch(UpdateQuestionId(data.question_id));
       dispatch(UpdateIsQuestion(true));
@@ -43,7 +49,7 @@ const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
         formData.append("image", files[0]);
       }
       try {
-        await getSearchResults(
+        await postWithAuthorization(
           store.isQuestion
             ? `community/questions/${data.question_id}/image`
             : `community/observations/${store.observationId}/image`,
@@ -64,27 +70,19 @@ const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex items-center justify-center my-5">
-        <p className="font-bold text-secondary  border-b-4  border-b-primary mb-2 text-2xl w-[120px] text-center ">
-          זיהוי צמח
-        </p>
-      </div>
+      <HeadLine text={"זיהוי צמח"} width={120} />
       <div className="flex flex-col md:flex-row gap-5">
         <NewSearch isAI={true} questionsIds={[]} setQuestionsIds={() => {}} />
-        <div
-          onClick={() => askTheCommunity()}
-          className="cursor-pointer flex justify-center items-center gap-2 text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 min-w-[248px] text-center p-1 rounded shadow hover:shadow-lg"
-        >
-          <HeartIcon />
-          <button>שאל את הקהילה</button>
-        </div>
-        <div
-          className="cursor-pointer flex justify-center items-center gap-2 text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500  w-[248px] text-center p-1 rounded shadow hover:shadow-lg"
-          onClick={() => props.setIsOpen(true)}
-        >
-          <CamaraIcon />
-          <button>הנחיות צילום</button>
-        </div>
+        <ButtonAI
+          icon={<HeartIcon />}
+          text={"שאל את הקהילה"}
+          funcClick={() => askTheCommunity()}
+        />{" "}
+        <ButtonAI
+          icon={<CamaraIcon />}
+          text={"הנחיות צילום"}
+          funcClick={() => props.setIsOpen(true)}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
-import { Select } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { register } from "services/flowersService";
+import Input from "components/Input/Input";
+import { postWithObj } from "services/flowersService";
+import SelectGender from "components/Selects/SelectGender";
+import ApprovalOfTerms from "components/ApprovalOfTerms/ApprovalOfTerms";
 
 interface User {
   password: string;
@@ -118,7 +120,7 @@ const Register = () => {
     if (!validateForm()) return;
     setIsRegisterError(false);
     try {
-      await register("users/", user);
+      await postWithObj("users/", user);
       setIsRegistered(true);
     } catch (err: any) {
       setIsRegisterError(true);
@@ -133,7 +135,6 @@ const Register = () => {
 
   const isValidEmail = (email: string) => {
     const isValid = /\S+@\S+\.\S+/.test(email);
-
     return isValid;
   };
 
@@ -147,129 +148,78 @@ const Register = () => {
         <p className="text-center mb-2">תודה!</p>
       </div>
     );
+
   return (
     <div className="flex  flex-col items-center justify-center overflow-hidden">
       <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-        <div className="flex flex-col">
-          <p className="text-sm text-secondary font-bold mb-2">שם פרטי</p>
-          <input
-            className="input w-full"
-            name="f_name"
-            value={user.f_name}
-            onChange={onChange}
-          />
-          <p
-            className={`${
-              isError(errors.f_name) ? "" : "hidden"
-            } bg-red-300 text-sm text-white rounded px-1 p-[.5px] my-1 text-center`}
-          >
-            {errors.f_name}
-          </p>
-        </div>
-        <div className="flex flex-col">
-          <p className="text-sm text-secondary font-bold mb-2">שם משפחה</p>
-          <input
-            className="input w-full"
-            name="l_name"
-            value={user.l_name}
-            onChange={onChange}
-          />
-          <p
-            className={`${
-              isError(errors.l_name) ? "" : "hidden"
-            }bg-red-300 text-sm text-white rounded px-1 p-[.5px] my-1 text-center`}
-          >
-            {errors.l_name}
-          </p>
-        </div>
+        <Input
+          text={"שם פרטי"}
+          inputName={"f_name"}
+          val={user.f_name}
+          onChange={onChange}
+          error={errors.f_name}
+        />
+        <Input
+          text={"שם משפחה"}
+          inputName={"l_name"}
+          val={user.l_name}
+          onChange={onChange}
+          error={errors.l_name}
+        />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-        <div className="flex flex-col">
-          <p className="text-sm text-secondary font-bold mb-2">איימיל</p>
-          <input
-            className="input w-full"
-            name="email"
-            value={user.email}
-            onChange={onChange}
-          />
-          <p
-            className={`${
-              isError(errors.email) ? "" : "hidden"
-            }bg-red-300 text-sm text-white rounded px-1 p-[.5px] my-1 text-center`}
-          >
-            {errors.email}
-          </p>
-        </div>
-        <div className="flex flex-col">
-          <p className="text-sm text-secondary font-bold mb-2">
-            טלפון&nbsp;
-            <span className="text-xs text-gray-400">(אופציונלי)</span>
-          </p>
-          <input
-            className="input w-full"
-            name="phone"
-            value={user.phone}
-            onChange={onChange}
-          />
-        </div>
+        <Input
+          text={"אימייל"}
+          inputName={"email"}
+          val={user.email}
+          onChange={onChange}
+          error={errors.email}
+        />
+        <Input
+          text={"טלפון"}
+          inputName={"phone"}
+          val={user.phone}
+          onChange={onChange}
+          error={""}
+          optional={true}
+        />
       </div>
       <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-        <div className="flex flex-col">
-          <p className="text-sm text-secondary font-bold mb-2">שם משתמש</p>
-          <input
-            className="input w-full"
-            name="username"
-            value={user.username}
-            onChange={onChange}
-          />
-          <p
-            className={`${
-              isError(errors.username) ? "" : "hidden"
-            }bg-red-300 text-sm text-white rounded px-1 p-[.5px] my-1 text-center`}
-          >
-            {errors.username}
-          </p>
-        </div>
+        <Input
+          text={"שם משתמש"}
+          inputName={"username"}
+          val={user.username}
+          onChange={onChange}
+          error={errors.username}
+        />
         <div className="flex flex-col sm:flex-row   gap-1 sm:gap-4">
-          <div className="flex flex-col">
-            <p className="text-sm text-secondary font-bold mb-2">
-              ישוב&nbsp;
-              <span className="text-xs text-gray-400">(אופציונלי)</span>
-            </p>
-            <input
-              className="input w-full"
-              name="settlement"
-              value={user.settlement}
-              onChange={onChange}
-            />
-          </div>
+          <Input
+            text={"יישוב"}
+            inputName={"settlement"}
+            val={user.settlement}
+            onChange={onChange}
+            error={""}
+            optional={true}
+          />
         </div>
       </div>
       <div className="flex flex-col">
         <div className="flex flex-col sm:flex-row gap-4 w-[100%]">
-          <div className="flex flex-col">
-            <p className="text-sm text-secondary font-bold mb-2">סיסמה</p>
-            <input
-              type="password"
-              className="input w-full"
-              name="password"
-              value={user.password}
-              onChange={onChange}
-            />
-          </div>
-          <div className="flex flex-col">
-            <p className="text-sm text-secondary font-bold mb-2">
-              אימות סיסמה&nbsp;
-            </p>
-            <input
-              type="password"
-              className="input w-full"
-              name="confirm_password"
-              value={user.confirm_password}
-              onChange={onChange}
-            />
-          </div>
+          <Input
+            text={"סיסמה"}
+            inputName={"password"}
+            val={user.password}
+            onChange={onChange}
+            error={""}
+          />
+          <Input
+            text={"אימות סיסמה"}
+            inputName={"password"}
+            val={user.confirm_password}
+            onChange={onChange}
+            error={""}
+          />
         </div>
         <p
           className={`${
@@ -279,39 +229,12 @@ const Register = () => {
           {errors.password}
         </p>
       </div>
-      <div className="flex flex-col">
-        <p className="text-sm text-secondary font-bold mb-2">מגדר&nbsp;</p>
-        <Select name="sex" onChange={onChange}>
-          <option value="0">-- בחר מגדר --</option>
-          <option value="זכר">זכר</option>
-          <option value="נקבה">נקבה</option>
-        </Select>
-        <p
-          className={`${
-            isError(errors.sex) ? "" : "hidden"
-          }bg-red-300 text-sm text-white rounded px-1 p-[.5px] my-1 text-center`}
-        >
-          {errors.sex}
-        </p>
-      </div>
-      <div className="mt-4 flex gap-1 ">
-        <input
-          type="checkbox"
-          name="accept_terms_of_service"
-          checked={user.accept_terms_of_service}
-          onChange={onAcceptTerms}
-        />
-        <p className="text-xs text-secondary">
-          אני מאשר\ת את תנאי השימוש באנציקלופרח
-        </p>
-      </div>
-      <p
-        className={`${
-          !errors.accept_terms_of_service ? "" : "hidden"
-        } w-full  bg-red-300 text-sm text-white rounded px-1 p-[.5px] my-1 text-center`}
-      >
-        יש לאשר את תנאי השימוש.
-      </p>
+      <SelectGender onChange={onChange} error={errors.sex} />
+      <ApprovalOfTerms
+        accept_terms_of_service={user.accept_terms_of_service}
+        error={errors.accept_terms_of_service}
+        onAcceptTerms={onAcceptTerms}
+      />
       <div className="w-full px-20 mt-6">
         <button className="button-primary w-full" onClick={onSubmit}>
           הרשם

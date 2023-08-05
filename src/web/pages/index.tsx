@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
 import Suggestions from "../components/Suggestions/Suggestions";
 import TopToolbar from "../components/TopToolbar/TopToolbar";
-import { getAll } from "services/flowersService";
-import Router, { useRouter } from "next/router";
+import { get } from "services/flowersService";
+import Router from "next/router";
 import MoreButton from "components/Buttons/MoreButton";
 
 const Home: NextPage = () => {
@@ -15,10 +15,10 @@ const Home: NextPage = () => {
     async function getData() {
       try {
         const questions = (
-          await getAll("community/questions/?answer_filter=all&skip=0&limit=7")
+          await get("community/questions/?answer_filter=all&skip=0&limit=7")
         ).data;
         const observations = (
-          await getAll("community/observations/?skip=0&limit=7")
+          await get("community/observations/?skip=0&limit=7")
         ).data;
         setQuestions(questions);
         setObservations(observations);
@@ -39,7 +39,7 @@ const Home: NextPage = () => {
     <Layout>
       <div className="default-container">
         <TopToolbar />
-        <div className="flex justify-center mt-5  md:mt-20">
+        <div className="flex justify-center mt-5 md:mt-20">
           <p
             className="font-bold text-secondary  border-b-2 border-b-orange-300 mb-7"
             onClick={() => nextPage("/questionFromTheCommunity")}

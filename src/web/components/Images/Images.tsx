@@ -1,9 +1,11 @@
 import { useRef, useState } from "react";
-import Image from "next/image";
-import link from "images/link.png";
 import { useDispatch, useSelector } from "react-redux";
 import ModalImage from "components/Modals/ModalImage";
 import { UpdatePlantName, UpdateUserName } from "redux/action";
+import RightButton from "components/Buttons/RightButton";
+import LeftButton from "components/Buttons/LeftButton";
+import ImageComp from "components/ImageComp/ImageComp";
+import React from "react";
 
 const Images = (props: {
   username?: string;
@@ -14,7 +16,6 @@ const Images = (props: {
   imagesDetections?: boolean;
   imageFromTheUser: boolean;
 }) => {
-  const store = useSelector((state: any) => state);
   const dispatch = useDispatch();
   const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
   const [chooseImage, setChooseImage] = useState<any>("");
@@ -71,97 +72,47 @@ const Images = (props: {
     dispatch(UpdatePlantName(props.plantName));
   };
 
-  console.log(props.photos);
+  const showButtonRight = !arrowDisable ? (
+    <RightButton
+      handleHorizantalScroll={handleHorizantalScroll}
+      elementRef={elementRef}
+    />
+  ) : null;
+
+  const rightOrLeft =
+    props.photos.length > 0 ? (
+      <div>
+        {showButtonRight}
+        <LeftButton
+          handleHorizantalScroll={handleHorizantalScroll}
+          elementRef={elementRef}
+        />
+      </div>
+    ) : null;
+
+  const showImages = props.photos.map((image: any, i: number) => (
+    <ImageComp
+      key={image.file_name}
+      image={image}
+      i={i}
+      clickImage={clickImage}
+      photos={props.photos}
+      imageFromTheUser={props.imageFromTheUser}
+      imagesDetections={props.imagesDetections}
+      isQuestion={props.isQuestion}
+      username={props.username}
+    />
+  ));
 
   return (
     <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]	">
       <div className="flex flex-row gap-2.5 max-w-[100%]">
-        {props.photos.length > 0 ? (
-          <div>
-            {!arrowDisable ? (
-              <button
-                className="absolute flex w-[20px] h-[20px] rounded-full font-bold pl-0.5"
-                onClick={(e) => {
-                  handleHorizantalScroll(e, elementRef.current, 25, 100, 10);
-                }}
-                style={{
-                  background: "rgba(240,240,240,0.8)",
-                  justifyContent: "space-between",
-                  top: "141px",
-                  fontSize: "17px",
-                }}
-              >
-                <div className="relative w-[20px] h-[20px] rounded-full bottom-1">
-                  {"<"}
-                </div>
-              </button>
-            ) : null}
-            <button
-              className="top-[90px] sm:top-[141px] absolute flex w-[20px] h-[20px] rounded-full font-bold pl-0 left-0"
-              onClick={(e) => {
-                handleHorizantalScroll(e, elementRef.current, 25, 100, -10);
-              }}
-              style={{
-                background: "rgba(240,240,240,0.8)",
-                justifyContent: "space-between",
-                fontSize: "17px",
-              }}
-            >
-              <div className="relative w-[20px] h-[20px] rounded-full bottom-1">
-                {">"}
-              </div>
-            </button>
-          </div>
-        ) : null}
+        {rightOrLeft}
         <div
           className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-hidden"
           ref={elementRef}
         >
-          {props.photos.map((image: any, i: number) => (
-            <div key={image.file_name} className="max-w-[100%]">
-              <img
-                className="max-w-[235px] h-[190px] sm:max-w-[360px] sm:h-[302px] rounded-2xl object-cover"
-                onClick={(e) => clickImage(e, image, i)}
-                key={i}
-                id={image.file_name}
-                loading="lazy"
-                alt="undefined"
-                src={
-                  !props.imagesDetections
-                    ? props.imageFromTheUser
-                      ? props.isQuestion
-                        ? `https://storage.googleapis.com/ef-dev-fe/questions/${image.file_name}`
-                        : `https://storage.googleapis.com/ef-dev-fe/observations/${image.file_name}`
-                      : `https://storage.googleapis.com/ef-prod/plants-images/images/${
-                          typeof props.photos[i] === "string"
-                            ? props.photos[i]
-                            : props.photos[i].file_name
-                        }`
-                    : `https://storage.googleapis.com/ef-dev-fe/image_api_files/${image.file_name}`
-                }
-              />
-              <div className="flex mt-2 ml-2 mr-2 gap-2 w-[100%] sm:max-w-[360px] ">
-                <div className="text-secondary text-sm ml-auto">
-                  צילום:{" "}
-                  {image.author_name ? image.author_name : props.username}
-                </div>
-                {image.author_name ? (
-                  <div className="flex ml-3">
-                    <a href={image.source_url_page}>
-                      <div className="relative h-[16px] w-[16px] cursor-pointer">
-                        <Image
-                          objectFit="contain"
-                          layout="fill"
-                          src={link}
-                          alt="undefined"
-                        />{" "}
-                      </div>
-                    </a>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          ))}
+          {showImages}
         </div>
       </div>
       <ModalImage

@@ -3,7 +3,7 @@ import Image from "next/image";
 import camara from "../../images/camara.png";
 import { ChangeEvent } from "react";
 import Router, { withRouter } from "next/router";
-import { getSearchResults } from "services/flowersService";
+import { postWithAuthorization } from "services/flowersService";
 import { useDispatch, useSelector } from "react-redux";
 import {
   updateImagesCommunity,
@@ -48,7 +48,7 @@ const ModalCamera = (props: {
     try {
       setIsSubmitting(true);
       const data = (
-        await getSearchResults("detect/image/", formData, store.token)
+        await postWithAuthorization("detect/image/", formData, store.token)
       ).data;
       dispatch(updateResults(data));
       dispatch(updateSelectedImages(files));
@@ -70,7 +70,7 @@ const ModalCamera = (props: {
     }
     try {
       const data = (
-        await getSearchResults(
+        await postWithAuthorization(
           store.isQuestion
             ? `community/questions/${store.questionId}/image`
             : `community/observations/${store.observationId}/image`,

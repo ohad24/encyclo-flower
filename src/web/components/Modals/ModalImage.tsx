@@ -17,6 +17,25 @@ const ModalImage = (props: {
   setIsImageOpen: (bool: boolean) => void;
 }) => {
   const store = useSelector((state: any) => state);
+
+  const showName = props.image.author_name
+    ? props.image.author_name
+    : store.username;
+
+  const showSource = props.image.author_name ? (
+    <div className="flex flex-row-reverse items-center justify-center h-[15px] mt-3 ml-3 mr-auto">
+      <a href={props.image.source_url_page}>
+        <div className="relative h-[16px] w-[16px] cursor-pointer">
+          <NextImage
+            objectFit="contain"
+            layout="fill"
+            src={link}
+            alt="undefined"
+          />
+        </div>
+      </a>
+    </div>
+  ) : null;
   return (
     <Modal
       isCentered
@@ -34,7 +53,7 @@ const ModalImage = (props: {
         <ModalCloseButton />
         <ModalBody className="mt-[2rem]">
           <div className="max-w-[100%]">
-            <p className="text-3xl mb-2 text-sky-900 font-black	text-center	">
+            <p className="text-3xl mb-2 text-sky-900 font-black	text-center">
               {store.plantName}
             </p>
             <img
@@ -46,26 +65,10 @@ const ModalImage = (props: {
             <div className="flex flex-row">
               <div className="flex items-center mt-2 mb-5 ml-3 mr-3">
                 <div className="text-secondary text-sm ml-auto">
-                  צילום:{" "}
-                  {props.image.author_name
-                    ? props.image.author_name
-                    : store.username}
+                  צילום: {showName}
                 </div>
               </div>
-              {props.image.author_name ? (
-                <div className="flex flex-row-reverse items-center justify-center h-[15px] mt-3 ml-3 mr-auto">
-                  <a href={props.image.source_url_page}>
-                    <div className="relative h-[16px] w-[16px] cursor-pointer">
-                      <NextImage
-                        objectFit="contain"
-                        layout="fill"
-                        src={link}
-                        alt="undefined"
-                      />
-                    </div>
-                  </a>
-                </div>
-              ) : null}
+              {showSource}
             </div>
             <p className="text-base text-sky-900 mr-2">
               {props.image.description}

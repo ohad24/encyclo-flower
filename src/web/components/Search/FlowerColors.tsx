@@ -7,7 +7,7 @@ const FlowerColors = ({ onColorChange }: Props) => {
   const [colors, setColors] = React.useState(globalColors);
   useEffect(() => {}, [colors]);
   return (
-    <div className="">
+    <div>
       <div className="grid grid-cols-4 row-gap grid-cols-reverse gap-1  max-w-[200px] gap-y-2 gap-x-4">
         {colors &&
           colors.map((item, index) => {

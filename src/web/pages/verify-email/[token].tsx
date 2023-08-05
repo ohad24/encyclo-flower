@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "components/Layout/Layout";
-import { verifyEmail } from "services/flowersService";
+import { get } from "services/flowersService";
 
 const VerifyEmail = () => {
   const [message, setMessage] = useState<string>("");
@@ -10,9 +10,7 @@ const VerifyEmail = () => {
   useEffect(() => {
     async function verify() {
       try {
-        const response = await verifyEmail(
-          `users/verify-email/${router.query.token}`
-        );
+        const response = await get(`users/verify-email/${router.query.token}`);
         response.status === 204
           ? setMessage("ההרשמה הצליחה")
           : setMessage("ההרשמה נכשלה");

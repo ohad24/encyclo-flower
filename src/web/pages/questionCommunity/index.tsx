@@ -1,27 +1,22 @@
 import Layout from "components/Layout/Layout";
 import React, { useEffect } from "react";
 import "../../styles/QuestionCommunity.module.css";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  getAll,
-  submit,
-  updateQuestionObservation,
-} from "services/flowersService";
-import Router, { withRouter } from "next/router";
+import { useSelector } from "react-redux";
+import { get, putWithAuthorization } from "services/flowersService";
+import Router from "next/router";
 import FormToCommunity from "components/Forms/FormToCommunity";
 import Loader from "components/Loader/Loader";
 
 const QuestionCommunity = () => {
+  const store = useSelector((state: any) => state);
   const [questionsIds, setQuestionsIds] = React.useState<string[]>([]);
   const [question, setQuestion] = React.useState("");
-  const store = useSelector((state: any) => state);
   const [images, setImages] = React.useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
   const getImages = async () => {
     try {
-      const data = (await getAll(`community/questions/${store.questionId}`))
-        .data;
+      const data = (await get(`community/questions/${store.questionId}`)).data;
       setImages(data.images);
     } catch (err) {
       console.log(err);
@@ -30,28 +25,35 @@ const QuestionCommunity = () => {
 
   useEffect(() => {
     async function getData() {
-      await getImages();
+      try {
+        const data = (await get(`community/questions/${store.questionId}`))
+          .data;
+        setImages(data.images);
+      } catch (err) {
+        console.log(err);
+      }
     }
     getData();
-  }, [getImages, questionsIds]);
+  }, [questionsIds]);
 
   const postQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      await updateQuestionObservation(
+      await putWithAuthorization(
         `community/questions/${store.questionId}`,
         { question_text: question },
         store.token
       );
-      await submit(
+      await putWithAuthorization(
         `community/questions/${store.questionId}/submit`,
+        {},
         store.token
       );
-      setIsSubmitting(false);
       Router.push({
         pathname: "/questionFromTheCommunity",
       });
+      setIsSubmitting(false);
     } catch (err) {
       console.log(err);
       setIsSubmitting(false);

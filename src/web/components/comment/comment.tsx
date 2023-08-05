@@ -39,18 +39,3 @@ const Comment = (props: { comment: any }) => {
 };
 
 export default Comment;
-
-/* גרסה הבאה
-<div className="flex flex-row text-sm	text-sky-900 font-medium	ml-2">
-          <div
-            className="w-[20px] h-[20px] rounded-full mr-auto ml-1 pr-0.5 pt-0.5"
-            style={{
-              filter: "drop-shadow(0px 4px 10.5px rgba(249,189,56,0.73))",
-              backgroundImage:
-                "linear-gradient(135deg, #f58f3b 0%, #f9bd38 100%)",
-            }}
-          >
-            <LikeIcon color="#003e5b" size={16} />
-          </div>{" "}
-          <p>98</p>
-        </div> */

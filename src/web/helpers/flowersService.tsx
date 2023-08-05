@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { ChangeEvent } from "react";
 import { updateImagesCommunity } from "redux/action";
-import { getSearchResults } from "services/flowersService";
+import { postWithAuthorization } from "services/flowersService";
 import { AnyAction, Dispatch } from "redux";
 
 function FileListItems(files: FileList | null, store: any) {
@@ -33,7 +33,7 @@ export const addImage = async (
   }
   try {
     const data = (
-      await getSearchResults(
+      await postWithAuthorization(
         store.isQuestion
           ? `community/questions/${store.questionId}/image`
           : `community/observations/${store.observationId}/image`,
