@@ -3,10 +3,15 @@ from pymongo.database import Database
 from core.config import get_settings
 from bson.codec_options import CodecOptions
 import tzlocal
+import logging
+
+logger = logging.getLogger("uvicorn")
 
 settings = get_settings()
 
 db_client = MongoClient(settings.MONGO_URI)
+db_version = db_client.server_info()["version"]
+logger.info(f"{db_version=}")
 
 
 def get_db() -> Database:

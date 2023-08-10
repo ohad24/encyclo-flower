@@ -16,7 +16,7 @@ services:
       - SUBDOMAINS=www,dev
       - ONLY_SUBDOMAINS=false
       - EMAIL=encyclo.flower@gmail.com
-      - VALIDATION=http  # Required: certbot validation method
+      - VALIDATION=http # Required: certbot validation method
     ports:
       - 80:80
       - 443:443
@@ -44,6 +44,22 @@ services:
       - ./google_cred.json:/app/google_cred.json
     networks:
       - development
+
+  frontend:
+    image: ohad24/encyclo-flower-web:latest
+    restart: always
+    env_file:
+      - PRODUCTION.env
+    networks:
+      - production
+
+  frontend-dev:
+    image: ohad24/encyclo-flower-web:edge
+    restart: always
+    env_file:
+      - DEVELOPMENT.env
+    networks:
+      - production
 
 volumes:
   swag-ssl:

@@ -4,21 +4,20 @@ from typing import Optional
 
 def prepare_query_plant_name_text(name: str) -> dict:
     name_text_or = [
-        {"science_name": {"$regex": name, "$options": "-i"}},
-        {"heb_name": {"$regex": name, "$options": "-i"}},
+        {"science_name": {"$regex": name, "$options": "i"}},
+        {"heb_name": {"$regex": name, "$options": "i"}},
     ]
     for arr in ["synonym_names_eng", "synonym_names_heb"]:
-        # * "in" not allow nestest $ in query
-        name_text_or.append(
-            {
-                arr: {
-                    "$elemMatch": {
-                        "$regex": name,
-                        "$options": "-i",
-                    }
+        # * "in" not allow nested $ in query
+        synonym_sub_query = {
+            arr: {
+                "$elemMatch": {
+                    "$regex": name,
+                    "$options": "i",
                 }
             }
-        )
+        }
+        name_text_or.append(synonym_sub_query)  # type: ignore
     return {"$or": name_text_or}
 
 
