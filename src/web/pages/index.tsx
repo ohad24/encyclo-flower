@@ -35,6 +35,24 @@ const Home: NextPage = () => {
     });
   };
 
+  const showQuestions = questions.map((question) => (
+    <Suggestions
+      key={question.question_id}
+      str={"question_text"}
+      question={question}
+      isQuestion={true}
+    />
+  ));
+
+  const showObservations = observations.map((observation) => (
+    <Suggestions
+      key={observation.observation_id}
+      str={"observation_text"}
+      question={observation}
+      isQuestion={false}
+    />
+  ));
+
   return (
     <Layout>
       <div className="default-container">
@@ -48,14 +66,7 @@ const Home: NextPage = () => {
           </p>
         </div>
         <div className="flex flex-col items-center gap-4">
-          {questions.map((question) => (
-            <Suggestions
-              key={question.question_id}
-              str={"question_text"}
-              question={question}
-              isQuestion={true}
-            />
-          ))}
+          {showQuestions}
           <MoreButton
             text={"לעוד שאלות"}
             nextPage={nextPage}
@@ -69,14 +80,7 @@ const Home: NextPage = () => {
               שיתופי תצפיות
             </p>
           </div>
-          {observations.map((observation) => (
-            <Suggestions
-              key={observation.observation_id}
-              str={"observation_text"}
-              question={observation}
-              isQuestion={false}
-            />
-          ))}
+          {showObservations}
           <MoreButton
             text={"לעוד שיתופים"}
             nextPage={nextPage}

@@ -1,9 +1,9 @@
 import React from "react";
 
-type Props = {
+interface Props {
   color?: string;
   size?: number;
-};
+}
 
 const RotateIcon = ({ color = "#003e5b", size = 15 }: Props) => {
   return (

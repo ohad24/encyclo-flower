@@ -7,7 +7,7 @@ const writeToUs = () => {
   return (
     <Layout>
       <div className="default-container">
-        <HeadLine text={"כתבו לנו"} width={80} />
+        <HeadLine text={"כתבו לנו"} width={110} />
         <motion.div
           className="flex justify-center text-lg"
           initial={{ opacity: 0, height: 0 }}

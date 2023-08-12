@@ -21,7 +21,6 @@ const initialUser: User = {
 const Login = ({ onClose }: Props) => {
   const [isRegisterError, setIsRegisterError] = useState(false);
   const [user, setUser] = useState<User>(initialUser);
-  const [email, setEmail] = useState<string>("");
   const [isForgot, setIsForgot] = useState<boolean>(false);
   const dispatch = useDispatch();
   const [errors, setErrors] = useState({

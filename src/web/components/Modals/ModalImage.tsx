@@ -10,21 +10,26 @@ import link from "images/link.png";
 import { useSelector } from "react-redux";
 import NextImage from "next/image";
 
-const ModalImage = (props: {
+interface Props {
   image: any;
   imageFromTheUser: boolean;
   isImageOpen: boolean;
   setIsImageOpen: (bool: boolean) => void;
-}) => {
+}
+
+const ModalImage = ({
+  image,
+  imageFromTheUser,
+  isImageOpen,
+  setIsImageOpen,
+}: Props) => {
   const store = useSelector((state: any) => state);
 
-  const showName = props.image.author_name
-    ? props.image.author_name
-    : store.username;
+  const showName = image.author_name ? image.author_name : store.username;
 
-  const showSource = props.image.author_name ? (
+  const showSource = image.author_name ? (
     <div className="flex flex-row-reverse items-center justify-center h-[15px] mt-3 ml-3 mr-auto">
-      <a href={props.image.source_url_page}>
+      <a href={image.source_url_page}>
         <div className="relative h-[16px] w-[16px] cursor-pointer">
           <NextImage
             objectFit="contain"
@@ -39,8 +44,8 @@ const ModalImage = (props: {
   return (
     <Modal
       isCentered
-      isOpen={props.isImageOpen}
-      onClose={() => props.setIsImageOpen(false)}
+      isOpen={isImageOpen}
+      onClose={() => setIsImageOpen(false)}
       size="xl"
     >
       <ModalOverlay
@@ -60,7 +65,7 @@ const ModalImage = (props: {
               className={`flex sm:h-[400px] md:h-[500px] w-[100%] m-auto rounded-2xl object-cover pl-2 pr-2`}
               alt="undefined"
               role="presentation"
-              src={props.image.url}
+              src={image.url}
             />
             <div className="flex flex-row">
               <div className="flex items-center mt-2 mb-5 ml-3 mr-3">
@@ -70,9 +75,7 @@ const ModalImage = (props: {
               </div>
               {showSource}
             </div>
-            <p className="text-base text-sky-900 mr-2">
-              {props.image.description}
-            </p>
+            <p className="text-base text-sky-900 mr-2">{image.description}</p>
           </div>
         </ModalBody>
       </ModalContent>

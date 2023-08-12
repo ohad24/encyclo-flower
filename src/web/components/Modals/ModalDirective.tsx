@@ -5,22 +5,23 @@ import {
   ModalContent,
   ModalOverlay,
 } from "@chakra-ui/react";
-import Image from "next/image";
 import React from "react";
 import helpImage1 from "../../images/ai_help_1.png";
 import helpImage2 from "../../images/ai_help_2.png";
 import helpImage3 from "../../images/ai_help_3.png";
 import PhotographyGuidance from "components/PhotographyGuidance/PhotographyGuidance";
 
-const ModalDirective = (props: {
+interface Props {
   isOpen: boolean;
   setIsOpen: (bool: boolean) => void;
-}) => {
+}
+
+const ModalDirective = ({ isOpen, setIsOpen }: Props) => {
   return (
     <Modal
       isCentered
-      isOpen={props.isOpen}
-      onClose={() => props.setIsOpen(false)}
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
       size="2xl"
     >
       <ModalOverlay

@@ -1,9 +1,9 @@
 import React from "react";
 
-type Props = {
+interface Props {
   color?: string;
   size?: number;
-};
+}
 
 const LogoutIcon = ({ color = "orange", size = 16 }: Props) => {
   return (

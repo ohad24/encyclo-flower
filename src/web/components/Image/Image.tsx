@@ -52,16 +52,17 @@ const Image = ({ path, index, image, images, setImages }: Props) => {
       console.log(err);
     }
   };
+
+  const src = store.isQuestion
+    ? `${process.env.IMAGE_BASE_URL}/ef-dev-fe/questions/${image.file_name}`
+    : `${process.env.IMAGE_BASE_URL}/ef-dev-fe/observations/${image.file_name}`;
+
   return (
     <div className="m-auto sm:m-0">
       <img
         id={`img${index}`}
         alt="undefined"
-        src={
-          store.isQuestion
-            ? `https://storage.googleapis.com/ef-dev-fe/questions/${image.file_name}`
-            : `https://storage.googleapis.com/ef-dev-fe/observations/${image.file_name}`
-        }
+        src={src}
         className="w-[196px] h-[169px] rounded-3xl m-auto md:m-0 bg-blue-100 object-cover mb-2"
       />
       <div className="flex flex-row mt-1">

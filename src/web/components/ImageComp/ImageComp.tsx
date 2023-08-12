@@ -38,6 +38,18 @@ const ImageComp = ({
     </div>
   ) : null;
 
+  const src = !imagesDetections
+    ? imageFromTheUser
+      ? isQuestion
+        ? `${process.env.IMAGE_BASE_URL}/questions/${image.file_name}`
+        : `${process.env.IMAGE_BASE_URL}/observations/${image.file_name}`
+      : `${process.env.IMAGE_USER_BASE_URL}/plants-images/images/${
+          typeof photos[i] === "string" ? photos[i] : photos[i].file_name
+        }`
+    : `${process.env.IMAGE_BASE_URL}/image_api_files/${image.file_name}`;
+
+  const photographer = image.author_name ? image.author_name : username;
+
   return (
     <div className="max-w-[100%]">
       <img
@@ -47,23 +59,11 @@ const ImageComp = ({
         id={image.file_name}
         loading="lazy"
         alt="undefined"
-        src={
-          !imagesDetections
-            ? imageFromTheUser
-              ? isQuestion
-                ? `https://storage.googleapis.com/ef-dev-fe/questions/${image.file_name}`
-                : `https://storage.googleapis.com/ef-dev-fe/observations/${image.file_name}`
-              : `https://storage.googleapis.com/ef-prod/plants-images/images/${
-                  typeof photos[i] === "string"
-                    ? photos[i]
-                    : photos[i].file_name
-                }`
-            : `https://storage.googleapis.com/ef-dev-fe/image_api_files/${image.file_name}`
-        }
+        src={src}
       />
       <div className="flex mt-2 ml-2 mr-2 gap-2 w-[100%] sm:max-w-[360px] ">
         <div className="text-secondary text-sm ml-auto">
-          צילום: {image.author_name ? image.author_name : username}
+          צילום: {photographer}
         </div>
         {showSource}
       </div>

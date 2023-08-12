@@ -1,10 +1,11 @@
 import React from "react";
+
 interface Props {
-  size: number;
-  color: string;
+  color?: string;
+  size?: number;
 }
 
-const NextIcon = ({ size = 16, color = "#" }: Props) => {
+const NextIcon = ({ color = "#", size = 16 }: Props) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

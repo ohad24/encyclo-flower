@@ -7,43 +7,45 @@ import { useDispatch } from "react-redux";
 import { UpdateIsQuestion, UpdateQuestion } from "redux/action";
 import SuggestionsDetails from "components/SuggestionsDetails/SuggestionsDetails";
 
-const Suggestions = (props: {
+interface Props {
   question: IQuestion | IObservations;
   isQuestion: boolean;
   str: string;
   username?: string;
-}) => {
+}
+
+const Suggestions = ({ question, isQuestion, str, username }: Props) => {
   const [images, setImages] = useState<any[]>([]);
   const dispatch = useDispatch();
   useEffect(() => {
     async function getData() {
       try {
-        const question = (
+        const data = (
           await get(
             `community/${
-              "question_id" in props.question
-                ? `questions/${props.question.question_id}`
-                : `observations/${props.question.observation_id}`
+              "question_id" in question
+                ? `questions/${question.question_id}`
+                : `observations/${question.observation_id}`
             }`
           )
         ).data;
-        setImages(question.images);
+        setImages(data.images);
       } catch (err) {
         console.log(err);
       }
     }
     getData();
-  }, [dispatch, props.question]);
+  }, [dispatch, question]);
 
   const nextPage = () => {
     dispatch(
       UpdateQuestion({
-        ...props.question,
+        ...question,
         location_name: images[0].location_name,
         images: images,
       })
     );
-    dispatch(UpdateIsQuestion(props.isQuestion));
+    dispatch(UpdateIsQuestion(isQuestion));
     Router.push({
       pathname: "/sharesFromTheCommunity",
     });
@@ -54,19 +56,15 @@ const Suggestions = (props: {
       onClick={nextPage}
     >
       <div className="flex flex-col xl:flex-row p-2">
-        <SuggestionsDetails
-          username={props.username}
-          question={props.question}
-          str={props.str}
-        />
+        <SuggestionsDetails username={username} question={question} str={str} />
         <div className="flex flex-wrap basis-1/2 max-w-[100%] xl:max-w-[750px]">
           <div className="xl:mr-auto max-w-[100%]">
             <Images
-              username={props.question.username}
+              username={question.username}
               photos={images}
               width={520}
               imageFromTheUser={true}
-              isQuestion={props.isQuestion}
+              isQuestion={isQuestion}
             />
           </div>
         </div>

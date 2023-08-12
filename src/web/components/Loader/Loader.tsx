@@ -6,6 +6,7 @@ interface Props {
   text: string;
   isLoading: boolean;
 }
+
 const Loader = ({ text = "Loading...", isLoading }: Props) => {
   return (
     <div>

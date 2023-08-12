@@ -12,11 +12,13 @@ import {
 } from "redux/action";
 import Loader from "components/Loader/Loader";
 
-const GalleryOrCamera = (props: {
+interface Props {
   isAI: boolean;
   questionsIds: Array<string>;
   setQuestionsIds: (arrIds: Array<string>) => void;
-}) => {
+}
+
+const GalleryOrCamera = ({ isAI, questionsIds, setQuestionsIds }: Props) => {
   const dispatch = useDispatch();
   const store = useSelector((state: any) => state);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
@@ -76,7 +78,7 @@ const GalleryOrCamera = (props: {
           store.token
         )
       ).data;
-      props.setQuestionsIds([...props.questionsIds, data.image_id]);
+      setQuestionsIds([...questionsIds, data.image_id]);
       dispatch(updateImagesCommunity(FileListItems(files)));
     } catch (err) {
       console.log(err);
@@ -94,8 +96,8 @@ const GalleryOrCamera = (props: {
           id="filePicker"
           type={"file"}
           className="text-secondary text-sm text-center invisible max-w-[150px]"
-          onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
-          multiple={props.isAI ? true : false}
+          onChange={(e) => (isAI ? handleSetImage(e) : addImage(e))}
+          multiple={isAI ? true : false}
         ></input>
         <span>
           <Image src={camara} alt="Camara" />

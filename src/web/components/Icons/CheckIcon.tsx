@@ -1,7 +1,7 @@
 import React from "react";
 interface Props {
-  size: number;
-  color: string;
+  size?: number;
+  color?: string;
 }
 
 const CheckIcon = ({ size = 32, color = "#" }: Props) => {

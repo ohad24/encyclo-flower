@@ -8,18 +8,20 @@ import SelectPicture from "components/Selects/SelectPicture";
 import SelectLocation from "components/Selects/SelectLocation";
 import Month from "components/Selects/Month";
 
-const ImageFromQuestion = (props: {
+interface Props {
   index: number;
   image: any;
   images: Array<any>;
   setImages: (arrIds: Array<any>) => void;
-}) => {
+}
+
+const ImageFromQuestion = ({ index, image, images, setImages }: Props) => {
   const store = useSelector((state: any) => state);
   const [dataImage, setDataImage] = React.useState({
-    description: props.image.description,
-    content_category: props.image.content_category,
-    location_name: props.image.location_name,
-    month_taken: store.imagesCommunity[props.index].lastModifiedDate
+    description: image.description,
+    content_category: image.content_category,
+    location_name: image.location_name,
+    month_taken: store.imagesCommunity[index].lastModifiedDate
       .toISOString()
       .slice(0, 10),
   });
@@ -54,7 +56,7 @@ const ImageFromQuestion = (props: {
           month_taken: monthsText[+dataImage.month_taken.slice(6, 7) - 1].name,
         };
         await putWithAuthorization(
-          `${path}/image/${props.image.image_id}`,
+          `${path}/image/${image.image_id}`,
           obj,
           store.token
         );
@@ -65,14 +67,14 @@ const ImageFromQuestion = (props: {
   };
 
   return (
-    <div key={props.index} className="w-[100%] md:max-w-[371px] ">
+    <div key={index} className="w-[100%] md:max-w-[371px] ">
       <div className="flex flex-row flex-wrap w-[100%] m-auto mb-0 gap-5 items-center">
         <Image
           path={path}
-          index={props.index}
-          image={props.image}
-          images={props.images}
-          setImages={props.setImages}
+          index={index}
+          image={image}
+          images={images}
+          setImages={setImages}
         />
         <div className="mb-5 w-[100%] sm:w-[155px]">
           <SelectPicture

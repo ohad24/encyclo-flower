@@ -42,6 +42,15 @@ const Shares = () => {
     }
   };
 
+  const showObservations = observations.map((observation) => (
+    <Suggestions
+      key={observation.observation_id}
+      str={"observation_text"}
+      question={observation}
+      isQuestion={false}
+    />
+  ));
+
   return (
     <Layout>
       <div className="default-container">
@@ -55,14 +64,7 @@ const Shares = () => {
           hasMore={hasMore}
           loader={<h2>טוען...</h2>}
         >
-          {observations.map((observation) => (
-            <Suggestions
-              key={observation.observation_id}
-              str={"observation_text"}
-              question={observation}
-              isQuestion={false}
-            />
-          ))}
+          {showObservations}
         </InfiniteScroll>
       </div>
     </Layout>

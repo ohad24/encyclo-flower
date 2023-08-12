@@ -525,7 +525,7 @@ const Search = () => {
                     />
 
                     <p className="font-bold text-secondary my-3 text-sm  text-center  ">
-                      סידור עלים
+                      שפת עלה
                     </p>
                     <FlowerShape
                       startIngIndex={5}

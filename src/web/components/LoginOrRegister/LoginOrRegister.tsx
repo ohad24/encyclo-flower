@@ -3,7 +3,7 @@ import Image from "next/image";
 import account from "../../images/account.png";
 import LogoutIcon from "components/Icons/LogoutIcon";
 import { UpdateToken } from "redux/action";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 
 interface Props {
   setIsLoginOpen: React.Dispatch<React.SetStateAction<boolean>>;

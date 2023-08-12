@@ -15,10 +15,10 @@ import Register from "../Register/Register";
 
 import Login from "components/Login/Login";
 
-type Props = {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
-};
+}
 
 const LoginAndRegisterModel = ({ isOpen, onClose }: Props) => {
   return (

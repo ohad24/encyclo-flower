@@ -3,7 +3,7 @@ import HeadLine from "components/Headline/headLine";
 import CamaraIcon from "components/Icons/CamaraIcon";
 import HeartIcon from "components/Icons/HeartIcon";
 import NewSearch from "components/NewSearch/NewSearch";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   UpdateIsQuestion,
@@ -12,7 +12,11 @@ import {
 } from "redux/action";
 import { create, postWithAuthorization } from "services/flowersService";
 
-const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
+interface Props {
+  setIsOpen: (bool: boolean) => void;
+}
+
+const MenuAI = ({ setIsOpen }: Props) => {
   const dispatch = useDispatch();
   const store = useSelector((state: any) => state);
 
@@ -81,7 +85,7 @@ const MenuAI = (props: { setIsOpen: (bool: boolean) => void }) => {
         <ButtonAI
           icon={<CamaraIcon />}
           text={"הנחיות צילום"}
-          funcClick={() => props.setIsOpen(true)}
+          funcClick={() => setIsOpen(true)}
         />
       </div>
     </div>

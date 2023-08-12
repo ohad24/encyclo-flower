@@ -26,13 +26,9 @@ import {
 import EditIcon from "components/Icons/EditIcon";
 import SearchIcon from "components/Icons/SearchIcon";
 import RightIcon from "components/Icons/RightIcon";
-import Router, { withRouter } from "next/router";
+import Router from "next/router";
 import NewSearch from "components/NewSearch/NewSearch";
 import Loader from "components/Loader/Loader";
-
-interface Props {
-  data: IPlantDetails;
-}
 
 const initialState = {
   plant_id: "",

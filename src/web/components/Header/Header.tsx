@@ -5,7 +5,7 @@ import MenuIcon from "../MenuIcon/Menu";
 import LoginAndRegisterModel from "../LoginAndRegisterModel/LoginAndRegisterModel";
 
 import { nanoid } from "nanoid";
-import Router from "next/router";
+import Router, { useRouter } from "next/router";
 
 // Icons components
 import ModalLogin from "components/Modals/ModalLogin";

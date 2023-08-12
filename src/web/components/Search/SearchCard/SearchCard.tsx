@@ -29,7 +29,7 @@ const SearchCard = ({ item }: Props) => {
           duration-300 pb-3 group"
     >
       <img
-        src={`https://storage.googleapis.com/ef-prod/plants-images/thumbnails/${item.image}`}
+        src={`${process.env.IMAGE_USER_BASE_URL}/plants-images/thumbnails/${item.image}`}
         className="h-40 object-cover rounded-xl w-full rounded-b-none"
         alt="some alt"
       />

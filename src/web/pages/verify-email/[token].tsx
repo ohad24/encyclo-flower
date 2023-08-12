@@ -10,10 +10,14 @@ const VerifyEmail = () => {
   useEffect(() => {
     async function verify() {
       try {
-        const response = await get(`users/verify-email/${router.query.token}`);
-        response.status === 204
-          ? setMessage("ההרשמה הצליחה")
-          : setMessage("ההרשמה נכשלה");
+        if (router.query.token) {
+          const response = await get(
+            `users/verify-email/${router.query.token}`
+          );
+          response.status === 204
+            ? setMessage("ההרשמה הצליחה")
+            : setMessage("ההרשמה נכשלה");
+        }
       } catch (err) {
         console.log(err);
         setMessage("ההרשמה נכשלה");

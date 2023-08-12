@@ -12,12 +12,19 @@ import Loader from "components/Loader/Loader";
 import SearchByImage from "components/SeachByImage/SearchByImage";
 import SearchByProperties from "components/SearchByProperties/SearchByProperties";
 
-const NewSearch = (props: {
+interface Props {
   isAI: boolean;
   isSearchFromPlant?: boolean;
   questionsIds: Array<string>;
   setQuestionsIds: (arrIds: Array<string>) => void;
-}) => {
+}
+
+const NewSearch = ({
+  isAI,
+  isSearchFromPlant,
+  questionsIds,
+  setQuestionsIds,
+}: Props) => {
   const dispatch = useDispatch();
   const store = useSelector((state: any) => state);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
@@ -77,13 +84,13 @@ const NewSearch = (props: {
           store.token
         )
       ).data;
-      props.setQuestionsIds([...props.questionsIds, data.image_id]);
+      setQuestionsIds([...questionsIds, data.image_id]);
       dispatch(updateImagesCommunity(FileListItems(files)));
     } catch (err) {
       console.log(err);
     }
   };
-  const showSearch = props.isSearchFromPlant ? (
+  const showSearch = isSearchFromPlant ? (
     <SearchByImage />
   ) : (
     <SearchByProperties />
@@ -92,7 +99,7 @@ const NewSearch = (props: {
   return (
     <div
       className={
-        props.isSearchFromPlant
+        isSearchFromPlant
           ? "h-[100px] m-auto max-w-[120px] mt-2 sm:mt-5"
           : "h-[32px]"
       }
@@ -104,8 +111,8 @@ const NewSearch = (props: {
         id="filePicker"
         type={"file"}
         className="text-secondary text-sm text-center max-w-[150px] invisible"
-        onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
-        multiple={props.isAI ? true : false}
+        onChange={(e) => (isAI ? handleSetImage(e) : addImage(e))}
+        multiple={isAI ? true : false}
       ></input>
     </div>
   );

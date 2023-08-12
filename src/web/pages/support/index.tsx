@@ -1,11 +1,8 @@
 import React from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
-import support1 from "../../images/support-1.png";
-import support2 from "../../images/support-2.jpg";
-import support3 from "../../images/support-3.jpg";
 import Layout from "../../components/Layout/Layout";
 import HeadLine from "components/Headline/headLine";
+import ImagesSupports from "components/Images/ImagesSupports";
 
 const Support = () => {
   return (
@@ -34,35 +31,9 @@ const Support = () => {
             על כן אנו צוות המיזם וכלל המשתמשים והנהנים ממנו, מוקירים ומברכים על
             תמיכה זו להגדלת המודעות ועל חשיבותה להגדלת המודעות לצמחי הבר ולשמירת
             הטבע הישראלי.
-            <br />{" "}
-            <div className="flex flex-col md:flex-row items-center md:justify-center  gap-[1.6rem] md:gap-[4.5rem]   min-h-[310px] md:min-h-[170px]">
-              <div>
-                <Image
-                  width="280px"
-                  height="92.14px"
-                  src={support1}
-                  alt="support kkl "
-                />
-              </div>
-              <div>
-                <Image
-                  width="280px"
-                  height="118.69px"
-                  src={support2}
-                  alt="support kkl "
-                />
-              </div>
-              <div>
-                <Image
-                  width="280px"
-                  height="157px"
-                  src={support3}
-                  alt="support 2 "
-                />
-              </div>
-            </div>
-            * מעוניינים לתמוך גם אתם במיזם? להתפרסם כנותני חסות? לקדם את שמירת
-            צמחי הבר? כתבו לנו – והצטרפו למשפחת אנציקלופרח ולדרך המשותפת.
+            <br /> <ImagesSupports />* מעוניינים לתמוך גם אתם במיזם? להתפרסם
+            כנותני חסות? לקדם את שמירת צמחי הבר? כתבו לנו – והצטרפו למשפחת
+            אנציקלופרח ולדרך המשותפת.
           </div>
         </motion.div>
       </div>

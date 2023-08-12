@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import ModalImage from "components/Modals/ModalImage";
 import { UpdatePlantName, UpdateUserName } from "redux/action";
 import RightButton from "components/Buttons/RightButton";
@@ -7,7 +7,7 @@ import LeftButton from "components/Buttons/LeftButton";
 import ImageComp from "components/ImageComp/ImageComp";
 import React from "react";
 
-const Images = (props: {
+interface Props {
   username?: string;
   plantName?: string;
   photos: any;
@@ -15,7 +15,16 @@ const Images = (props: {
   isQuestion?: boolean;
   imagesDetections?: boolean;
   imageFromTheUser: boolean;
-}) => {
+}
+
+const Images = ({
+  username,
+  plantName,
+  photos,
+  isQuestion,
+  imagesDetections,
+  imageFromTheUser,
+}: Props) => {
   const dispatch = useDispatch();
   const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
   const [chooseImage, setChooseImage] = useState<any>("");
@@ -56,20 +65,18 @@ const Images = (props: {
     setIsImageOpen(true);
     setChooseImage({
       ...image,
-      url: !props.imagesDetections
-        ? props.imageFromTheUser
-          ? props.isQuestion
-            ? `https://storage.googleapis.com/ef-dev-fe/questions/${image.file_name}`
-            : `https://storage.googleapis.com/ef-dev-fe/observations/${image.file_name}`
-          : `https://storage.googleapis.com/ef-prod/plants-images/images/${
-              typeof props.photos[i] === "string"
-                ? props.photos[i]
-                : props.photos[i].file_name
+      url: !imagesDetections
+        ? imageFromTheUser
+          ? isQuestion
+            ? `${process.env.IMAGE_BASE_URL}/questions/${image.file_name}`
+            : `${process.env.IMAGE_BASE_URL}/observations/${image.file_name}`
+          : `${process.env.IMAGE_USER_BASE_URL}/plants-images/images/${
+              typeof photos[i] === "string" ? photos[i] : photos[i].file_name
             }`
-        : `https://storage.googleapis.com/ef-dev-fe/image_api_files/${image.file_name}`,
+        : `${process.env.IMAGE_BASE_URL}/image_api_files/${image.file_name}`,
     });
-    dispatch(UpdateUserName(props.username || ""));
-    dispatch(UpdatePlantName(props.plantName));
+    dispatch(UpdateUserName(username || ""));
+    dispatch(UpdatePlantName(plantName));
   };
 
   const showButtonRight = !arrowDisable ? (
@@ -80,7 +87,7 @@ const Images = (props: {
   ) : null;
 
   const rightOrLeft =
-    props.photos.length > 0 ? (
+    photos.length > 0 ? (
       <div>
         {showButtonRight}
         <LeftButton
@@ -90,28 +97,30 @@ const Images = (props: {
       </div>
     ) : null;
 
-  const showImages = props.photos.map((image: any, i: number) => (
+  const showImages = photos.map((image: any, i: number) => (
     <ImageComp
       key={image.file_name}
       image={image}
       i={i}
       clickImage={clickImage}
-      photos={props.photos}
-      imageFromTheUser={props.imageFromTheUser}
-      imagesDetections={props.imagesDetections}
-      isQuestion={props.isQuestion}
-      username={props.username}
+      photos={photos}
+      imageFromTheUser={imageFromTheUser}
+      imagesDetections={imagesDetections}
+      isQuestion={isQuestion}
+      username={username}
     />
   ));
 
   return (
     <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]	">
+      {" "}
       <div className="flex flex-row gap-2.5 max-w-[100%]">
         {rightOrLeft}
         <div
           className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-hidden"
           ref={elementRef}
         >
+          {" "}
           {showImages}
         </div>
       </div>
@@ -119,7 +128,7 @@ const Images = (props: {
         isImageOpen={isImageOpen}
         setIsImageOpen={setIsImageOpen}
         image={chooseImage}
-        imageFromTheUser={props.imageFromTheUser}
+        imageFromTheUser={imageFromTheUser}
       />
     </div>
   );

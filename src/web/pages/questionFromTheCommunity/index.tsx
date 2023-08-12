@@ -40,6 +40,15 @@ const QuestionCommunity = () => {
     }
   };
 
+  const showQuestions = questions.map((question) => (
+    <Suggestions
+      key={question.question_id}
+      str={"question_text"}
+      question={question}
+      isQuestion={true}
+    />
+  ));
+
   return (
     <Layout>
       <div className="default-container">
@@ -53,14 +62,7 @@ const QuestionCommunity = () => {
           hasMore={hasMore}
           loader={<h2>טוען...</h2>}
         >
-          {questions.map((question) => (
-            <Suggestions
-              key={question.question_id}
-              str={"question_text"}
-              question={question}
-              isQuestion={true}
-            />
-          ))}
+          {showQuestions}
         </InfiniteScroll>
       </div>
     </Layout>
