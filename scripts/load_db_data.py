@@ -11,7 +11,7 @@ db_client = MongoClient(
     password="example",
 )
 
-data_path = Path("scripts/plant_data_08_04_2022.json")
+data_path = Path("scripts/plants_20230529.json")
 
 
 dbs = ["dev", "test"]
@@ -27,17 +27,17 @@ for db_name in dbs:
 
 # * upload to cloud test env
 
-MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "test")
+# MONGO_URI = os.getenv("MONGO_URI")
+# MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "test")
 
-if MONGO_URI:
-    client = MongoClient(MONGO_URI)
-    db = client[MONGO_DB_NAME]
-    plants_collection = db["plants"]
-    plants_collection.drop()
-    with open(data_path) as file:
-        file_data = json.load(file)
+# if MONGO_URI:
+#     client = MongoClient(MONGO_URI)
+#     db = client[MONGO_DB_NAME]
+#     plants_collection = db["plants"]
+#     plants_collection.drop()
+#     with open(data_path) as file:
+#         file_data = json.load(file)
 
-    plants_collection.insert_many(file_data)
-else:
-    print("No MONGO_URI env variable found")
+#     plants_collection.insert_many(file_data)
+# else:
+#     print("No MONGO_URI env variable found")

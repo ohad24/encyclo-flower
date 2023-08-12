@@ -15,9 +15,14 @@ updates:
     schedule:
       interval: "daily"
 
+  - package-ecosystem: "npm"
+    directory: "/src/web"
+    schedule:
+      interval: "daily"
+
   # Manage dependencies for encyclo-flower-swag docker image
   - package-ecosystem: "docker"
-    directory: "/src/web"
+    directory: "/src/swag"
     schedule:
       interval: "daily"
 
@@ -26,3 +31,4 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
