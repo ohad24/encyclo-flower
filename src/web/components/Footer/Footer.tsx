@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import logo from "../../images/logo.png";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 import footerImage from "../../images/footer.png";
 
 const Footer = () => {
@@ -23,11 +23,3 @@ const Footer = () => {
 };
 
 export default Footer;
-/*
-
-<div className="text-center w-[100%]  text-white text-sm pb-1 top-full absolute">
-        כל הזכויות שמורות – אנציקלופרח |{" "}
-        <button onClick={nextPage}> תנאי שימוש </button> |{" "}
-        <Image src={logo} alt="Logo" width={66.13} height={34} />
-      </div>
-  */

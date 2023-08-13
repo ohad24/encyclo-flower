@@ -1184,10 +1184,10 @@
   "resolved" "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.5.tgz"
   "version" "15.7.5"
 
-"@types/react-dom@^16.8 || ^17.0 || ^18.0", "@types/react-dom@^18.2.4":
-  "integrity" "sha512-G2mHoTMTL4yoydITgOGwWdWMVd8sNgyEP85xVmMKAPUBwQWm9wBPQUmvbeF4V3WBY1P7mmL4BkjQ0SqUpf1snw=="
-  "resolved" "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.2.4.tgz"
-  "version" "18.2.4"
+"@types/react-dom@^16.8 || ^17.0 || ^18.0", "@types/react-dom@^18.2.7":
+  "integrity" "sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA=="
+  "resolved" "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.2.7.tgz"
+  "version" "18.2.7"
   dependencies:
     "@types/react" "*"
 
@@ -1198,10 +1198,10 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@^16.8 || ^17.0 || ^18.0", "@types/react@^16.8.0 || ^17.0.0 || ^18.0.0", "@types/react@^16.9.0 || ^17.0.0 || ^18.0.0", "@types/react@^18.2.7":
-  "integrity" "sha512-ojrXpSH2XFCmHm7Jy3q44nXDyN54+EYKP2lBhJ2bqfyPj6cIUW/FZW/Csdia34NQgq7KYcAlHi5184m4X88+yw=="
-  "resolved" "https://registry.npmjs.org/@types/react/-/react-18.2.7.tgz"
-  "version" "18.2.7"
+"@types/react@*", "@types/react@^16.8 || ^17.0 || ^18.0", "@types/react@^16.8.0 || ^17.0.0 || ^18.0.0", "@types/react@^16.9.0 || ^17.0.0 || ^18.0.0", "@types/react@^18.2.19":
+  "integrity" "sha512-e2S8wmY1ePfM517PqCG80CcE48Xs5k0pwJzuDZsfE8IZRRBfOMCF+XqnFxu6mWtyivum1MQm4aco+WIt6Coimw=="
+  "resolved" "https://registry.npmjs.org/@types/react/-/react-18.2.19.tgz"
+  "version" "18.2.19"
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -3130,10 +3130,10 @@
     "react-is" "^18.0.0"
     "use-sync-external-store" "^1.0.0"
 
-"react-remove-scroll-bar@^2.3.3":
-  "integrity" "sha512-i9GMNWwpz8XpUpQ6QlevUtFjHGqnPG4Hxs+wlIJntu/xcsZVEpJcIV71K3ZkqNy2q3GfgvkD7y6t/Sv8ofYSbw=="
-  "resolved" "https://registry.npmjs.org/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.3.tgz"
-  "version" "2.3.3"
+"react-remove-scroll-bar@^2.3.3", "react-remove-scroll-bar@^2.3.4":
+  "integrity" "sha512-63C4YQBUt0m6ALadE9XV56hV8BgJWDmmTPY758iIJjfQKt2nYwoUrPk0LXRXcB/yIj82T1/Ixfdpdk68LwIB0A=="
+  "resolved" "https://registry.npmjs.org/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.4.tgz"
+  "version" "2.3.4"
   dependencies:
     "react-style-singleton" "^2.2.1"
     "tslib" "^2.0.0"
@@ -3464,6 +3464,11 @@
   "integrity" "sha512-R2/nULkdg1VR/EL4RXg4dEohdoxNUJGLMnWIQnPKL+O9Twu7Cn3Rxi4dlXkDzZrEGtR+G+psSXFouWlpTyLhCQ=="
   "resolved" "https://registry.npmjs.org/tailwind-merge/-/tailwind-merge-1.13.2.tgz"
   "version" "1.13.2"
+
+"tailwind-scrollbar-hide@^1.1.7":
+  "integrity" "sha512-X324n9OtpTmOMqEgDUEA/RgLrNfBF/jwJdctaPZDzB3mppxJk7TLIDmOreEDm1Bq4R9LSPu4Epf8VSdovNU+iA=="
+  "resolved" "https://registry.npmjs.org/tailwind-scrollbar-hide/-/tailwind-scrollbar-hide-1.1.7.tgz"
+  "version" "1.1.7"
 
 "tailwindcss@^3.1.8":
   "integrity" "sha512-YSneUCZSFDYMwk+TGq8qYFdCA3yfBRdBlS7txSq0LUmzyeqRe3a8fBQzbz9M3WS/iFT4BNf/nmw9mEzrnSaC0g=="

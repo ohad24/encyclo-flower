@@ -3,12 +3,8 @@ import React, { useEffect } from "react";
 import "../../styles/QuestionCommunity.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { UpdateIsQuestion } from "redux/action";
-import {
-  getAll,
-  submit,
-  updateQuestionObservation,
-} from "services/flowersService";
-import Router, { withRouter } from "next/router";
+import { get, putWithAuthorization } from "services/flowersService";
+import Router from "next/router";
 import FormToCommunity from "components/Forms/FormToCommunity";
 import Loader from "components/Loader/Loader";
 
@@ -26,7 +22,7 @@ const CommunitySharing = () => {
     async function getData() {
       try {
         const data = (
-          await getAll(`community/observations/${store.observationId}`)
+          await get(`community/observations/${store.observationId}`)
         ).data;
         setImages(data.images);
       } catch (err) {
@@ -41,13 +37,14 @@ const CommunitySharing = () => {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      await updateQuestionObservation(
+      await putWithAuthorization(
         `community/observations/${store.observationId}`,
         { observation_text: question },
         store.token
       );
-      await submit(
+      await putWithAuthorization(
         `community/observations/${store.observationId}/submit`,
+        {},
         store.token
       );
       setIsSubmitting(false);
@@ -62,9 +59,8 @@ const CommunitySharing = () => {
 
   const getImages = async () => {
     try {
-      const data = (
-        await getAll(`community/observations/${store.observationId}`)
-      ).data;
+      const data = (await get(`community/observations/${store.observationId}`))
+        .data;
       setImages(data.images);
     } catch (err) {
       console.log(err);

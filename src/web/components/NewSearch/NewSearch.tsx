@@ -1,8 +1,7 @@
 import React from "react";
-import GalleryIcon from "components/Icons/Gallery";
 import { ChangeEvent } from "react";
-import Router, { withRouter } from "next/router";
-import { getSearchResults } from "services/flowersService";
+import Router from "next/router";
+import { postWithAuthorization } from "services/flowersService";
 import { useDispatch, useSelector } from "react-redux";
 import {
   updateImagesCommunity,
@@ -10,14 +9,22 @@ import {
   updateSelectedImages,
 } from "redux/action";
 import Loader from "components/Loader/Loader";
-import SearchIcon from "components/Icons/SearchIcon";
+import SearchByImage from "components/SeachByImage/SearchByImage";
+import SearchByProperties from "components/SearchByProperties/SearchByProperties";
 
-const NewSearch = (props: {
+interface Props {
   isAI: boolean;
   isSearchFromPlant?: boolean;
   questionsIds: Array<string>;
   setQuestionsIds: (arrIds: Array<string>) => void;
-}) => {
+}
+
+const NewSearch = ({
+  isAI,
+  isSearchFromPlant,
+  questionsIds,
+  setQuestionsIds,
+}: Props) => {
   const dispatch = useDispatch();
   const store = useSelector((state: any) => state);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
@@ -47,7 +54,7 @@ const NewSearch = (props: {
     try {
       setIsSubmitting(true);
       const data = (
-        await getSearchResults("detect/image/", formData, store.token)
+        await postWithAuthorization("detect/image/", formData, store.token)
       ).data;
       dispatch(updateResults(data));
       dispatch(updateSelectedImages(files));
@@ -69,7 +76,7 @@ const NewSearch = (props: {
     }
     try {
       const data = (
-        await getSearchResults(
+        await postWithAuthorization(
           store.isQuestion
             ? `community/questions/${store.questionId}/image`
             : `community/observations/${store.observationId}/image`,
@@ -77,85 +84,38 @@ const NewSearch = (props: {
           store.token
         )
       ).data;
-      props.setQuestionsIds([...props.questionsIds, data.image_id]);
+      setQuestionsIds([...questionsIds, data.image_id]);
       dispatch(updateImagesCommunity(FileListItems(files)));
     } catch (err) {
       console.log(err);
     }
   };
+  const showSearch = isSearchFromPlant ? (
+    <SearchByImage />
+  ) : (
+    <SearchByProperties />
+  );
 
   return (
     <div
       className={
-        props.isSearchFromPlant
+        isSearchFromPlant
           ? "h-[100px] m-auto max-w-[120px] mt-2 sm:mt-5"
           : "h-[32px]"
       }
     >
       {" "}
       <Loader text="טוען תוצאות חיפוש..." isLoading={isSubmitting} />
-      {props.isSearchFromPlant ? (
-        <label
-          htmlFor="filePicker"
-          className="cursor-pointer text-center flex flex-col-reverse text-base m-auto text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 h-[100px] w-[120px] rounded-3xl"
-        >
-          <span className="table m-auto">
-            <span className="table m-auto">
-              <GalleryIcon size={22} />
-            </span>
-            <span className="flex flex-wrap leading-5 max-w-[100px] font-bold">
-              חיפוש בעזרת תמונה
-            </span>
-          </span>
-        </label>
-      ) : (
-        <label
-          htmlFor="filePicker"
-          className="cursor-pointer flex justify-center items-center gap-2 text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 min-w-[248px] text-center p-1 rounded shadow hover:shadow-lg"
-        >
-          <SearchIcon /> <span>חיפוש חדש</span>
-        </label>
-      )}
+      {showSearch}
       <input
         id="filePicker"
         type={"file"}
         className="text-secondary text-sm text-center max-w-[150px] invisible"
-        onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
-        multiple={props.isAI ? true : false}
+        onChange={(e) => (isAI ? handleSetImage(e) : addImage(e))}
+        multiple={isAI ? true : false}
       ></input>
     </div>
   );
 };
 
 export default NewSearch;
-
-/* 
-    <button className="flex flex-col-reverse text-base m-auto text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 h-[100px] w-[120px] mt-2 sm:mt-5 rounded-3xl">
-            <span className="table m-auto">
-              <span className="table m-auto">
-                <GalleryIcon size={22} />
-              </span>
-              <span className="flex flex-wrap leading-5 max-w-[100px] font-bold">
-                חיפוש בעזרת תמונה
-              </span>
-            </span>
-          </button>
-<div className="cursor-pointer h-[50px] flex justify-center items-center gap-2 text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 min-w-[248px] text-center p-1 rounded shadow hover:shadow-lg">
-      <Loader text="טוען תוצאות חיפוש..." isLoading={isSubmitting} />
-      <div className="bg-orange-500">
-        <label htmlFor="filePicker" className="flex flex-row">
-          <input
-            id="filePicker"
-            style={{ visibility: "hidden" }}
-            type={"file"}
-            className="text-secondary text-sm text-center max-w-[150px]"
-            onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
-            multiple={props.isAI ? true : false}
-          ></input>
-          <span className="flex flex-row m-auto inline-block items-center">
-            {" "}
-            <SearchIcon /> <span className="m-auto">חיפוש חדש</span>{" "}
-          </span>
-        </label>
-      </div>
-    </div> */

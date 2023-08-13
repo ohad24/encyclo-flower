@@ -1,8 +1,8 @@
 import { Input } from "@chakra-ui/react";
 import AddImageButton from "components/Buttons/AddImageButton";
 import PostQuestionButton from "components/Buttons/PostQuestionButton";
+import HeadLine from "components/Headline/headLine";
 import ImageFromQuestion from "components/ImageFromQuestion/ImageFromQuestions";
-import { nanoid } from "nanoid";
 import { useSelector } from "react-redux";
 
 interface Props {
@@ -23,16 +23,27 @@ const FormToCommunity = ({
   setQuestionsIds,
 }: Props) => {
   const store = useSelector((state: any) => state);
+
+  const showImages = Array.from(images).map((image: any, index) => {
+    return (
+      <ImageFromQuestion
+        key={image.image_id}
+        index={index}
+        image={image}
+        images={images}
+        setImages={setImages}
+      />
+    );
+  });
+
+  const questionOrShare = store.isQuestion ? "שאלה לקהילה" : "שיתוף תצפית";
+
   return (
     <form
       onSubmit={postQuestion}
       className="flex flex-col justify-center items-center w-[100%] md:max-w-[52.7%] m-auto"
     >
-      <div className="flex items-center justify-center my-5 ">
-        <p className="font-bold text-secondary  border-b-4  border-b-primary mb-7 text-2xl w-[158px] text-center ">
-          {store.isQuestion ? "שאלה לקהילה" : "שיתוף תצפית"}
-        </p>
-      </div>
+      <HeadLine text={questionOrShare} width={158} />
 
       <Input
         className="relative p-2 mb-8 max-w-[100%] min-h-[80px] caret-color: #60a5fa placeholder-sky-900 text-sky-900 pb-12"
@@ -45,19 +56,7 @@ const FormToCommunity = ({
           backgroundColor: "rgb(229 231 235)",
         }}
       />
-      <div className="flex flex-row gap-10 ml-auto flex-wrap">
-        {Array.from(images).map((image, index) => {
-          return (
-            <ImageFromQuestion
-              key={nanoid()}
-              index={index}
-              image={image}
-              images={images}
-              setImages={setImages}
-            />
-          );
-        })}
-      </div>
+      <div className="flex flex-row gap-10 ml-auto flex-wrap">{showImages}</div>
       <AddImageButton
         questionsIds={questionsIds}
         setQuestionsIds={setQuestionsIds}

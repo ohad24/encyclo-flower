@@ -16,24 +16,19 @@ import {
 import { useSelector } from "react-redux";
 import Images from "components/Images/Images";
 import { nanoid } from "nanoid";
-import { background } from "@chakra-ui/react";
 import HeartIcon from "components/Icons/HeartIcon";
 import {
-  getIsFavorite,
-  getPlantByName,
-  removeFavorite,
-  submit,
+  getWithAuthorization,
+  get,
+  deleteWithAuthorization,
+  putWithAuthorization,
 } from "services/flowersService";
 import EditIcon from "components/Icons/EditIcon";
 import SearchIcon from "components/Icons/SearchIcon";
 import RightIcon from "components/Icons/RightIcon";
-import Router, { withRouter } from "next/router";
+import Router from "next/router";
 import NewSearch from "components/NewSearch/NewSearch";
 import Loader from "components/Loader/Loader";
-
-interface Props {
-  data: IPlantDetails;
-}
 
 const initialState = {
   plant_id: "",
@@ -131,12 +126,11 @@ const PlanetDetails = () => {
     async function checkFavorite() {
       try {
         setIsSubmitting(true);
-        const dataPlant = (
-          await getPlantByName(`plants/${router.query.science_name}`)
-        ).data;
+        const dataPlant = (await get(`plants/${router.query.science_name}`))
+          .data;
         setPlanet(dataPlant);
         const data = (
-          await getIsFavorite(
+          await getWithAuthorization(
             `users/me/favorite-plant/${router.query.science_name}`,
             store.token
           )
@@ -178,13 +172,17 @@ const PlanetDetails = () => {
   const handleClick = async () => {
     try {
       if (colorHeart === "orange") {
-        await removeFavorite(
+        await deleteWithAuthorization(
           `plants/${planet.science_name}/remove-favorite`,
           store.token
         );
         setColorHeart("#0f4871");
       } else {
-        await submit(`plants/${planet.science_name}/add-favorite`, store.token);
+        await putWithAuthorization(
+          `plants/${planet.science_name}/add-favorite`,
+          {},
+          store.token
+        );
         setColorHeart("orange");
       }
     } catch (err) {
@@ -290,42 +288,23 @@ const PlanetDetails = () => {
               const k = key as keyof typeof planet.taxon;
               if (planet.taxon[k] !== null) {
                 return (
-                  <div
-                    key={key}
-                    className="flex flex-col"
-                    style={{
-                      position: "relative",
-                    }}
-                  >
+                  <div key={key} className="relative flex flex-col">
                     <p className="font-bold m-auto">{globalTaxon[k]}</p>
-                    <div
-                      className="flex flex-row"
-                      style={{
-                        position: "relative",
-                      }}
-                    >
+                    <div className="relative flex flex-row">
                       {index !== 0 ? (
                         <div
+                          className="absolute border-solid border-t-8 border-r-18"
                           style={{
-                            width: "0",
-                            height: "0",
-                            borderStyle: "solid",
+                            top: "35%",
                             borderWidth: "10px 18px 10px 0",
                             borderColor:
                               "transparent white transparent transparent",
-                            position: "absolute",
-                            right: "0%",
-                            top: "35%",
                           }}
                         ></div>
                       ) : null}
                       <div
+                        className="w-[126px] h-[70px] text-center pt-4 rounded-2xl"
                         style={{
-                          width: "126px",
-                          height: "70px",
-                          textAlign: "center",
-                          paddingTop: "17px",
-                          borderRadius: "15px",
                           backgroundColor: "#e5dfe1",
                           border: "4px solid #ffffff",
                         }}
@@ -334,17 +313,13 @@ const PlanetDetails = () => {
                       </div>
                       {index + 1 !== Object.keys(planet.taxon).length ? (
                         <div
+                          className="absolute border-solid z-10"
                           style={{
-                            width: "0",
-                            height: "0",
-                            borderStyle: "solid",
                             borderWidth: "20px 30px 20px 0",
                             borderColor:
                               "transparent #e5dfe1 transparent transparent",
-                            position: "absolute",
                             right: "85%",
                             top: "20%",
-                            zIndex: "10",
                           }}
                         ></div>
                       ) : null}
@@ -508,7 +483,7 @@ const PlanetDetails = () => {
               </div>
             </div>
           </div>
-          <article style={{ whiteSpace: "pre-wrap" }} className="mt-10">
+          <article className="whitespace-pre-wrap mt-10">
             {planet.description?.split("\n").map((row) => {
               if (row[0] === "@") {
                 return (

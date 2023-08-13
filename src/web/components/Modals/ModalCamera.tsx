@@ -3,7 +3,7 @@ import Image from "next/image";
 import camara from "../../images/camara.png";
 import { ChangeEvent } from "react";
 import Router, { withRouter } from "next/router";
-import { getSearchResults } from "services/flowersService";
+import { postWithAuthorization } from "services/flowersService";
 import { useDispatch, useSelector } from "react-redux";
 import {
   updateImagesCommunity,
@@ -12,13 +12,19 @@ import {
 } from "redux/action";
 import Loader from "components/Loader/Loader";
 
-const ModalCamera = (props: {
+interface Props {
   isAI: boolean;
-  isAIOpen: boolean;
   setIsAIOpen: (bool: boolean) => void;
   questionsIds: Array<string>;
   setQuestionsIds: (arrIds: Array<string>) => void;
-}) => {
+}
+
+const ModalCamera = ({
+  isAI,
+  setIsAIOpen,
+  questionsIds,
+  setQuestionsIds,
+}: Props) => {
   const dispatch = useDispatch();
   const store = useSelector((state: any) => state);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
@@ -48,7 +54,7 @@ const ModalCamera = (props: {
     try {
       setIsSubmitting(true);
       const data = (
-        await getSearchResults("detect/image/", formData, store.token)
+        await postWithAuthorization("detect/image/", formData, store.token)
       ).data;
       dispatch(updateResults(data));
       dispatch(updateSelectedImages(files));
@@ -70,7 +76,7 @@ const ModalCamera = (props: {
     }
     try {
       const data = (
-        await getSearchResults(
+        await postWithAuthorization(
           store.isQuestion
             ? `community/questions/${store.questionId}/image`
             : `community/observations/${store.observationId}/image`,
@@ -78,8 +84,8 @@ const ModalCamera = (props: {
           store.token
         )
       ).data;
-      props.setQuestionsIds([...props.questionsIds, data.image_id]);
-      props.setIsAIOpen(false);
+      setQuestionsIds([...questionsIds, data.image_id]);
+      setIsAIOpen(false);
       dispatch(updateImagesCommunity(FileListItems(files)));
     } catch (err) {
       console.log(err);
@@ -97,8 +103,8 @@ const ModalCamera = (props: {
           id="filePicker"
           type={"file"}
           className="text-secondary text-sm text-center max-w-[150px] invisible"
-          onChange={(e) => (props.isAI ? handleSetImage(e) : addImage(e))}
-          multiple={props.isAI ? true : false}
+          onChange={(e) => (isAI ? handleSetImage(e) : addImage(e))}
+          multiple={isAI ? true : false}
         ></input>
         <span>
           <Image src={camara} alt="Camara" />

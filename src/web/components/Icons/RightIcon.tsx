@@ -1,9 +1,9 @@
 import React from "react";
 
-type Props = {
+interface Props {
   color?: string;
   size?: number;
-};
+}
 
 const RightIcon = ({ color = "#0f4871", size = 16 }: Props) => {
   return (

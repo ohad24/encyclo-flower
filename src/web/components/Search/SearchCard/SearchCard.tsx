@@ -24,12 +24,12 @@ const SearchCard = ({ item }: Props) => {
 
   return (
     <div
-      className="flex flex-col   w-full sm:w-[20rem]    my-4 
+      className="flex flex-col   w-full sm:w-[20rem] my-4 
           bg-white rounded-xl transform transition-all hover:-translate-y-[0.5px] shadow hover:shadow-xl
           duration-300 pb-3 group"
     >
       <img
-        src={`https://storage.googleapis.com/ef-prod/plants-images/thumbnails/${item.image}`}
+        src={`${process.env.IMAGE_BASE_URL}/plants-images/thumbnails/${item.image}`}
         className="h-40 object-cover rounded-xl w-full rounded-b-none"
         alt="some alt"
       />

@@ -8,10 +8,14 @@ import Suggestions from "components/Suggestions/Suggestions";
 import { IUser } from "helpers/interfaces";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { getIsFavorite, update } from "services/flowersService";
+import {
+  getWithAuthorization,
+  putWithAuthorization,
+} from "services/flowersService";
 import Images from "components/Images/Images";
 import SaveIcon from "components/Icons/SaveIcon";
 import Loader from "components/Loader/Loader";
+import HeadLine from "components/Headline/headLine";
 
 const initialUser = {
   user_id: "",
@@ -43,7 +47,7 @@ const MyProfile = () => {
     async function getUser() {
       try {
         setIsSubmitting(true);
-        const data = (await getIsFavorite("users/me", store.token)).data;
+        const data = (await getWithAuthorization("users/me", store.token)).data;
         setUser(data);
         setEditUser(data);
         setIsSubmitting(false);
@@ -108,7 +112,11 @@ const MyProfile = () => {
   const saveDetails = async () => {
     if (!validateForm()) return;
     try {
-      await update(`users/${user.username}`, editUser, store.token);
+      await putWithAuthorization(
+        `users/${user.username}`,
+        editUser,
+        store.token
+      );
       setUser({ ...user, ...editUser });
       setClickEdit(false);
     } catch (err) {
@@ -125,11 +133,7 @@ const MyProfile = () => {
     <Layout>
       <div className="default-container">
         <div className="flex flex-col justify-center items-center max-w-[100%] m-auto">
-          <div className="flex items-center justify-center my-5 ">
-            <p className="font-bold text-secondary border-b-4 border-b-primary text-2xl max-w-[205px] text-center ">
-              הפרופיל שלי{" "}
-            </p>
-          </div>
+          <HeadLine text={"הפרופיל שלי"} width={205} />
           <div className="text-xl text-center text-sky-900">
             <div>
               {!clickEdit && (
@@ -282,9 +286,9 @@ const MyProfile = () => {
                         <SaveIcon size={19} color="#16a34a" />
                       </div>
                       <button
-                        className="text-green-600"
+                        className="mt-0.5"
                         onClick={saveDetails}
-                        style={{ marginTop: "2.5px", color: "#16a34a" }}
+                        style={{ color: "#16a34a" }}
                       >
                         {" "}
                         שמור פרטים
@@ -295,11 +299,7 @@ const MyProfile = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center justify-center my-5 ">
-            <p className="font-bold text-secondary border-b-4 border-b-primary text-2xl max-w-[255px] text-center ">
-              תמונות שהעליתי לזיהוי
-            </p>
-          </div>
+          <HeadLine text={"תמונות שהעליתי לזיהוי"} width={255} />
           <Images
             photos={user.image_detections.map((image: any) => image.metadata)}
             username={user.username}
@@ -308,11 +308,7 @@ const MyProfile = () => {
             isQuestion={false}
             imagesDetections={true}
           />
-          <div className="flex items-center justify-center my-5 ">
-            <p className="font-bold text-secondary border-b-4 border-b-primary text-2xl max-w-[255px] text-center ">
-              שאלות ששאלתי
-            </p>
-          </div>
+          <HeadLine text={"שאלות ששאלתי"} width={255} />
           {user.questions.map((question: any) => (
             <Suggestions
               key={question.question_id}
@@ -322,11 +318,7 @@ const MyProfile = () => {
               isQuestion={true}
             />
           ))}
-          <div className="flex items-center justify-center my-5 ">
-            <p className="font-bold text-secondary border-b-4 border-b-primary text-2xl max-w-[255px] text-center ">
-              הפוסטים שלי{" "}
-            </p>
-          </div>
+          <HeadLine text={"הפוסטים שלי"} width={255} />
           {user.observations.map((observation: any) => (
             <Suggestions
               key={observation.observation_id}
@@ -337,11 +329,7 @@ const MyProfile = () => {
             />
           ))}
         </div>
-        <div className="flex items-center justify-center my-5 ">
-          <p className="font-bold text-secondary border-b-4 border-b-primary text-2xl max-w-[255px] text-center ">
-            צמחים שאהבתי{" "}
-          </p>
-        </div>
+        <HeadLine text={"צמחים שאהבתי"} width={255} />
         {user.favorite_plants.map((favorite_plant: any, index: number) => (
           <SearchResult
             key={favorite_plant.plant_id}
