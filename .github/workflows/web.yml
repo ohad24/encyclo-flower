@@ -53,6 +53,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SERVER_BASE_URL=https://encyclo-flower.com/api/v1
+            IMAGE_BASE_URL=https://storage.googleapis.com/ef-prod
+            IMAGE_USER_BASE_URL=https://storage.googleapis.com/ef-prod
 
       - name: Build and push (other triggers)
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
@@ -64,6 +66,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SERVER_BASE_URL=https://dev.encyclo-flower.com/api/v1
+            IMAGE_BASE_URL=https://storage.googleapis.com/ef-dev
+            IMAGE_USER_BASE_URL=https://storage.googleapis.com/ef-dev
 
   deploy:
     if: ${{ github.event_name != 'pull_request' }}
