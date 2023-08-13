@@ -1,4 +1,4 @@
-from envsmtp import EmailMessage
+from envsmtp import EmailMessage, NameEmail
 from pydantic import EmailStr
 from core.config import get_settings
 from models.user import UserVerificationTokenData, UserVerificationTokenDataExt
@@ -32,25 +32,24 @@ def setup_email_verification(
     )
 
     # * set email body
-    # TODO: setup a production email template
-    body = f"""
-    Hi,
-    Please click the link below to verify your email address:
-    {base_url}{settings.API_PREFIX[1:]}/users/verify-email/{user_verification.token}
+    body = f"""<div dir="rtl">
+    ברכות על הצטרפותך לקהילת אנציקלופרח!
 
-    The link will expire in 48 hours.
+נא לאשר את כתובת המייל בקישור:
+{os.getenv("APP_URL", str(base_url)[:-1])}/verify-email/{user_verification.token}
 
-    Thanks,
-    The {settings.APP_NAME} Team
-    """
+הגדרת צמחים מהנה!
+<img style="max-width:200px;width:100%" src="https://storage.googleapis.com/ef-prod/logo.png" alt="logo">
+</div>
+"""
 
     # * store token in db
     db.email_verification_tokens.insert_one(user_verification.dict())
 
     # * send mail with token
     msg = EmailMessage(
-        sender=settings.EMAIL_ADDRESS,
-        receipients=email,
+        sender=NameEmail(settings.EMAIL_SENDER_NAME, settings.EMAIL_SENDER_ADDRESS),
+        receipients=NameEmail("new user", email),
         subject="Email verification",
         body=body,
     )

@@ -245,18 +245,18 @@ async def create_user(
     hash_password = get_password_hash(user_in.password.get_secret_value())
 
     # * setup userInDB with hash password
-    userInDB = UserInDB(**user_in.dict(exclude={"password"}), password=hash_password)
+    user = UserInDB(**user_in.dict(exclude={"password"}), password=hash_password)
 
     # * email verification
     background_tasks.add_task(
         setup_email_verification,
-        userInDB.user_id,
-        userInDB.email,
+        user.user_id,
+        user.email,
         request.base_url,
     )
 
     # * insert user
-    db.users.insert_one(userInDB.dict())
+    db.users.insert_one(user.dict())
 
     return Response(status_code=201)
 

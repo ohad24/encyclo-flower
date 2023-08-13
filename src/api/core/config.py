@@ -26,7 +26,8 @@ class Settings(BaseSettings):
 
     # * Email settings
     # * SMTP_USER and SMTP_PASS should be in environment variables
-    EMAIL_ADDRESS: EmailStr = "encyclo.flower@gmail.com"
+    EMAIL_SENDER_NAME: str = "Encyclo Flower"
+    EMAIL_SENDER_ADDRESS: EmailStr = "encyclo.flower@gmail.com"
     EMAIL_VERIFICATION_EXPIRES_MINUTES: int = 60 * 24 * 2  # 2 days
     EMAIL_PASSWORD_RESET_EXPIRES_MINUTES: int = 60 * 24  # 1 days
 
