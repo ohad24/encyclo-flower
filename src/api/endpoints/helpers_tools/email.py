@@ -86,8 +86,8 @@ def setup_reset_password_email(
 
     # * send mail with token
     msg = EmailMessage(
-        sender=settings.EMAIL_ADDRESS,
-        receipients=email,
+        sender=NameEmail(settings.EMAIL_SENDER_NAME, settings.EMAIL_SENDER_ADDRESS),
+        receipients=NameEmail("new user", email),
         subject="Reset password",
         body=body,
     )
