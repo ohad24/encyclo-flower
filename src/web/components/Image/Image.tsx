@@ -54,8 +54,8 @@ const Image = ({ path, index, image, images, setImages }: Props) => {
   };
 
   const src = store.isQuestion
-    ? `${process.env.IMAGE_BASE_URL}/ef-dev-fe/questions/${image.file_name}`
-    : `${process.env.IMAGE_BASE_URL}/ef-dev-fe/observations/${image.file_name}`;
+    ? `${process.env.IMAGE_USER_BASE_URL}/questions/${image.file_name}`
+    : `${process.env.IMAGE_USER_BASE_URL}/observations/${image.file_name}`;
 
   return (
     <div className="m-auto sm:m-0">

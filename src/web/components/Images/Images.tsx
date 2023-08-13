@@ -68,12 +68,12 @@ const Images = ({
       url: !imagesDetections
         ? imageFromTheUser
           ? isQuestion
-            ? `${process.env.IMAGE_BASE_URL}/questions/${image.file_name}`
-            : `${process.env.IMAGE_BASE_URL}/observations/${image.file_name}`
-          : `${process.env.IMAGE_USER_BASE_URL}/plants-images/images/${
+            ? `${process.env.IMAGE_USER_BASE_URL}/questions/${image.file_name}`
+            : `${process.env.IMAGE_USER_BASE_URL}/observations/${image.file_name}`
+          : `${process.env.IMAGE_BASE_URL}/plants-images/images/${
               typeof photos[i] === "string" ? photos[i] : photos[i].file_name
             }`
-        : `${process.env.IMAGE_BASE_URL}/image_api_files/${image.file_name}`,
+        : `${process.env.IMAGE_USER_BASE_URL}/image_api_files/${image.file_name}`,
     });
     dispatch(UpdateUserName(username || ""));
     dispatch(UpdatePlantName(plantName));
