@@ -67,7 +67,7 @@ jobs:
       - name: "Download latest plants data file"
         run: gsutil cp $(gsutil ls gs://ef-prod-private/plants_data | sort -r | head -n 1) plants_data.json
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.9.0
+        uses: supercharge/mongodb-github-action@v1.10.0
         with:
           mongodb-version: 6.0.8
           mongodb-username: ${{ env.MONGO_USERNAME }}
