@@ -68,12 +68,12 @@ const Images = ({
       url: !imagesDetections
         ? imageFromTheUser
           ? isQuestion
-            ? `${process.env.IMAGE_BASE_URL}/questions/${image.file_name}`
-            : `${process.env.IMAGE_BASE_URL}/observations/${image.file_name}`
-          : `${process.env.IMAGE_USER_BASE_URL}/plants-images/images/${
+            ? `${process.env.IMAGE_USER_BASE_URL}/questions/${image.file_name}`
+            : `${process.env.IMAGE_USER_BASE_URL}/observations/${image.file_name}`
+          : `${process.env.IMAGE_BASE_URL}/plants-images/images/${
               typeof photos[i] === "string" ? photos[i] : photos[i].file_name
             }`
-        : `${process.env.IMAGE_BASE_URL}/image_api_files/${image.file_name}`,
+        : `${process.env.IMAGE_USER_BASE_URL}/image_api_files/${image.file_name}`,
     });
     dispatch(UpdateUserName(username || ""));
     dispatch(UpdatePlantName(plantName));
@@ -112,12 +112,12 @@ const Images = ({
   ));
 
   return (
-    <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]	">
+    <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]">
       {" "}
       <div className="flex flex-row gap-2.5 max-w-[100%]">
         {rightOrLeft}
         <div
-          className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-hidden"
+          className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-x-scroll hide-scrollbar"
           ref={elementRef}
         >
           {" "}

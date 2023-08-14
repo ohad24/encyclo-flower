@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { updateImagesCommunity } from "redux/action";
 import { deleteWithAuthorization, create } from "services/flowersService";
-import RotateIcon from "components/Icons/CamaraIcon copy";
+import RotateIcon from "components/Icons/RotateIcon";
 
 interface Props {
   path: string;
@@ -54,8 +54,8 @@ const Image = ({ path, index, image, images, setImages }: Props) => {
   };
 
   const src = store.isQuestion
-    ? `${process.env.IMAGE_BASE_URL}/ef-dev-fe/questions/${image.file_name}`
-    : `${process.env.IMAGE_BASE_URL}/ef-dev-fe/observations/${image.file_name}`;
+    ? `${process.env.IMAGE_USER_BASE_URL}/questions/${image.file_name}`
+    : `${process.env.IMAGE_USER_BASE_URL}/observations/${image.file_name}`;
 
   return (
     <div className="m-auto sm:m-0">

@@ -41,12 +41,12 @@ const ImageComp = ({
   const src = !imagesDetections
     ? imageFromTheUser
       ? isQuestion
-        ? `${process.env.IMAGE_BASE_URL}/questions/${image.file_name}`
-        : `${process.env.IMAGE_BASE_URL}/observations/${image.file_name}`
-      : `${process.env.IMAGE_USER_BASE_URL}/plants-images/images/${
+        ? `${process.env.IMAGE_USER_BASE_URL}/questions/${image.file_name}`
+        : `${process.env.IMAGE_USER_BASE_URL}/observations/${image.file_name}`
+      : `${process.env.IMAGE_BASE_URL}/plants-images/images/${
           typeof photos[i] === "string" ? photos[i] : photos[i].file_name
         }`
-    : `${process.env.IMAGE_BASE_URL}/image_api_files/${image.file_name}`;
+    : `${process.env.IMAGE_USER_BASE_URL}/image_api_files/${image.file_name}`;
 
   const photographer = image.author_name ? image.author_name : username;
 

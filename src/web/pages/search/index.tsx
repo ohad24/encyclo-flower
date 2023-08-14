@@ -108,11 +108,11 @@ const kozim = [
 ];
 
 import Loader from "components/Loader/Loader";
-import { ISearchResult, IState } from "helpers/interfaces";
+import { IState } from "helpers/interfaces";
 import { postWithObj } from "services/flowersService";
 import SearchResult from "components/SearchResult/SearchResult";
 import SearchResults from "components/SearchResults/SearchResults";
-import RotateIcon from "components/Icons/CamaraIcon copy";
+import RotateIcon from "components/Icons/RotateIcon";
 import { UpdateResultsByAttributes } from "redux/action";
 import { useDispatch, useSelector } from "react-redux";
 import HeadLine from "components/Headline/headLine";
