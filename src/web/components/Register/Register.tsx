@@ -215,7 +215,7 @@ const Register = () => {
           />
           <Input
             text={"אימות סיסמה"}
-            inputName={"password"}
+            inputName={"confirm_password"}
             val={user.confirm_password}
             onChange={onChange}
             error={""}
