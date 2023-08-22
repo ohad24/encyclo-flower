@@ -1,7 +1,7 @@
 import { Input } from "@chakra-ui/react";
 import AddImageButton from "components/Buttons/AddImageButton";
 import PostQuestionButton from "components/Buttons/PostQuestionButton";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/headLine";
 import ImageFromQuestion from "components/ImageFromQuestion/ImageFromQuestions";
 import { useSelector } from "react-redux";
 

@@ -2,6 +2,7 @@ import React from "react";
 
 interface Props {
   updateDataImage: () => Promise<void>;
+  location_name: string;
   handleChange: (
     e:
       | React.ChangeEvent<HTMLSelectElement>
@@ -9,7 +10,11 @@ interface Props {
   ) => void;
 }
 
-const SelectLocation = ({ updateDataImage, handleChange }: Props) => {
+const SelectLocation = ({
+  updateDataImage,
+  handleChange,
+  location_name,
+}: Props) => {
   return (
     <div className="w-[100%] sm:w-[155px]">
       <select
@@ -17,7 +22,7 @@ const SelectLocation = ({ updateDataImage, handleChange }: Props) => {
         name="location_name"
         onBlur={updateDataImage}
         onChange={handleChange}
-        defaultValue={"default"}
+        defaultValue={location_name}
         required
         className="mb-4 w-[100%] sm:w-[155px] h-[32px] caret-color: #60a5fa inputQuestion placeholder-sky-900 text-sky-900 rounded-3xl text-center font-medium pb-0.5 appearance-none"
         style={{

@@ -1,4 +1,3 @@
-import { useDispatch } from "react-redux";
 import { ChangeEvent } from "react";
 import { updateImagesCommunity } from "redux/action";
 import { postWithAuthorization } from "services/flowersService";

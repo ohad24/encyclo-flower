@@ -5,7 +5,7 @@ import MenuIcon from "../MenuIcon/Menu";
 import LoginAndRegisterModel from "../LoginAndRegisterModel/LoginAndRegisterModel";
 
 import { nanoid } from "nanoid";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 
 // Icons components
 import ModalLogin from "components/Modals/ModalLogin";
@@ -13,6 +13,8 @@ import Logo from "components/Logo/Logo";
 import Supports from "components/Supports/Supports";
 import Notifications from "components/Notifications/Notifications";
 import LoginOrRegister from "components/LoginOrRegister/LoginOrRegister";
+import { useSelector } from "react-redux";
+import ModalLoginMessage from "components/Modals/ModalLoginMessage";
 
 const cookies = new Cookies();
 const menuItems = [
@@ -28,7 +30,9 @@ const menuItems = [
 ];
 
 const Header = () => {
+  const store = useSelector((state: any) => state);
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpenMessage, setIsOpenMessage] = React.useState(false);
   const [menuId, setMenuId] = useState(0);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const handleMenuId = (id: number) => {
@@ -45,6 +49,12 @@ const Header = () => {
     }
   }, []);
 
+  const showMessage = (item: any) => {
+    if (item.text === "הפרופיל שלי") {
+      setIsOpenMessage(true);
+    }
+  };
+
   const renderMenu = (isSeperator: boolean) => {
     return (
       <>
@@ -52,7 +62,11 @@ const Header = () => {
           return (
             <div key={nanoid()} className="flex flex-row gap-2">
               <div
-                onClick={() => handleMenuId(index)}
+                onClick={
+                  store.token
+                    ? () => handleMenuId(index)
+                    : () => showMessage(item)
+                }
                 className={`${
                   menuId === index ? "text-primary" : ""
                 } cursor-pointer ${
@@ -61,7 +75,15 @@ const Header = () => {
                     : null
                 }`}
               >
-                <Link href={`${item.url}`}>{item.text}</Link>
+                <Link
+                  href={
+                    !store.token && item.text === "הפרופיל שלי"
+                      ? ""
+                      : `${item.url}`
+                  }
+                >
+                  {item.text}
+                </Link>
               </div>
               {isSeperator ? <div>|</div> : ""}
             </div>
@@ -86,7 +108,6 @@ const Header = () => {
           <div className="flex gap-2 md:gap-5 align-center justify-center flex-row-reverse">
             <Notifications />
             <LoginOrRegister setIsLoginOpen={setIsLoginOpen} />
-
             <div className="md:hidden" onClick={() => setIsOpen(true)}>
               <MenuIcon />
             </div>
@@ -107,6 +128,7 @@ const Header = () => {
         setIsOpen={setIsOpen}
         renderMenu={renderMenu}
       />
+      <ModalLoginMessage isOpen={isOpenMessage} setIsOpen={setIsOpenMessage} />
     </header>
   );
 };

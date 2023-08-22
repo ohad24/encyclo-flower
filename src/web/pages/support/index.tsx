@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Layout from "../../components/Layout/Layout";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/headLine";
 import ImagesSupports from "components/Images/ImagesSupports";
 
 const Support = () => {

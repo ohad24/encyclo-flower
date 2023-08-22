@@ -43,7 +43,7 @@ const LoginOrRegister = ({ setIsLoginOpen }: Props) => {
         {store.token ? (
           <div className="hidden md:block text-xs">מחובר</div>
         ) : (
-          <div className="hidden md:block text-xs">התחבר \ הרשם</div>
+          <div className="hidden md:block text-xs">התחבר \ הירשם</div>
         )}
       </div>
     </div>

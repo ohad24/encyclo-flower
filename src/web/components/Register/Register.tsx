@@ -54,24 +54,42 @@ const Register = () => {
   };
   const validateForm = () => {
     let isValid: boolean = true;
-    if (user.f_name.length < 1) {
-      setErrors((prev) => {
-        return { ...prev, f_name: "שם פרטי - חובה" };
-      });
+    if (user.f_name.length < 2) {
+      if (user.f_name.length < 1) {
+        setErrors((prev) => {
+          return { ...prev, f_name: "שם פרטי - חובה" };
+        });
+      } else {
+        setErrors((prev) => {
+          return { ...prev, f_name: "הכנס בין 2 ל- 20 תווים" };
+        });
+      }
       isValid = false;
     }
 
-    if (user.l_name.length < 1) {
-      setErrors((prev) => {
-        return { ...prev, l_name: "שם משפחה - חובה" };
-      });
+    if (user.l_name.length < 2) {
+      if (user.l_name.length < 1) {
+        setErrors((prev) => {
+          return { ...prev, l_name: "שם משפחה - חובה" };
+        });
+      } else {
+        setErrors((prev) => {
+          return { ...prev, l_name: "הכנס בין 2 ל- 20 תווים" };
+        });
+      }
       isValid = false;
     }
 
-    if (user.username.length < 1) {
-      setErrors((prev) => {
-        return { ...prev, username: "שם משתמש - חובה" };
-      });
+    if (user.username.length < 5) {
+      if (user.username.length < 1) {
+        setErrors((prev) => {
+          return { ...prev, username: "שם משתמש - חובה" };
+        });
+      } else {
+        setErrors((prev) => {
+          return { ...prev, username: "הכנס בין 5 ל- 20 תווים" };
+        });
+      }
       isValid = false;
     }
 
@@ -215,7 +233,7 @@ const Register = () => {
           />
           <Input
             text={"אימות סיסמה"}
-            inputName={"password"}
+            inputName={"confirm_password"}
             val={user.confirm_password}
             onChange={onChange}
             error={""}

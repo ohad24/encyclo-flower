@@ -8,10 +8,12 @@ import { create } from "services/flowersService";
 import { useDispatch, useSelector } from "react-redux";
 import { UpdateObservationId } from "redux/action";
 import GalleryOrCamera from "components/GalleryOrCamera/GalleryOrCamera";
+import ModalLoginMessage from "components/Modals/ModalLoginMessage";
 
 const TopToolbar = () => {
-  const store = useSelector((state: any) => state);
   const dispatch = useDispatch();
+  const store = useSelector((state: any) => state);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const askTheCommunity = async () => {
     try {
@@ -24,7 +26,6 @@ const TopToolbar = () => {
           store.token
         )
       ).data;
-      console.log(data.observation_id);
       dispatch(UpdateObservationId(data.observation_id));
       Router.push({
         pathname: "/communitySharing",
@@ -54,7 +55,7 @@ const TopToolbar = () => {
       <div className="toolbar-card">
         <div
           className="flex flex-col items-center justify-center p-2"
-          onClick={askTheCommunity}
+          onClick={store.token ? askTheCommunity : () => setIsOpen(true)}
         >
           <div>
             <Image src={link} alt="Share" />
@@ -63,6 +64,7 @@ const TopToolbar = () => {
           <div className="text-sm">תצפית\תמונות\פריחה\טיול</div>
         </div>
       </div>
+      <ModalLoginMessage isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
 };

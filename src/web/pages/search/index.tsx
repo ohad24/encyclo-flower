@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Layout from "components/Layout/Layout";
 import { Radio, RadioGroup } from "@chakra-ui/react";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 // Custom components
 import EnvTypes from "components/Search/EnvTypes";
@@ -115,12 +116,15 @@ import SearchResults from "components/SearchResults/SearchResults";
 import RotateIcon from "components/Icons/RotateIcon";
 import { UpdateResultsByAttributes } from "redux/action";
 import { useDispatch, useSelector } from "react-redux";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/headLine";
 
 // Main component
 const Search = () => {
   const store = useSelector((state: any) => state);
+  const [page, setPage] = React.useState<number>(1);
+  const [numOfResults, setNumOfResults] = React.useState<number>(0);
   const [value, setValue] = React.useState<string>("1");
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [isNoResults, setNoResults] = React.useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
@@ -294,13 +298,35 @@ const Search = () => {
       setNoResults(false);
       const values = removeEmptyValues(state);
       const { data } = await postWithObj("plants/search", values);
+      setNumOfResults(data.total);
       setIsSubmitting(false);
+      setPage(2);
       dispatch(UpdateResultsByAttributes(data.plants));
     } catch (err: any) {
       const error = err;
       console.log("error", error);
       setNoResults(true);
       setIsSubmitting(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const values = removeEmptyValues(state);
+      const { data } = await postWithObj("plants/search", {
+        ...values,
+        page: page,
+      });
+      dispatch(
+        UpdateResultsByAttributes(store.resultsByAttributes.concat(data.plants))
+      );
+      if (page === data.total_pages) {
+        setHasMore(false);
+      } else {
+        setPage(page + 1);
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -578,20 +604,30 @@ const Search = () => {
           </form>
 
           {store.resultsByAttributes.length > 0 ? (
-            <SearchResults length={store.resultsByAttributes.length} />
+            <SearchResults length={numOfResults} />
           ) : null}
-          {store.resultsByAttributes &&
-            store.resultsByAttributes.map((result: any, index: number) => {
-              return (
-                <SearchResult
-                  key={result.heb_name}
-                  result={result}
-                  index={index}
-                  widthButton={109}
-                  textButton={"זה הצמח"}
-                />
-              );
-            })}
+          {numOfResults ? (
+            <InfiniteScroll
+              className="gap-4"
+              dataLength={store.resultsByAttributes.length}
+              next={() => fetchData()}
+              hasMore={hasMore}
+              loader={<h2>טוען...</h2>}
+            >
+              {store.resultsByAttributes &&
+                store.resultsByAttributes.map((result: any, index: number) => {
+                  return (
+                    <SearchResult
+                      key={result.heb_name + index}
+                      result={result}
+                      index={index}
+                      widthButton={109}
+                      textButton={"זה הצמח"}
+                    />
+                  );
+                })}
+            </InfiniteScroll>
+          ) : null}
         </div>
       </>
     </Layout>
