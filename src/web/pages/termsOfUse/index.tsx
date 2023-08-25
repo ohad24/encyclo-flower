@@ -1,7 +1,7 @@
 import React from "react";
 import Layout from "../../components/Layout/Layout";
 import { motion } from "framer-motion";
-import HeadLine from "components/HeadLine/headLine";
+import HeadLine from "components/Headline/headLine";
 
 const About = () => {
   return (

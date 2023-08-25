@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import ButtonAI from "components/Buttons/ButtonAI";
-import HeadLine from "components/HeadLine/headLine";
 import CamaraIcon from "components/Icons/CamaraIcon";
 import HeartIcon from "components/Icons/HeartIcon";
 import NewSearch from "components/NewSearch/NewSearch";
@@ -13,6 +12,7 @@ import {
 } from "redux/action";
 import { create, postWithAuthorization } from "services/flowersService";
 import ModalLoginMessage from "components/Modals/ModalLoginMessage";
+import HeadLine from "components/Headline/headLine";
 
 interface Props {
   setIsOpen: (bool: boolean) => void;
