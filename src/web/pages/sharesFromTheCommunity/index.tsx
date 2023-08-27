@@ -8,6 +8,7 @@ import DataShares from "components/DataShares/DataShares";
 import Comment from "components/Comment/comment";
 import HeadLine from "components/HeadLine/HeadLine";
 
+
 const SharesCommunity = () => {
   const store = useSelector((state: any) => state);
   const [comments, setComments] = useState<string[]>([]);

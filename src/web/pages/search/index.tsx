@@ -118,6 +118,7 @@ import { UpdateResultsByAttributes } from "redux/action";
 import { useDispatch, useSelector } from "react-redux";
 import HeadLine from "components/HeadLine/HeadLine";
 
+
 // Main component
 const Search = () => {
   const store = useSelector((state: any) => state);
