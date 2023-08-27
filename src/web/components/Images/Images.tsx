@@ -86,7 +86,7 @@ const Images = ({
     />
   ) : null;
 
-  const rightOrLeft =
+  const rightOrLeft = photos ? (
     photos.length > 0 ? (
       <div>
         {showButtonRight}
@@ -95,29 +95,32 @@ const Images = ({
           elementRef={elementRef}
         />
       </div>
-    ) : null;
+    ) : null
+  ) : null;
 
-  const showImages = photos.map((image: any, i: number) => (
-    <ImageComp
-      key={image.file_name}
-      image={image}
-      i={i}
-      clickImage={clickImage}
-      photos={photos}
-      imageFromTheUser={imageFromTheUser}
-      imagesDetections={imagesDetections}
-      isQuestion={isQuestion}
-      username={username}
-    />
-  ));
+  const showImages = photos
+    ? photos.map((image: any, i: number) => (
+        <ImageComp
+          key={image.file_name}
+          image={image}
+          i={i}
+          clickImage={clickImage}
+          photos={photos}
+          imageFromTheUser={imageFromTheUser}
+          imagesDetections={imagesDetections}
+          isQuestion={isQuestion}
+          username={username}
+        />
+      ))
+    : null;
 
   return (
-    <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]	">
+    <div className="relative flex flex-row items-center text-secondary mt-2 w-[100%]">
       {" "}
       <div className="flex flex-row gap-2.5 max-w-[100%]">
         {rightOrLeft}
         <div
-          className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-hidden"
+          className="flex flex-row items-start gap-3 text-secondary max-w-[100%] overflow-x-scroll hide-scrollbar"
           ref={elementRef}
         >
           {" "}

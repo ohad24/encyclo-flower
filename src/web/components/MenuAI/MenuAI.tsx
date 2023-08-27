@@ -1,5 +1,5 @@
+import React, { useState } from "react";
 import ButtonAI from "components/Buttons/ButtonAI";
-import HeadLine from "components/Headline/headLine";
 import CamaraIcon from "components/Icons/CamaraIcon";
 import HeartIcon from "components/Icons/HeartIcon";
 import NewSearch from "components/NewSearch/NewSearch";
@@ -11,14 +11,17 @@ import {
   updateImagesCommunity,
 } from "redux/action";
 import { create, postWithAuthorization } from "services/flowersService";
+import ModalLoginMessage from "components/Modals/ModalLoginMessage";
+import HeadLine from "components/Headline/headLine";
 
 interface Props {
   setIsOpen: (bool: boolean) => void;
 }
 
 const MenuAI = ({ setIsOpen }: Props) => {
-  const dispatch = useDispatch();
   const store = useSelector((state: any) => state);
+  const dispatch = useDispatch();
+  const [isOpen, setIsOpenLog] = useState(false);
 
   function FileListItems(files: FileList | null, store: any) {
     var b = new ClipboardEvent("").clipboardData || new DataTransfer();
@@ -80,7 +83,9 @@ const MenuAI = ({ setIsOpen }: Props) => {
         <ButtonAI
           icon={<HeartIcon />}
           text={"שאל את הקהילה"}
-          funcClick={() => askTheCommunity()}
+          funcClick={
+            store.token ? () => askTheCommunity() : () => setIsOpenLog(true)
+          }
         />{" "}
         <ButtonAI
           icon={<CamaraIcon />}
@@ -88,6 +93,7 @@ const MenuAI = ({ setIsOpen }: Props) => {
           funcClick={() => setIsOpen(true)}
         />
       </div>
+      <ModalLoginMessage isOpen={isOpen} setIsOpen={setIsOpenLog} />
     </div>
   );
 };

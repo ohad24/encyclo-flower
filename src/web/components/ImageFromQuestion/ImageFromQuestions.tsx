@@ -21,9 +21,9 @@ const ImageFromQuestion = ({ index, image, images, setImages }: Props) => {
     description: image.description,
     content_category: image.content_category,
     location_name: image.location_name,
-    month_taken: store.imagesCommunity[index].lastModifiedDate
-      .toISOString()
-      .slice(0, 10),
+    month_taken: store.imagesCommunity[index]
+      ? store.imagesCommunity[index].lastModifiedDate.toISOString().slice(0, 10)
+      : "",
   });
 
   const path = store.isQuestion
@@ -84,6 +84,7 @@ const ImageFromQuestion = ({ index, image, images, setImages }: Props) => {
           <SelectLocation
             updateDataImage={updateDataImage}
             handleChange={handleChange}
+            location_name={dataImage.location_name}
           />
           <Month
             updateDataImage={updateDataImage}

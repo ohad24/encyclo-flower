@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { updateImagesCommunity } from "redux/action";
 import { deleteWithAuthorization, create } from "services/flowersService";
-import RotateIcon from "components/Icons/CamaraIcon copy";
+import RotateIcon from "components/Icons/RotateIcon";
 
 interface Props {
   path: string;

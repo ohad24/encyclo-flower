@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import { get } from "services/flowersService";
 import { useSelector } from "react-redux";
 import Images from "components/Images/Images";
-import Comment from "components/comment/comment";
-import HeadLine from "components/Headline/headLine";
 import FormComment from "components/Forms/FormComment";
 import DataShares from "components/DataShares/DataShares";
+import Comment from "components/Comment/comment";
+import HeadLine from "components/Headline/headLine";
 
 const SharesCommunity = () => {
   const store = useSelector((state: any) => state);

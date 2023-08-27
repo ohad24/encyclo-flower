@@ -47,6 +47,7 @@ const ModalImage = ({
       isOpen={isImageOpen}
       onClose={() => setIsImageOpen(false)}
       size="xl"
+      blockScrollOnMount={false}
     >
       <ModalOverlay
         bg="none"

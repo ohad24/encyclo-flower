@@ -1,9 +1,9 @@
-import { Input } from "@chakra-ui/react";
 import AddImageButton from "components/Buttons/AddImageButton";
 import PostQuestionButton from "components/Buttons/PostQuestionButton";
 import HeadLine from "components/Headline/headLine";
 import ImageFromQuestion from "components/ImageFromQuestion/ImageFromQuestions";
 import { useSelector } from "react-redux";
+import { Input } from "@chakra-ui/react";
 
 interface Props {
   postQuestion: (e: React.FormEvent) => Promise<void>;

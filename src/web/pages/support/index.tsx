@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Layout from "../../components/Layout/Layout";
-import HeadLine from "components/Headline/headLine";
 import ImagesSupports from "components/Images/ImagesSupports";
+import HeadLine from "components/Headline/headLine";
 
 const Support = () => {
   return (

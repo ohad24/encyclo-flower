@@ -1,14 +1,17 @@
 import { create, get } from "services/flowersService";
 import { useSelector } from "react-redux";
 import React, { useState } from "react";
+import ModalLoginMessage from "components/Modals/ModalLoginMessage";
 
 interface Props {
   setComments: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const FormComment = ({ setComments }: Props) => {
+  const [isOpen, setIsOpen] = React.useState(false);
   const store = useSelector((state: any) => state);
   const [yourComment, setYourComment] = useState<string>("");
+
   const sendComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -53,9 +56,14 @@ const FormComment = ({ setComments }: Props) => {
     }
   };
 
+  const showMessage = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsOpen(true);
+  };
+
   return (
     <form
-      onSubmit={sendComment}
+      onSubmit={store.token ? sendComment : showMessage}
       className="flex flex-row max-w-[453px] h-[32px] rounded-2xl bg-neutral-200"
     >
       <div className="w-[12px] h-[12px] bg-orange-400 rounded-full mt-3 mr-3 "></div>
@@ -83,6 +91,7 @@ const FormComment = ({ setComments }: Props) => {
           />
         </svg>
       </button>
+      <ModalLoginMessage isOpen={isOpen} setIsOpen={setIsOpen} />
     </form>
   );
 };

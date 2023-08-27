@@ -29,6 +29,7 @@ import RightIcon from "components/Icons/RightIcon";
 import Router from "next/router";
 import NewSearch from "components/NewSearch/NewSearch";
 import Loader from "components/Loader/Loader";
+import ModalLoginMessage from "components/Modals/ModalLoginMessage";
 
 const initialState = {
   plant_id: "",
@@ -118,6 +119,7 @@ const getEnvironmentSavingText = (p: IPlantDetails): string => {
 const PlanetDetails = () => {
   const router = useRouter();
   const store = useSelector((state: any) => state);
+  const [isOpen, setIsOpen] = React.useState(false);
   const [colorHeart, setColorHeart] = useState<string>("#0f4871");
   const [planet, setPlanet] = useState<IPlantDetails>(initialState);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
@@ -129,14 +131,17 @@ const PlanetDetails = () => {
         const dataPlant = (await get(`plants/${router.query.science_name}`))
           .data;
         setPlanet(dataPlant);
-        const data = (
-          await getWithAuthorization(
-            `users/me/favorite-plant/${router.query.science_name}`,
-            store.token
-          )
-        ).data;
-        if (data.is_favorite) {
-          setColorHeart("orange");
+        if (store.token) {
+          const data = (
+            await getWithAuthorization(
+              `users/me/favorite-plant/${router.query.science_name}`,
+              store.token
+            )
+          ).data;
+
+          if (data.is_favorite) {
+            setColorHeart("orange");
+          }
         }
         setIsSubmitting(false);
       } catch (err) {
@@ -203,7 +208,10 @@ const PlanetDetails = () => {
           <p className="font-bold text-secondary border-b-4 border-b-orange-300 mb-9 text-2xl ml-5">
             {planet.heb_name}
           </p>
-          <button className="right-11 mb-9" onClick={handleClick}>
+          <button
+            className="right-11 mb-9"
+            onClick={store.token ? handleClick : () => setIsOpen(true)}
+          >
             <HeartIcon color={colorHeart} size={25} />
           </button>
         </div>
@@ -539,6 +547,7 @@ const PlanetDetails = () => {
           </button>
         </div>
         <Loader text="טוען נתונים..." isLoading={isSubmitting} />
+        <ModalLoginMessage isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
     </Layout>
   );
