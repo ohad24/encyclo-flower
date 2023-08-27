@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { get } from "services/flowersService";
 import Suggestions from "components/Suggestions/Suggestions";
 import InfiniteScroll from "react-infinite-scroll-component";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/HeadLine";
 
 const Shares = () => {
   const [observations, setObservations] = useState<any[]>([]);

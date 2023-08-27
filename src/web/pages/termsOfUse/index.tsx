@@ -1,14 +1,14 @@
 import React from "react";
 import Layout from "../../components/Layout/Layout";
 import { motion } from "framer-motion";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/HeadLine";
 
 const About = () => {
   return (
     <Layout>
       <div className="default-container">
         <div className="flex flex-col justify-center items-center">
-          <HeadLine text={"תנאי שימוש"} width={120} />
+          <HeadLine text={"תנאי שימוש"} width={125} />
           <motion.div
             className="text-secondary mb-10 max-w-[1000px]"
             initial={{ opacity: 0 }}

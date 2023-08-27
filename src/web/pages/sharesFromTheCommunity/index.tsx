@@ -6,7 +6,7 @@ import Images from "components/Images/Images";
 import FormComment from "components/Forms/FormComment";
 import DataShares from "components/DataShares/DataShares";
 import Comment from "components/Comment/comment";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/HeadLine";
 
 const SharesCommunity = () => {
   const store = useSelector((state: any) => state);

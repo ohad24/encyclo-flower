@@ -1,7 +1,7 @@
 import Layout from "components/Layout/Layout";
 import React, { useEffect, useState } from "react";
 import { get } from "services/flowersService";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/HeadLine";
 import Suggestions from "components/Suggestions/Suggestions";
 import InfiniteScroll from "react-infinite-scroll-component";
 

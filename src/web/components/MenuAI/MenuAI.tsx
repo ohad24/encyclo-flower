@@ -12,7 +12,7 @@ import {
 } from "redux/action";
 import { create, postWithAuthorization } from "services/flowersService";
 import ModalLoginMessage from "components/Modals/ModalLoginMessage";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/HeadLine";
 
 interface Props {
   setIsOpen: (bool: boolean) => void;
