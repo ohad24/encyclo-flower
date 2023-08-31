@@ -8,7 +8,7 @@ const About = () => {
     <Layout>
       <div className="default-container">
         <div className="flex flex-col justify-center items-center">
-          <HeadLine text={"תנאי שימוש"} width={120} />
+          <HeadLine text={"תנאי שימוש"} width={125} />
           <motion.div
             className="text-secondary mb-10 max-w-[1000px]"
             initial={{ opacity: 0 }}
