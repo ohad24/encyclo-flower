@@ -15,7 +15,7 @@ import {
 import Images from "components/Images/Images";
 import SaveIcon from "components/Icons/SaveIcon";
 import Loader from "components/Loader/Loader";
-import HeadLine from "components/HeadLine/HeadLine";
+import HeadLine from "components/Headline/headLine";
 
 const initialUser = {
   user_id: "",
