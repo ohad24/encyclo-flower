@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
@@ -68,7 +68,7 @@ jobs:
       _IMG_NAME: ef-test-detect-plant-tmp
     if: github.event_name == 'pull_request'
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@v4"
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
@@ -119,7 +119,7 @@ jobs:
       _IMG_NAME: ef-dev-detect-plant
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push'}}
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@v4"
       - id: "auth"
         name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@v1"
@@ -151,7 +151,7 @@ jobs:
       _IMG_NAME: ef-prod-detect-plant
     if: ${{ github.event_name == 'release' && github.event.action == 'released' }}
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@v4"
       - id: "auth"
         name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@v1"
