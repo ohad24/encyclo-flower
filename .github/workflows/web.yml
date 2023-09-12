@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and push (tagged releases)
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: src/web
           push: ${{ github.event_name != 'pull_request' }}
@@ -58,7 +58,7 @@ jobs:
 
       - name: Build and push (other triggers)
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: src/web
           push: ${{ github.event_name != 'pull_request' }}
