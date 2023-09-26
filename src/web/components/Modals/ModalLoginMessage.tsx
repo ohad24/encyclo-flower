@@ -26,9 +26,9 @@ const ModalLoginMessage = ({ isOpen, setIsOpen }: Props) => {
         backdropInvert="0%"
         backdropBlur="5px"
       />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalBody className=" m-auto text-sky-900 text-xl	">
+      <ModalContent maxWidth="490">
+        <ModalCloseButton className="ml-5" />
+        <ModalBody className="text-sky-900 text-xl mr-5">
           התחבר או הירשם כדי לבצע פעולות נוספות באתר
         </ModalBody>
       </ModalContent>

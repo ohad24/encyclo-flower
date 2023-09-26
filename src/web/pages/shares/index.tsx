@@ -4,6 +4,7 @@ import { get } from "services/flowersService";
 import Suggestions from "components/Suggestions/Suggestions";
 import InfiniteScroll from "react-infinite-scroll-component";
 import HeadLine from "components/HeadLine/HeadLine";
+import { Spinner } from "@chakra-ui/react";
 
 const Shares = () => {
   const [observations, setObservations] = useState<any[]>([]);
@@ -59,10 +60,19 @@ const Shares = () => {
         </div>
         <InfiniteScroll
           className="flex flex-col items-center gap-4"
+          style={{ overflowY: "hidden" }}
           dataLength={observations.length} //This is important field to render the next data
           next={() => fetchData()}
           hasMore={hasMore}
-          loader={<h2>טוען...</h2>}
+          loader={
+            <Spinner
+              color="blue.700"
+              emptyColor="gray.300"
+              size="xl"
+              thickness="15px"
+              speed="1.5s"
+            />
+          }
         >
           {showObservations}
         </InfiniteScroll>

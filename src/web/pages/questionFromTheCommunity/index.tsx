@@ -1,9 +1,10 @@
 import Layout from "components/Layout/Layout";
 import React, { useEffect, useState } from "react";
 import { get } from "services/flowersService";
-import HeadLine from "components/HeadLine/HeadLine";
 import Suggestions from "components/Suggestions/Suggestions";
 import InfiniteScroll from "react-infinite-scroll-component";
+import HeadLine from "components/HeadLine/HeadLine";
+import { Spinner } from "@chakra-ui/react";
 
 const QuestionCommunity = () => {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -57,10 +58,19 @@ const QuestionCommunity = () => {
         </div>
         <InfiniteScroll
           className="flex flex-col items-center gap-4"
+          style={{ overflowY: "hidden" }}
           dataLength={questions.length}
           next={() => fetchData()}
           hasMore={hasMore}
-          loader={<h2>טוען...</h2>}
+          loader={
+            <Spinner
+              color="blue.700"
+              emptyColor="gray.300"
+              size="xl"
+              thickness="10px"
+              speed="1.5s"
+            />
+          }
         >
           {showQuestions}
         </InfiniteScroll>

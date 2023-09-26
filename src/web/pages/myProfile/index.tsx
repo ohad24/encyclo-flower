@@ -263,7 +263,12 @@ const MyProfile = () => {
                     <p className="text-sm text-secondary font-bold mb-2">
                       מגדר&nbsp;
                     </p>
-                    <Select name="sex" value={editUser.sex} onChange={onChange}>
+                    <Select
+                      style={{ textIndent: "20px" }}
+                      name="sex"
+                      value={editUser.sex}
+                      onChange={onChange}
+                    >
                       <option value="0">-- בחר מגדר --</option>
                       <option value="זכר">זכר</option>
                       <option value="נקבה">נקבה</option>

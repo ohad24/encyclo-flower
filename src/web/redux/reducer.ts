@@ -14,6 +14,26 @@ const initialState = {
   plantName: "",
   username: "",
   pathname: "",
+  search: {
+    name_text: "",
+    colors: [],
+    location_names: [],
+    flowering_seasons: [],
+    petals: [],
+    leaf_shapes: [],
+    leaf_edges: [],
+    leaf_arrangements: [],
+    life_forms: [],
+    habitats: [],
+    stem_shapes: [],
+    spine: [],
+    red: false,
+    invasive: false,
+    danger: false,
+    rare: false,
+    protected: false,
+    page: 1,
+  },
 };
 
 const applyChanges = (state = initialState, action: any) => {
@@ -48,6 +68,8 @@ const applyChanges = (state = initialState, action: any) => {
       return { ...state, username: action.payload };
     case "UpdatePathName":
       return { ...state, pathname: action.payload };
+    case "UpdateSearch":
+      return { ...state, search: action.payload };
     default:
       return state;
   }

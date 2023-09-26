@@ -25,8 +25,8 @@ const Comment = ({ comment }: Props) => {
 
   return (
     <div>
-      <div className="flex flex-col max-w-[453px] min-h-[32px] rounded-2xl bg-neutral-200 pr-3  pb-2">
-        <p className="text-lg text-orange-400 font-extrabold"> {fullName}</p>
+      <div className="flex flex-col max-w-[453px] min-h-[32px] rounded-2xl bg-neutral-200 pr-3 pb-2">
+        <p className="text-lg text-orange-400"> {fullName}</p>
         <p className="text-lg text-sky-900 font-normal">
           {comment.comment_text}
         </p>
