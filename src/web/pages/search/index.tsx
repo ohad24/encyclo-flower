@@ -116,7 +116,7 @@ import SearchResults from "components/SearchResults/SearchResults";
 import RotateIcon from "components/Icons/RotateIcon";
 import { UpdateResultsByAttributes, UpdateSearch } from "redux/action";
 import { useDispatch, useSelector } from "react-redux";
-import HeadLine from "components/HeadLine/HeadLine";
+import HeadLine from "components/Headline/headLine";
 import { useRouter } from "next/router";
 
 // Main component
