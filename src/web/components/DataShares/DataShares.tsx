@@ -16,9 +16,7 @@ const DataShares = () => {
 
   return (
     <div className="max-w-[768px] m-auto">
-      <p className="text-orange-300 text-2xl font-black">
-        {store.question.username}
-      </p>
+      <p className="text-orange-300 text-2xl">{store.question.username}</p>
       <p className="text-xl text-sky-900 font-medium">
         {store.question.question_text}
       </p>

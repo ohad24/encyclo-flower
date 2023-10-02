@@ -1,22 +1,33 @@
 import CheckIcon from "components/Icons/CheckIcon";
 import Images from "components/Images/Images";
+import { IState } from "helpers/interfaces";
 import Router, { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
-import { UpdatePathName } from "redux/action";
+import { UpdatePathName, UpdateSearch } from "redux/action";
 
 interface Props {
   result: any;
   index: number;
-  widthButton: number;
+  state?: IState;
   textButton: string;
+  widthButton: number;
 }
 
-const SearchResult = ({ result, index, widthButton, textButton }: Props) => {
+const SearchResult = ({
+  result,
+  index,
+  state,
+  widthButton,
+  textButton,
+}: Props) => {
   const dispatch = useDispatch();
   const router = useRouter();
 
   const nextPlantPage = () => {
     dispatch(UpdatePathName(router.pathname));
+    if (state !== undefined) {
+      dispatch(UpdateSearch({ ...state }));
+    }
     Router.push({
       pathname: `/plantes/${result.science_name}`,
     });

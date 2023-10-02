@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Layout from "components/Layout/Layout";
-import { Radio, RadioGroup } from "@chakra-ui/react";
+import { Radio, RadioGroup, Spinner } from "@chakra-ui/react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 // Custom components
@@ -114,40 +114,23 @@ import { postWithObj } from "services/flowersService";
 import SearchResult from "components/SearchResult/SearchResult";
 import SearchResults from "components/SearchResults/SearchResults";
 import RotateIcon from "components/Icons/RotateIcon";
-import { UpdateResultsByAttributes } from "redux/action";
+import { UpdateResultsByAttributes, UpdateSearch } from "redux/action";
 import { useDispatch, useSelector } from "react-redux";
-import HeadLine from "components/Headline/headLine";
+import HeadLine from "components/HeadLine/HeadLine";
+import { useRouter } from "next/router";
 
 // Main component
 const Search = () => {
   const store = useSelector((state: any) => state);
-  const [page, setPage] = React.useState<number>(1);
-  const [numOfResults, setNumOfResults] = React.useState<number>(0);
+  const router = useRouter();
+  const [numOfResults, setNumOfResults] = React.useState<number>(
+    Number(sessionStorage.getItem("numOfResults"))
+  );
   const [value, setValue] = React.useState<string>("1");
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isNoResults, setNoResults] = React.useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
-
-  const [state, setState] = useState<IState>({
-    name_text: "",
-    colors: [],
-    location_names: [],
-    flowering_seasons: [],
-    petals: [],
-    leaf_shapes: [],
-    leaf_edges: [],
-    leaf_arrangements: [],
-    life_forms: [],
-    habitats: [],
-    stem_shapes: [],
-    spine: [],
-    red: false,
-    invasive: false,
-    danger: false,
-    rare: false,
-    protected: false,
-    page: 1,
-  });
+  const [state, setState] = useState<IState>(store.search);
 
   const onChange = <T,>(name: string, value: T) => {
     setState({ ...state, [name]: value });
@@ -298,9 +281,16 @@ const Search = () => {
       setNoResults(false);
       const values = removeEmptyValues(state);
       const { data } = await postWithObj("plants/search", values);
+      sessionStorage.setItem("numOfResults", data.total);
       setNumOfResults(data.total);
+      if (data.total_pages === 1) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+        setState({ ...state, page: 2 });
+      }
       setIsSubmitting(false);
-      setPage(2);
+      dispatch(UpdateSearch(state));
       dispatch(UpdateResultsByAttributes(data.plants));
     } catch (err: any) {
       const error = err;
@@ -312,18 +302,26 @@ const Search = () => {
 
   const fetchData = async () => {
     try {
-      const values = removeEmptyValues(state);
-      const { data } = await postWithObj("plants/search", {
-        ...values,
-        page: page,
-      });
-      dispatch(
-        UpdateResultsByAttributes(store.resultsByAttributes.concat(data.plants))
-      );
-      if (page === data.total_pages) {
-        setHasMore(false);
+      if (numOfResults > 30) {
+        const values = removeEmptyValues(state);
+        const { data } = await postWithObj("plants/search", {
+          ...values,
+          page: state.page,
+        });
+        if (store.resultsByAttributes.length < numOfResults) {
+          dispatch(
+            UpdateResultsByAttributes(
+              store.resultsByAttributes.concat(data.plants)
+            )
+          );
+        }
+        if (state.page === data.total_pages) {
+          setHasMore(false);
+        } else {
+          setState({ ...state, page: state.page + 1 });
+        }
       } else {
-        setPage(page + 1);
+        setHasMore(false);
       }
     } catch (err) {
       console.log(err);
@@ -349,6 +347,28 @@ const Search = () => {
     resetAttribute(leafShapes);
     resetAttribute(stemShapes);
     setValue("רבים");
+    dispatch(
+      UpdateSearch({
+        name_text: "",
+        colors: [],
+        location_names: [],
+        flowering_seasons: [],
+        petals: [],
+        leaf_shapes: [],
+        leaf_edges: [],
+        leaf_arrangements: [],
+        life_forms: [],
+        habitats: [],
+        stem_shapes: [],
+        spine: [],
+        red: false,
+        invasive: false,
+        danger: false,
+        rare: false,
+        protected: false,
+        page: 1,
+      })
+    );
     setState({
       name_text: "",
       colors: [],
@@ -373,14 +393,18 @@ const Search = () => {
   };
 
   useEffect(() => {
-    console.log("no result", isNoResults);
-  }, [isNoResults]);
+    function res() {
+      if (router.query.isBack === "true") {
+        resetAll();
+      }
+    }
+    res();
+  }, []);
 
   return (
     <Layout>
       <>
         <Loader text="טוען תוצאות חיפוש..." isLoading={isSubmitting} />
-
         <div className="default-container">
           <form
             onSubmit={(e) => submitForm(e)}
@@ -606,13 +630,24 @@ const Search = () => {
           {store.resultsByAttributes.length > 0 ? (
             <SearchResults length={numOfResults} />
           ) : null}
-          {numOfResults ? (
+          {store.resultsByAttributes.length > 0 ? (
             <InfiniteScroll
               className="gap-4"
+              style={{ overflowY: "hidden" }}
               dataLength={store.resultsByAttributes.length}
               next={() => fetchData()}
               hasMore={hasMore}
-              loader={<h2>טוען...</h2>}
+              loader={
+                <div className="m-auto w-12">
+                  <Spinner
+                    color="blue.700"
+                    emptyColor="gray.300"
+                    size="xl"
+                    thickness="15px"
+                    speed="1.5s"
+                  />
+                </div>
+              }
             >
               {store.resultsByAttributes &&
                 store.resultsByAttributes.map((result: any, index: number) => {
@@ -621,6 +656,7 @@ const Search = () => {
                       key={result.heb_name + index}
                       result={result}
                       index={index}
+                      state={state}
                       widthButton={109}
                       textButton={"זה הצמח"}
                     />

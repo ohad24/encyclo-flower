@@ -20,7 +20,7 @@ const Loader = ({ text = "Loading...", isLoading }: Props) => {
             <div className="wof-loader">
               <div className="loader-bg"></div>
               <div className="wof-loader-content">
-                <div className="flex items-center  flex-col gap-0 justify-center">
+                <div className="flex items-center flex-col gap-0 justify-center">
                   <div>
                     <Spinner
                       color="white"

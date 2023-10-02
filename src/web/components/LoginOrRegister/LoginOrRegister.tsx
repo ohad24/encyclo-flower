@@ -31,19 +31,19 @@ const LoginOrRegister = ({ setIsLoginOpen }: Props) => {
   ) : null;
 
   return (
-    <div className="flex flex-row flex-wrap">
+    <div className="flex flex-row ">
       {isLogin}
       <div
-        className=" flex flex-col justify-center items-center cursor-pointer"
+        className="flex flex-col justify-center items-center cursor-pointer"
         onClick={() => setIsLoginOpen(store.token ? false : true)}
       >
         <div>
           <Image src={account} alt="Logo" />
         </div>
         {store.token ? (
-          <div className="hidden md:block text-xs">מחובר</div>
+          <div className="md:block text-xs">מחובר</div>
         ) : (
-          <div className="hidden md:block text-xs">התחבר \ הירשם</div>
+          <div className="md:block text-xs">התחבר \ הירשם</div>
         )}
       </div>
     </div>

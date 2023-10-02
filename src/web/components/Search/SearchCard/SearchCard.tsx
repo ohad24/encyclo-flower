@@ -48,7 +48,7 @@ const SearchCard = ({ item }: Props) => {
           <PaintBrush size={20} color={"#0f4871"} />
           <p className="text-sm  text-secondary font-bold flex items-center gap-3">
             צבעים בטבע:
-            <div className="flex gap-1 ">
+            <div className="flex gap-1">
               {item.colors?.map((color) => {
                 const bgColor = getColors(color);
 

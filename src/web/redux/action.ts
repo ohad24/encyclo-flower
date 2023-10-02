@@ -1,4 +1,4 @@
-import { ISearchResult } from "helpers/interfaces";
+import { ISearchResult, IState } from "helpers/interfaces";
 
 const updateResults = (arr: Object[]) => {
   return {
@@ -105,6 +105,13 @@ const UpdatePathName = (pathname: string) => {
   };
 };
 
+const UpdateSearch = (search: IState) => {
+  return {
+    type: "UpdateSearch",
+    payload: search,
+  };
+};
+
 export {
   updateResults,
   UpdateResultsByAttributes,
@@ -121,4 +128,5 @@ export {
   UpdatePlantName,
   UpdateUserName,
   UpdatePathName,
+  UpdateSearch,
 };

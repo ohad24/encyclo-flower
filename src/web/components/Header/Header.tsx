@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import Cookies from "universal-cookie";
-import MenuIcon from "../MenuIcon/Menu";
+import MenuIcon from "../Icons/MenuIcon";
 import LoginAndRegisterModel from "../LoginAndRegisterModel/LoginAndRegisterModel";
 
 import { nanoid } from "nanoid";
@@ -11,12 +10,12 @@ import Router from "next/router";
 import ModalLogin from "components/Modals/ModalLogin";
 import Logo from "components/Logo/Logo";
 import Supports from "components/Supports/Supports";
-import Notifications from "components/Notifications/Notifications";
 import LoginOrRegister from "components/LoginOrRegister/LoginOrRegister";
 import { useSelector } from "react-redux";
 import ModalLoginMessage from "components/Modals/ModalLoginMessage";
 
-const cookies = new Cookies();
+import { useRouter } from "next/router";
+
 const menuItems = [
   { text: "בית", url: "/" },
   { text: "זיהוי צמח", url: "/ai" },
@@ -30,24 +29,11 @@ const menuItems = [
 ];
 
 const Header = () => {
+  const router = useRouter();
   const store = useSelector((state: any) => state);
   const [isOpen, setIsOpen] = React.useState(false);
-  const [isOpenMessage, setIsOpenMessage] = React.useState(false);
-  const [menuId, setMenuId] = useState(0);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const handleMenuId = (id: number) => {
-    setMenuId(id);
-    cookies.set("menuId", id, { path: "/" });
-  };
-
-  useEffect(() => {
-    const menuCookie = cookies.get("menuId");
-    if (!menuCookie) {
-      console.log("undefiend");
-    } else {
-      setMenuId(Number(menuCookie));
-    }
-  }, []);
+  const [isOpenMessage, setIsOpenMessage] = React.useState(false);
 
   const showMessage = (item: any) => {
     if (item.text === "הפרופיל שלי") {
@@ -58,17 +44,13 @@ const Header = () => {
   const renderMenu = (isSeperator: boolean) => {
     return (
       <>
-        {menuItems.map((item, index) => {
+        {menuItems.map((item) => {
           return (
             <div key={nanoid()} className="flex flex-row gap-2">
               <div
-                onClick={
-                  store.token
-                    ? () => handleMenuId(index)
-                    : () => showMessage(item)
-                }
+                onClick={store.token ? undefined : () => showMessage(item)}
                 className={`${
-                  menuId === index ? "text-primary" : ""
+                  router.pathname === item.url ? "text-primary" : ""
                 } cursor-pointer ${
                   !isSeperator
                     ? "border-2 border-transparent border-b-orange-100 w-full text-center p-1 pb-3"
@@ -106,7 +88,6 @@ const Header = () => {
         <Logo />
         <div className="flex flex-col items-center justify-center p-2 md:p-4 ">
           <div className="flex gap-2 md:gap-5 align-center justify-center flex-row-reverse">
-            <Notifications />
             <LoginOrRegister setIsLoginOpen={setIsLoginOpen} />
             <div className="md:hidden" onClick={() => setIsOpen(true)}>
               <MenuIcon />
@@ -114,7 +95,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-      <nav className=" gap-2 text-sm px-2 md:px-4 justify-center hidden md:flex">
+      <nav className="gap-2 text-sm px-2 md:px-4 justify-center hidden md:flex">
         {renderMenu(true)}
       </nav>
       <LoginAndRegisterModel

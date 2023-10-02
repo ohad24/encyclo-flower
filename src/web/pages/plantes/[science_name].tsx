@@ -195,9 +195,10 @@ const PlanetDetails = () => {
     }
   };
 
-  const nextPage = (path: string) => {
+  const nextPage = (path: string, bool: boolean) => {
     Router.push({
       pathname: path,
+      query: { isBack: bool },
     });
   };
 
@@ -514,7 +515,7 @@ const PlanetDetails = () => {
         </button>
         <div className="flex flex-row flex-wrap sm:flex-nowrap w-[120px] sm:w-[395px] m-auto">
           <button
-            onClick={() => nextPage("/search")}
+            onClick={() => nextPage("/search", true)}
             className="flex flex-col-reverse text-base m-auto text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 h-[100px] w-[120px] mt-2 sm:mt-5 rounded-3xl"
           >
             <span className="table m-auto">
@@ -533,7 +534,7 @@ const PlanetDetails = () => {
             setQuestionsIds={() => {}}
           />
           <button
-            onClick={() => nextPage(store.pathname)}
+            onClick={() => nextPage(store.pathname, false)}
             className="flex flex-col-reverse text-base m-auto text-secondary bg-gradient-to-r from-[#FFA500] to-[#FFD700] transition duration-500 h-[100px] w-[120px] mt-2 sm:mt-5 rounded-3xl"
           >
             <span className="table m-auto">

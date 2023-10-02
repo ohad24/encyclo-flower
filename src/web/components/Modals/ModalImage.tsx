@@ -17,12 +17,7 @@ interface Props {
   setIsImageOpen: (bool: boolean) => void;
 }
 
-const ModalImage = ({
-  image,
-  imageFromTheUser,
-  isImageOpen,
-  setIsImageOpen,
-}: Props) => {
+const ModalImage = ({ image, isImageOpen, setIsImageOpen }: Props) => {
   const store = useSelector((state: any) => state);
 
   const showName = image.author_name ? image.author_name : store.username;
